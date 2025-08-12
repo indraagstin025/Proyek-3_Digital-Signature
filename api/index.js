@@ -1,1 +1,0 @@
-import dotenv from 'dotenv';import path from 'path';dotenv.config({ path: path.resolve(process.cwd(), '.env') });console.log('SUPABASE_URL =', process.env.SUPABASE_URL);import app from '../src/app.js';export default app;
