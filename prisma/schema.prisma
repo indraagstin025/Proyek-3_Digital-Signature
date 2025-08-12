@@ -1,0 +1,127 @@
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+enum DocumentStatus {
+  draft
+  pending
+  completed
+  archived
+  @@map("document_status")
+}
+
+enum GroupMemberRole {
+  admin_group
+  signer
+  viewer
+  @@map("group_member_role")
+}
+
+enum SigningMethod {
+  canvas
+  qrcode
+  @@map("signing_method")
+}
+
+enum InvitationStatus {
+  active
+  used
+  expired
+}
+
+// === MODELS ===
+
+model User {
+  id                 String  @id @default(uuid()) @db.Uuid // Primary Key sebagai UUID
+  phoneNumber        String? @map("phone_number")
+  email              String @unique
+  name               String
+  title              String?
+  company            String?
+  administeredGroups Group[] @relation("AdminToGroup")
+  documents          Document[]
+  signatures         Signature[]
+  groupMemberships   GroupMember[]
+  @@map("users")
+}
+
+model Document {
+  id             Int            @id @default(autoincrement())
+  title          String
+  filePath       String         @map("file_path")
+  originalHash   String?        @map("original_hash")
+  status         DocumentStatus @default(draft)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  owner          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String         @map("user_id") @db.Uuid // Foreign Key sebagai UUID
+  group          Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId        Int?           @map("group_id")
+  signatures     Signature[]
+  @@map("documents")
+}
+
+model Signature {
+  id                 Int           @id @default(autoincrement())
+  signatureImagePath String        @map("signature_image_path") @db.Text
+  signingMethod      SigningMethod @map("signing_method")
+  verificationHash   String?       @map("verification_hash")
+  signedAt           DateTime      @map("signed_at")
+  ipAddress          String?       @map("ip_address")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String        @map("user_id") @db.Uuid // Foreign Key sebagai UUID
+  document           Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId         Int           @map("document_id")
+  @@map("signatures")
+}
+
+model Group {
+  id            Int               @id @default(autoincrement())
+  name          String
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  admin         User              @relation("AdminToGroup", fields: [adminId], references: [id], onDelete: Cascade)
+  adminId       String            @map("admin_id") @db.Uuid // Foreign Key sebagai UUID
+  members       GroupMember[]
+  documents     Document[]
+  invitations   GroupInvitation[]
+  @@map("groups")
+}
+
+model GroupMember {
+  id        Int             @id @default(autoincrement())
+  role      GroupMemberRole @default(viewer)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+  group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   Int             @map("group_id")
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String          @map("user_id") @db.Uuid // Foreign Key sebagai UUID
+  @@map("group_members")
+}
+
+model GroupInvitation {
+  id         Int              @id @default(autoincrement())
+  email      String?
+  token      String           @unique
+  role       GroupMemberRole
+  status     InvitationStatus @default(active)
+  usageLimit Int?             @map("usage_limit")
+  expiresAt  DateTime         @map("expires_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+  group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId    Int              @map("group_id")
+  @@map("group_invitations")
+}
