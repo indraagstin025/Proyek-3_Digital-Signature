@@ -27,8 +27,5 @@
     "nodemon": "^3.1.10",
     "prisma": "^6.13.0",
     "prisma-import": "^1.0.5"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   }
 }
