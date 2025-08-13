@@ -1,15 +1,15 @@
-// src/services/authService.js
 import { supabase } from "../config/supabaseClient.js";
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 /**
- * Mendaftarkan user ke Supabase Auth, lalu menyimpannya ke database lokal.
- * @param {string} email
- * @param {string} password
- * @param {object} additionalData - Berisi nama, phoneNumber, dll.
- * @returns {object} - Data user lokal yang baru dibuat.
+ * @description Mendaftarkan pengguna ke Supabase Auth dan menyimpannya ke database lokal.
+ * @param {string} email - Email pengguna.
+ * @param {string} password - Kata sandi pengguna.
+ * @param {object} additionalData - Data tambahan pengguna (nama, phoneNumber, address).
+ * @returns {Promise<object>} - Promise yang berisi data pengguna lokal yang baru dibuat.
+ * @throws {Error} - Jika ada kegagalan saat registrasi atau penyimpanan data.
  */
 export const registerUser = async (email, password, additionalData) => {
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -24,8 +24,6 @@ export const registerUser = async (email, password, additionalData) => {
         throw new Error("Registrasi Supabase berhasil namun data user tidak ditemukan.");
     }
 
-    // Siapkan data untuk disimpan ke database lokal (Prisma)
-    // isSuperAdmin akan otomatis 'false' sesuai default di schema.prisma
     const newUserData = {
         id: authData.user.id,
         email: authData.user.email,
@@ -36,23 +34,23 @@ export const registerUser = async (email, password, additionalData) => {
 
     try {
         const localUser = await prisma.user.create({ data: newUserData });
-        return localUser; // Cukup kembalikan data user lokal
+        return localUser;
     } catch (dbError) {
         console.error("User di Supabase sudah dibuat, tapi gagal simpan ke DB lokal:", dbError);
-        // Disarankan untuk menghapus user di Supabase jika ini terjadi untuk menghindari user yatim.
+        // Hapus user di Supabase jika gagal disimpan di DB lokal untuk mencegah data yatim.
         await supabase.auth.admin.deleteUser(authData.user.id);
         throw new Error("Gagal menyimpan data pengguna. Silakan coba lagi.");
     }
 };
 
 /**
- * Fungsi untuk melakukan Login.
- * @param {string} email
- * @param {string} password
- * @return {object} - Objek berisi session dari Supabase dan user dari database lokal.
+ * @description Mengautentikasi pengguna dan mengambil data dari database lokal.
+ * @param {string} email - Email pengguna.
+ * @param {string} password - Kata sandi pengguna.
+ * @returns {Promise<object>} - Promise yang berisi session dari Supabase dan data pengguna lokal.
+ * @throws {Error} - Jika login gagal.
  */
 export const loginUser = async (email, password) => {
-    // Langkah 1: Autentikasi dengan Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
@@ -65,7 +63,6 @@ export const loginUser = async (email, password) => {
         throw new Error("Login gagal: User tidak ditemukan.");
     }
 
-    // Langkah 2: Ambil data user dari database lokal dengan Prisma
     const localUser = await prisma.user.findUnique({
         where: { id: authData.user.id },
         select: {
@@ -80,7 +77,6 @@ export const loginUser = async (email, password) => {
         throw new Error("Data pengguna tidak ditemukan di database lokal.");
     }
 
-    // Langkah 3: Gabungkan dan kembalikan data
     return {
         session: authData.session,
         user: localUser,
@@ -88,8 +84,9 @@ export const loginUser = async (email, password) => {
 };
 
 /**
- * Fungsi untuk Melakukan Logout.
- * @returns {object} - Hasil dari proses Logout.
+ * @description Melakukan logout dari Supabase.
+ * @returns {Promise<object>} - Promise yang berisi pesan sukses.
+ * @throws {Error} - Jika logout gagal.
  */
 export const logoutUser = async () => {
     const { error } = await supabase.auth.signOut();
@@ -100,4 +97,47 @@ export const logoutUser = async () => {
     }
 
     return { message: 'Logout Berhasil' };
+};
+
+/**
+ * @description Meminta email reset password melalui Supabase.
+ * @param {string} email - Email pengguna yang meminta reset password.
+ * @returns {Promise<object>} - Promise yang berisi data atau error dari Supabase.
+ */
+export const forgotPassword = async (email) => {
+    // Redirect ke halaman reset password di frontend
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: process.env.RESET_PASSWORD_URL || 'http://localhost:3000/reset-password',
+    });
+
+    if (error) {
+        console.error("Forgot password error:", error);
+        return { data: null, error };
+    }
+
+    return {
+        data: { message: 'Jika email terdaftar, link untuk reset password sudah dikirimkan.' },
+        error: null,
+    };
+};
+
+/**
+ * @description Mereset password pengguna dengan token yang diberikan.
+ * @param {string} token - Token dari URL reset password.
+ * @param {string} newPassword - Kata sandi baru pengguna.
+ * @returns {Promise<object>} - Promise yang berisi data atau error dari Supabase.
+ */
+export const resetPassword = async (token, newPassword) => {
+    // Menggunakan fungsi Supabase untuk menukar token dan memperbarui password
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (updateError) {
+        console.error("Reset password error:", updateError);
+        throw new Error('Gagal mereset password: ' + updateError.message);
+    }
+
+    return {
+        data: { message: 'Password berhasil diubah.' },
+        error: null,
+    };
 };
