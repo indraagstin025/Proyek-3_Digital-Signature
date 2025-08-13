@@ -46,6 +46,7 @@ model User {
   name               String
   title              String?
   company            String?
+  address            String?
   isSuperAdmin       Boolean @default(false) @map("is_super_admin")
 
   administeredGroups Group[] @relation("AdminToGroup")
