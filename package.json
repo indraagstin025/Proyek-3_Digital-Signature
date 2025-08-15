@@ -5,8 +5,8 @@
   "main": "src/app.js",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon src/app.js",
-    "start": "npx prisma migrate deploy && node src/app.js",
+    "dev": "dotenv -e .env.development -- nodemon src/app.js",
+    "start": "npx prisma migrate deploy && dotenv -e .env.production -- node src/app.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
@@ -31,7 +31,8 @@
     "jest": "^30.0.5",
     "nodemon": "^3.1.10",
     "prisma": "^6.13.0",
-    "prisma-import": "^1.0.5"
+    "prisma-import": "^1.0.5",
+    "dotenv-cli": "^7.4.2"
   },
   "jest": {
     "transform": {
