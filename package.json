@@ -4,13 +4,12 @@
   "description": "",
   "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "nodemon src/app.js",
     "start": "npx prisma migrate deploy && node src/app.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
-
   },
   "keywords": [],
   "author": "",
@@ -21,12 +20,23 @@
     "@supabase/supabase-js": "^2.54.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "multer": "^2.0.2",
     "pg": "^8.16.3",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-jest": "^30.0.5",
+    "jest": "^30.0.5",
     "nodemon": "^3.1.10",
     "prisma": "^6.13.0",
     "prisma-import": "^1.0.5"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
+    },
+    "testEnvironment": "node"
   }
 }
