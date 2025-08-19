@@ -12,6 +12,16 @@ const prisma = new PrismaClient();
  * @throws {Error} - Jika ada kegagalan saat registrasi atau penyimpanan data.
  */
 export const registerUser = async (email, password, additionalData) => {
+
+    const existingUser = await prisma.user.findUnique({
+        where: { email },
+    });
+
+    if (existingUser) {
+        throw new Error("Email sudah terdaftar. Silakan gunakan email lain.");
+    }
+
+    // ✅ Daftar ke Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -25,7 +35,7 @@ export const registerUser = async (email, password, additionalData) => {
     }
 
     const newUserData = {
-        id: authData.user.id,
+        id: authData.user.id, // pakai UUID dari Supabase
         email: authData.user.email,
         name: additionalData.name,
         phoneNumber: additionalData.phoneNumber,
@@ -37,7 +47,7 @@ export const registerUser = async (email, password, additionalData) => {
         return localUser;
     } catch (dbError) {
         console.error("User di Supabase sudah dibuat, tapi gagal simpan ke DB lokal:", dbError);
-        // Hapus user di Supabase jika gagal disimpan di DB lokal untuk mencegah data yatim.
+        // ❌ Rollback: hapus user di Supabase kalau gagal simpan ke DB lokal
         await supabase.auth.admin.deleteUser(authData.user.id);
         throw new Error("Gagal menyimpan data pengguna. Silakan coba lagi.");
     }

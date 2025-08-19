@@ -9,21 +9,32 @@ export const register = async (req, res) => {
     try {
         const { email, password, name, phoneNumber, address } = req.body;
 
+        // ✅ Validasi input
         if (!email || !password || !name) {
             return res.status(400).json({ message: 'Email, password, dan nama wajib diisi.' });
         }
 
         const additionalData = { name, phoneNumber, address };
+
+        // ✅ Panggil service
         const result = await authService.registerUser(email, password, additionalData);
 
-        res.status(201).json({
+        return res.status(201).json({
             message: 'Registrasi berhasil. Silakan cek email Anda untuk verifikasi.',
             data: result,
         });
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Error di controller register:", error);
+
+        // ✅ Bedakan jenis error
+        if (error.message.includes("Email sudah terdaftar")) {
+            return res.status(409).json({ message: error.message }); // 409 Conflict
+        }
+
+        return res.status(400).json({ message: error.message || "Registrasi gagal." });
     }
 };
+
 
 /**
  * @description Controller untuk menangani login pengguna.
