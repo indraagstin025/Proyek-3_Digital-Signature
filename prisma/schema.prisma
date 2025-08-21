@@ -38,7 +38,7 @@ enum InvitationStatus {
 
 
 model User {
-  id                 String  @id @db.Uuid // Pakai Supabase user.id, jangan auto default
+  id                 String  @id @db.Uuid
   phoneNumber        String? @map("phone_number")
   email              String  @unique
   name               String
@@ -47,9 +47,13 @@ model User {
   address            String?
   isSuperAdmin       Boolean @default(false) @map("is_super_admin")
 
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
   administeredGroups Group[] @relation("AdminToGroup")
   documents          Document[]
-  signatures         Signature[]
+  signaturesPersonal SignaturePersonal[]
+  signaturesGroup    SignatureGroup[]
   groupMemberships   GroupMember[]
   @@map("users")
 }
@@ -61,17 +65,41 @@ model Document {
   filePath       String         @map("file_path")
   originalHash   String?        @map("original_hash")
   status         DocumentStatus @default(draft)
+  originalFilePath String
+  signedFilePath   String?
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
   owner          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String         @map("user_id") @db.Uuid // Foreign Key sebagai UUID
   group          Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId        Int?           @map("group_id")
-  signatures     Signature[]
+  signaturesPersonal SignaturePersonal[]
+  signaturesGroup    SignatureGroup[]
   @@map("documents")
 }
 
-model Signature {
+model SignaturePersonal {
+  id             Int           @id @default(autoincrement())
+  documentId     Int
+  userId         String        @db.Uuid
+  method         SigningMethod
+  signatureUrl   String?
+  qrCodeData     String?
+  signedAt       DateTime      @default(now())
+
+  name           String
+  email          String
+  phone          String?
+  address        String?
+  profileImage   String?
+
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document       Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("signatures_personal")
+}
+
+model SignatureGroup {
   id                 Int           @id @default(autoincrement())
   signatureImagePath String        @map("signature_image_path") @db.Text
   signingMethod      SigningMethod @map("signing_method")
@@ -80,12 +108,17 @@ model Signature {
   ipAddress          String?       @map("ip_address")
   createdAt          DateTime      @default(now()) @map("created_at")
   updatedAt          DateTime      @updatedAt @map("updated_at")
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId             String        @map("user_id") @db.Uuid // Foreign Key sebagai UUID
-  document           Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  userId             String        @map("user_id") @db.Uuid
   documentId         Int           @map("document_id")
-  @@map("signatures")
+
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document           Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("signatures_group")
 }
+
+
 
 model Group {
   id            Int               @id @default(autoincrement())
