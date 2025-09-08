@@ -1,4 +1,4 @@
-// src/services/userService.js
+
 
 export class UserService {
     constructor(userRepository) {
@@ -17,7 +17,7 @@ export class UserService {
     }
 
     async createUser(userData) {
-        // Logika bisnis tambahan (jika ada) bisa diletakkan di sini.
+
         return this.userRepository.createUser(userData);
     }
 }

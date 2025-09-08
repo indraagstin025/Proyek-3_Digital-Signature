@@ -102,28 +102,28 @@ export const createAuthController = (authService) => {
          * @description Controller untuk menangani proses reset password.
          */
         resetPassword: async (req, res) => {
-            const { newPassword } = req.body;
-            const { token } = req.query;
-
+            const { token, newPassword } = req.body;
             if (!token || !newPassword) {
-                return res.status(400).json({ message: 'Token dan password baru wajib diisi.' });
+                console.warn("⚠️ Token atau password baru tidak ada");
+                return res.status(400).json({
+                    message: 'Token dan password baru wajib diisi.'
+                });
             }
 
             try {
-                const { error } = await authService.resetPassword(token, newPassword);
-
-                if (error) {
-                    console.error(error);
-                    return res.status(400).json({ message: error.message });
-                }
-
+                const result = await authService.resetPassword(token, newPassword);
                 return res.status(200).json({
-                    message: 'Password berhasil diubah. Silakan login kembali.',
+                    message: result.message || 'Password berhasil diubah. Silakan login kembali.'
                 });
             } catch (error) {
-                console.error(error);
-                return res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
+                console.error("❌ Reset password error (controller):", error);
+
+                return res.status(500).json({
+                    message: error.message || 'Terjadi kesalahan pada server.'
+                });
             }
         }
+
+
     };
 };

@@ -61,12 +61,20 @@ export class AuthService {
     }
 
     /**
-     * @description Mereset password pengguna.
-     * @param {string} token
-     * @param {string} newPassword
+     * @description Mereset password pengguna menggunakan access token dari email.
+     * @param {string} token - Token reset password dari email
+     * @param {string} newPassword - Password baru
      * @returns {Promise<object>}
      */
     async resetPassword(token, newPassword) {
-        return this.authRepository.resetPassword(token, newPassword);
+        try {
+            const result = await this.authRepository.resetPassword(token, newPassword);
+            return result; // { message, data } dari repository
+        } catch (error) {
+            console.error("Reset password error (service):", error);
+            throw new Error(error.message || "Terjadi kesalahan saat mereset password.");
+        }
     }
+
+
 }

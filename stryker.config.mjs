@@ -1,0 +1,1 @@
+/** @type {import('@stryker-mutator/api/core').StrykerOptions} */export default {    testRunner: 'jest',    jest: {        // opsional, biarin default aja kalau jest.config.js sudah ada    },    mutate: [        'src/services/**/*.js',        'src/controllers/**/*.js'    ],    reporters: ['html', 'clear-text', 'progress'],    coverageAnalysis: 'off'};
