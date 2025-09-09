@@ -7,45 +7,43 @@
 export const createAuthController = (authService) => {
     return {
         /**
-         * @description Controller untuk menangani registrasi pengguna.
+         * Controller untuk menangani registrasi pengguna.
+         * Validasi input sudah ditangani oleh middleware di level rute.
          */
         register: async (req, res) => {
             try {
+                // Validasi manual dihapus, karena sudah ditangani oleh express-validator.
                 const { email, password, name, phoneNumber, address } = req.body;
-
-                if (!email || !password || !name) {
-                    return res.status(400).json({ message: 'Email, password, dan nama wajib diisi.' });
-                }
-
                 const additionalData = { name, phoneNumber, address };
-                const result = await authService.registerUser(email, password, additionalData);
+                const newUser = await authService.registerUser(email, password, additionalData);
+
+                // Buat objek respons yang bersih tanpa password hash
+                const userResponse = {
+                    id: newUser.id,
+                    name: newUser.name,
+                    email: newUser.email,
+                };
 
                 return res.status(201).json({
                     message: 'Registrasi berhasil. Silakan cek email Anda untuk verifikasi.',
-                    data: result,
+                    data: userResponse,
                 });
             } catch (error) {
                 console.error("Error di controller register:", error);
-
                 if (error.message.includes("Email sudah terdaftar")) {
                     return res.status(409).json({ message: error.message });
                 }
-
                 return res.status(400).json({ message: error.message || "Registrasi gagal." });
             }
         },
 
         /**
-         * @description Controller untuk menangani login pengguna.
+         * Controller untuk menangani login pengguna.
          */
         login: async (req, res) => {
             try {
+                // Validasi manual dihapus.
                 const { email, password } = req.body;
-
-                if (!email || !password) {
-                    return res.status(400).json({ message: 'Email dan password wajib diisi.' });
-                }
-
                 const result = await authService.loginUser(email, password);
 
                 res.status(200).json({
@@ -54,20 +52,21 @@ export const createAuthController = (authService) => {
                     user: result.user,
                 });
             } catch (error) {
-                res.status(401).json({ message: error.message });
+                res.status(401).json({ message: error.message || "Email atau password salah." });
             }
         },
 
         /**
-         * @description Controller untuk menangani logout pengguna.
+         * Controller untuk menangani logout pengguna.
+         * Token diverifikasi oleh authMiddleware.
          */
         logout: async (req, res) => {
             try {
-                const token = req.headers.authorization.split(' ')[1];
-                await authService.logoutUser(token);
+                // Tidak perlu lagi mengambil token dari header secara manual.
+                await authService.logoutUser();
                 res.status(200).json({ message: 'Anda telah berhasil Logout.' });
             } catch (error) {
-                res.status(401).json({ message: 'Token tidak valid.' });
+                res.status(500).json({ message: 'Logout gagal, terjadi kesalahan pada server.' });
             }
         },
 

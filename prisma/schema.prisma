@@ -42,13 +42,16 @@ model User {
   phoneNumber        String? @map("phone_number")
   email              String  @unique
   name               String
+  password           String
   title              String?
   company            String?
   address            String?
   isSuperAdmin       Boolean @default(false) @map("is_super_admin")
+  profilePictureUrl  String? @map("profile_picture_url")
+
 
   createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @default(now()) @map("updated_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   administeredGroups Group[] @relation("AdminToGroup")
   documents          Document[]
