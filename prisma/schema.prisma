@@ -58,7 +58,20 @@ model User {
   signaturesPersonal SignaturePersonal[]
   signaturesGroup    SignatureGroup[]
   groupMemberships   GroupMember[]
+  profilePictures    UserProfilePicture[]
   @@map("users")
+}
+
+model UserProfilePicture {
+  id String @id @default(uuid())
+  userId String @map("user_id") @db.Uuid
+  url String
+  hash String @unique
+  isActive Boolean @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("user_profile_pictures")
 }
 
 
