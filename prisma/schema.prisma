@@ -42,7 +42,6 @@ model User {
   phoneNumber        String? @map("phone_number")
   email              String  @unique
   name               String
-  password           String
   title              String?
   company            String?
   address            String?
@@ -66,11 +65,12 @@ model UserProfilePicture {
   id String @id @default(uuid())
   userId String @map("user_id") @db.Uuid
   url String
-  hash String @unique
+  hash String
   isActive Boolean @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, hash], name: "user_picture_hash_unique")
   @@map("user_profile_pictures")
 }
 

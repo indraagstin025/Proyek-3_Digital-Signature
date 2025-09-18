@@ -42,19 +42,25 @@ export const createAuthController = (authService) => {
          */
         login: async (req, res) => {
             try {
-                // Validasi manual dihapus.
                 const { email, password } = req.body;
                 const result = await authService.loginUser(email, password);
 
-                res.status(200).json({
+                return res.status(200).json({
+                    success: true,
                     message: 'Login berhasil',
                     session: result.session,
                     user: result.user,
                 });
             } catch (error) {
-                res.status(401).json({ message: error.message || "Email atau password salah." });
+                console.error("❌ Login error:", error.message);
+
+                return res.status(401).json({
+                    success: false,
+                    message: error.message || "Email atau password salah."
+                });
             }
         },
+
 
         /**
          * Controller untuk menangani logout pengguna.
