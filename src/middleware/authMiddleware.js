@@ -15,8 +15,18 @@ const authMiddleware = async (req, res, next) => {
 
     const { data, error } = await supabase.auth.getUser(token);
 
-    if (error || !data?.user) {
-      return res.status(401).json({ message: "Token tidak valid atau sudah kadaluarsa." });
+    if (error) {
+        if (error.message.toLowerCase().includes("jwt expired")) {
+            return res.status(401).json({
+                message: "Sesi Anda telah berakhir. Silahkan login kembali.",
+                code: "TOKEN_EXPIRED"
+            });
+        }
+        return res.status(401).json({ message: "Token otentikasi tidak valid.", code: "INVALID_TOKEN"});
+    }
+
+    if (!data?.user) {
+        return res.status(401).json({ message: "Token otentikasi tidak valid.", code: "INVALID_TOKEN"});
     }
 
     const supabaseUser = data.user;
