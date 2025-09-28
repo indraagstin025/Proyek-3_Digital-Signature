@@ -27,7 +27,7 @@ export class DocumentService {
    */
   async createDocument(userId, file, title) {
     if (!file) throw new Error("File dokumen wajib diunggah.");
-    if (!title || title.trim() === "") throw new Error("Judul dokumen wajib diisi.");
+    // if (!title || title.trim() === "") throw new Error("Judul dokumen wajib diisi.");
 
     const fileBuffer = file.buffer;
     const hash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
@@ -61,43 +61,28 @@ export class DocumentService {
     return document;
   }
 
-  /**
-   * @description Memperbarui dokumen. Bisa hanya judul, atau dengan mengunggah file baru (membuat versi baru).
-   */
-  async updateDocument(documentId, userId, updates, newFile) {
-    await this.getDocumentById(documentId, userId);
 
-    const dataToUpdate = {};
-    if (updates && updates.title) {
-      dataToUpdate.title = updates.title;
+    /**
+     * @description Memperbarui metadata dokumen (misalnya, judul).
+     * Fungsi ini tidak lagi menangani unggahan file baru.
+     * @param {string} documentId - ID dokumen yang akan diperbarui.
+     * @param {string} userId - ID pengguna untuk verifikasi kepemilikan.
+     * @param {object} updates - Objek berisi data yang akan diperbarui, misal: { title: "Judul Baru" }.
+     */
+    async updateDocument(documentId, userId, updates) {
+        await this.getDocumentById(documentId, userId);
+        const dataToUpdate = {};
+
+        if (updates && updates.title) {
+            dataToUpdate.title = updates.title;
+        }
+
+        if (Object.keys(dataToUpdate).length === 0) {
+            return this.getDocumentById(documentId, userId);
+        }
+
+        return this.documentRepository.update(documentId, dataToUpdate);
     }
-
-    if (newFile) {
-      const fileBuffer = newFile.buffer;
-      const newHash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
-      const existingVersion = await this.versionRepository.findByUserAndHash(userId, newHash);
-      if (existingVersion) {
-        throw new Error("Konten file ini sudah ada dalam riwayat dokumen Anda.");
-      }
-
-      const newUrl = await this.fileStorage.uploadDocument(newFile, userId);
-
-      const newVersion = await this.versionRepository.create({
-        documentId,
-        userId,
-        url: newUrl,
-        hash: newHash,
-      });
-
-      dataToUpdate.currentVersionId = newVersion.id;
-    }
-
-    if (Object.keys(dataToUpdate).length === 0) {
-      return this.getDocumentById(documentId, userId);
-    }
-
-    return this.documentRepository.update(documentId, dataToUpdate);
-  }
 
   /**
    * @description Menghapus dokumen beserta SEMUA versinya dan filenya di storage.
@@ -168,48 +153,5 @@ export class DocumentService {
     await this.versionRepository.deleteById(versionId);
 
     return { message: "Versi dokumen berhasil dihapus." };
-  }
-
-  /**
-   * @description Mengorkestrasi proses penambahan tanda tangan mandiri, yang akan menghasilkan VERSI BARU dari dokumen.
-   * @param {string} userId - ID user yang melakukan aksi (harus pemilik).
-   * @param {string} originalVersionId - ID versi dokumen ASLI yang akan ditandatangani (misal: Versi 1).
-   * @param {object} signatureData - Data tanda tangan { method, signatureImageUrl, positionX, ..., width, height }.
-   * @returns {Promise<object>} Dokumen induk yang telah diperbarui untuk menunjuk ke versi baru.
-   */
-  async addPersonalSignature(userId, originalVersionId, signatureData) {
-    const originalVersion = await this.versionRepository.findById(originalVersionId);
-    if (!originalVersion || originalVersion.userId !== userId) {
-      throw new Error("Akses ditolak atau versi tidak ditemukan.");
-    }
-
-    const document = await this.documentRepository.findById(originalVersion.documentId, userId);
-    if (document.status === "completed") {
-      throw new Error("Dokumen ini sudah selesai dan tidak dapat ditandatangani lagi.");
-    }
-
-    const signedFileUrl = await this.pdfService.generateSignedPdf(originalVersionId, [signatureData]);
-
-    const newVersion = await this.versionRepository.create({
-      documentId: originalVersion.documentId,
-      userId: userId,
-      url: signedFileUrl,
-    });
-
-    const dataToSave = {
-      signer: {
-        connect: { id: userId },
-      },
-      documentVersion: {
-        connect: { id: newVersion.id },
-      },
-      ...signatureData,
-    };
-    await this.signatureRepository.createPersonal(dataToSave);
-
-    return this.documentRepository.update(originalVersion.documentId, {
-      currentVersionId: newVersion.id,
-      status: "completed",
-    });
   }
 }

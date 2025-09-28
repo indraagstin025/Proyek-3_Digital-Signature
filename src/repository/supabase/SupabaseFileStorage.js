@@ -1,1 +1,126 @@
-import { supabase, supabaseBucket } from '../../config/supabaseClient.js';import path from 'path';import crypto from 'crypto';class SupabaseFileStorage {    /**     * ✅ FUNGSI BARU: Fungsi generik untuk mengunggah file dari buffer.     * Dibutuhkan oleh PDFService.     * @param {string} filePath - Path lengkap file di Supabase, contoh: 'user-id/signed/file.pdf'     * @param {Buffer} buffer - Data file dalam bentuk buffer.     * @param {string} contentType - Tipe MIME file, contoh: 'application/pdf'.     * @returns {Promise<string>} URL publik dari file yang diunggah.     */    async uploadFile(filePath, buffer, contentType) {        const { error } = await supabase.storage            .from(supabaseBucket)            .upload(filePath, buffer, { contentType, upsert: true });        if (error) {            throw new Error(`Gagal mengunggah file generik: ${error.message}`);        }        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(filePath);        return data.publicUrl;    }    async uploadDocument(file, userId) {        if (!file || !userId) {            throw new Error('File dan User ID wajib disediakan.');        }        const ext = path.extname(file.originalname);        const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;        const fileName = `documents/${userId}/${uniqueSuffix}${ext}`;        const { error } = await supabase.storage            .from(supabaseBucket)            .upload(fileName, file.buffer, { contentType: file.mimetype });        if (error) {            throw new Error(`Gagal mengunggah dokumen: ${error.message}`);        }        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(fileName);        return data.publicUrl;    }    /**     * ✅ FUNGSI PENTING YANG HILANG     * Mengunduh file sebagai Buffer untuk digunakan oleh PDFService.     * @param {string} publicUrl - URL publik lengkap dari file.     * @returns {Promise<Buffer>}     */    async downloadFileAsBuffer(publicUrl) {        const filePath = this.getFilePathFromUrl(publicUrl);        if (!filePath) {            throw new Error('Gagal mengekstrak path dari URL untuk diunduh.');        }        const { data, error } = await supabase.storage            .from(supabaseBucket)            .download(decodeURIComponent(filePath));        if (error) {            throw new Error(`Gagal mengunduh file: ${error.message}`);        }        const buffer = Buffer.from(await data.arrayBuffer());        return buffer;    }    /**     * Menghapus file dari Supabase storage berdasarkan URL publiknya.     */    async deleteFile(publicUrl) {        try {            if (!publicUrl) return;            const filePath = this.getFilePathFromUrl(publicUrl);            if (!filePath) return;            const decodedFilePath = decodeURIComponent(filePath);            const { error } = await supabase.storage                .from(supabaseBucket)                .remove([decodedFilePath]);            if (error) {                console.error(`Supabase gagal menghapus file: ${error.message}`);            }        } catch (error) {            console.error("Terjadi error di fungsi deleteFile:", error);        }    }    /**     * Mengunggah foto profil baru.     */    async uploadProfilePicture(file, userId) {        if (!file) throw new Error('File tidak ditemukan.');        const ext = path.extname(file.originalname);        const fileName = `profile-pictures/${userId}/${Date.now()}${ext}`;        const { error } = await supabase.storage            .from(supabaseBucket)            .upload(fileName, file.buffer, { contentType: file.mimetype });        if (error) throw new Error(`Upload profile gagal: ${error.message}`);        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(fileName);        return data.publicUrl;    }    /**     * Helper untuk mengekstrak path file dari URL.     */    getFilePathFromUrl(publicUrl) {        try {            const url = new URL(publicUrl);            const pathParts = url.pathname.split(`/${supabaseBucket}/`);            return pathParts[1] || null;        } catch (e) {            console.error('URL tidak valid:', publicUrl);            return null;        }    }}export default SupabaseFileStorage;
+import { supabase, supabaseBucket } from '../../config/supabaseClient.js';
+import path from 'path';
+import crypto from 'crypto';
+
+class SupabaseFileStorage {
+
+    /**
+     * Dibutuhkan oleh PDFService.
+     * @param {string} filePath - Path lengkap file di Supabase, contoh: 'user-id/signed/file.pdf'
+     * @param {Buffer} buffer - Data file dalam bentuk buffer.
+     * @param {string} contentType - Tipe MIME file, contoh: 'application/pdf'.
+     * @returns {Promise<string>} URL publik dari file yang diunggah.
+     */
+    async uploadFile(filePath, buffer, contentType) {
+        const { error } = await supabase.storage
+            .from(supabaseBucket)
+            .upload(filePath, buffer, { contentType, upsert: true });
+
+        if (error) {
+            throw new Error(`Gagal mengunggah file generik: ${error.message}`);
+        }
+        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(filePath);
+        return data.publicUrl;
+    }
+
+    async uploadDocument(file, userId) {
+        if (!file || !userId) {
+            throw new Error('File dan User ID wajib disediakan.');
+        }
+
+        const ext = path.extname(file.originalname);
+        const uniqueFileName = `${crypto.randomBytes(16).toString('hex')}${ext}`;
+        const filePath = `documents/${userId}/${uniqueFileName}`;
+
+        const { error } = await supabase.storage
+            .from(supabaseBucket)
+            .upload(filePath, file.buffer, { contentType: file.mimetype });
+
+        if (error) {
+            throw new Error(`Gagal mengunggah dokumen: ${error.message}`);
+        }
+
+        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(filePath);
+        return data.publicUrl;
+    }
+
+    /**
+     * Mengunduh file sebagai Buffer untuk digunakan oleh PDFService.
+     * @param {string} publicUrl - URL publik lengkap dari file.
+     * @returns {Promise<Buffer>}
+     */
+    async downloadFileAsBuffer(publicUrl) {
+        const filePath = this.getFilePathFromUrl(publicUrl);
+        if (!filePath) {
+            throw new Error('Gagal mengekstrak path dari URL untuk diunduh.');
+        }
+
+        const { data, error } = await supabase.storage
+            .from(supabaseBucket)
+            .download(decodeURIComponent(filePath));
+
+        if (error) {
+            throw new Error(`Gagal mengunduh file: ${error.message}`);
+        }
+
+        const buffer = Buffer.from(await data.arrayBuffer());
+        return buffer;
+    }
+
+    /**
+     * Menghapus file dari Supabase storage berdasarkan URL publiknya.
+     */
+    async deleteFile(publicUrl) {
+        try {
+            if (!publicUrl) return;
+
+            const filePath = this.getFilePathFromUrl(publicUrl);
+            if (!filePath) return;
+
+            const decodedFilePath = decodeURIComponent(filePath);
+
+            const { error } = await supabase.storage
+                .from(supabaseBucket)
+                .remove([decodedFilePath]);
+
+            if (error) {
+                console.error(`Supabase gagal menghapus file: ${error.message}`);
+            }
+        } catch (error) {
+            console.error("Terjadi error di fungsi deleteFile:", error);
+        }
+    }
+
+    /**
+     * Mengunggah foto profil baru.
+     */
+    async uploadProfilePicture(file, userId) {
+        if (!file) throw new Error('File tidak ditemukan.');
+        const ext = path.extname(file.originalname);
+        const fileName = `profile-pictures/${userId}/${Date.now()}${ext}`;
+
+        const { error } = await supabase.storage
+            .from(supabaseBucket)
+            .upload(fileName, file.buffer, { contentType: file.mimetype });
+
+        if (error) throw new Error(`Upload profile gagal: ${error.message}`);
+        const { data } = supabase.storage.from(supabaseBucket).getPublicUrl(fileName);
+        return data.publicUrl;
+    }
+
+    /**
+     * Helper untuk mengekstrak path file dari URL.
+     */
+    getFilePathFromUrl(publicUrl) {
+        try {
+            const url = new URL(publicUrl);
+            const pathParts = url.pathname.split(`/${supabaseBucket}/`);
+            return pathParts[1] || null;
+        } catch (e) {
+            console.error('URL tidak valid:', publicUrl);
+            return null;
+        }
+    }
+}
+
+export default SupabaseFileStorage;

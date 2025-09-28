@@ -60,6 +60,7 @@ model User {
   signaturesGroup    SignatureGroup[]    @relation("UserSignaturesGroup") // ✅ Diberi nama
   groupMemberships   GroupMember[]
   profilePictures    UserProfilePicture[]
+  sentInvitations    GroupInvitation[]   @relation("SentByInviter")
   @@map("users")
 }
 
@@ -94,9 +95,10 @@ model Document {
 }
 
 model DocumentVersion {
-  id                 String              @id @default(uuid()) @db.Uuid // ✅ Ditambah @db.Uuid
+  id                 String              @id @default(uuid()) @db.Uuid
   url                String              @db.Text
   hash               String?
+  signedFileHash     String?             @unique @map("signed_file_hash")
   createdAt          DateTime            @default(now()) @map("created_at")
   document           Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
   documentId         String              @map("document_id") @db.Uuid
@@ -119,6 +121,9 @@ model SignaturePersonal {
   positionY         Float           @map("position_y")
   pageNumber        Int             @map("page_number")
   signedAt          DateTime        @default(now()) @map("signed_at")
+  ipAddress         String?         @map("ip_address")
+  userAgent         String?         @map("user_agent") @db.Text
+  displayQrCode     Boolean         @default(true) @map("display_qr_code")
   documentVersionId String          @map("document_version_id") @db.Uuid // ✅ Ditambah @db.Uuid
   documentVersion   DocumentVersion @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)
   signerId          String          @map("signer_id") @db.Uuid
@@ -127,20 +132,23 @@ model SignaturePersonal {
 }
 
 model SignatureGroup {
-  id                 Int           @id @default(autoincrement())
-  signatureImagePath String        @map("signature_image_path") @db.Text
-  signingMethod      SigningMethod @map("signing_method")
-  verificationHash   String?       @map("verification_hash")
-  signedAt           DateTime      @map("signed_at")
-  ipAddress          String?       @map("ip_address")
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  id                 String          @id @default(uuid()) @db.Uuid
+  method             SigningMethod
+  signatureImageUrl  String          @map("signature_image_url")
+  width              Float           @map("width")    @default(0)
+  height             Float           @map("height")   @default(0)
+  positionX          Float           @map("position_x")
+  positionY          Float           @map("position_y")
+  pageNumber         Int             @map("page_number")
+  signedAt           DateTime        @default(now()) @map("signed_at")
+  ipAddress          String?         @map("ip_address")
+  userAgent          String?         @map("user_agent") @db.Text
 
-  userId             String        @map("user_id") @db.Uuid
-
-  user               User            @relation("UserSignaturesGroup", fields: [userId], references: [id], onDelete: Cascade)
-  documentVersionId  String        @map("document_version_id") @db.Uuid
+  documentVersionId  String          @map("document_version_id") @db.Uuid
   documentVersion    DocumentVersion @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)
+
+  signerId           String          @map("signer_id") @db.Uuid
+  signer             User            @relation("UserSignaturesGroup", fields: [signerId], references: [id], onDelete: Cascade)
 
   @@map("signatures_group")
 }
@@ -178,6 +186,8 @@ model GroupInvitation {
   status     InvitationStatus @default(active)
   usageLimit Int?             @map("usage_limit")
   expiresAt  DateTime         @map("expires_at")
+  inviterId  String           @map("inviter_id") @db.Uuid
+  inviter    User             @relation("SentByInviter", fields: [inviterId], references: [id], onDelete: Cascade)
   createdAt  DateTime         @default(now()) @map("created_at")
   updatedAt  DateTime         @updatedAt @map("updated_at")
   group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)

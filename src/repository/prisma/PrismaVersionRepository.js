@@ -1,8 +1,12 @@
+import { VersionRepository } from "../interface/VersionRepository.js";
+
 /**
  * @description Implementasi Repository untuk model 'DocumentVersion' menggunakan Prisma.
  */
-export class PrismaVersionRepository {
+
+export class PrismaVersionRepository extends VersionRepository {
   constructor(prisma) {
+    super();
     this.prisma = prisma;
   }
 
@@ -57,12 +61,24 @@ export class PrismaVersionRepository {
     return this.prisma.documentVersion.findMany({
       where: { documentId },
       orderBy: { createdAt: "desc" },
-
       include: {
         document: true,
         signaturesPersonal: true,
         signaturesGroup: true,
       },
+    });
+  }
+
+  /**
+   * @description Memperbarui data pada record versi dokumen.
+   * @param {string} versionId - ID versi yang akan diperbarui.
+   * @param {object} data - Data untuk diperbarui.
+   * @returns {Promise<object>}
+   */
+  async update(versionId, data) {
+    return this.prisma.documentVersion.update({
+      where: { id: versionId },
+      data: data,
     });
   }
 

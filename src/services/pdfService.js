@@ -1,5 +1,8 @@
 import { PDFDocument } from "pdf-lib";
 import QRCode from "qrcode";
+import crypto from "crypto";
+import path from "path";
+import AppError from "../validators/AppError.js";
 
 export class PDFService {
   constructor(versionRepository, signatureRepository, fileStorage) {
@@ -9,12 +12,13 @@ export class PDFService {
   }
 
   /**
-   * @description Menghasilkan PDF yang sudah ditandatangani berdasarkan versi dokumen dan data tanda tangan berbasis rasio.
+   * @description Menghasilkan PDF yang sudah ditandatangani dan (opsional) diberi QR code verifikasi.
    * @param {string} documentVersionId - ID versi dokumen asli.
-   * @param {Array<object>} signaturesToEmbed - Array berisi objek data tanda tangan dalam bentuk rasio (0-1).
-   * @returns {Promise<string>} URL publik dari file PDF yang sudah ditandatangani.
+   * @param {Array<object>} signaturesToEmbed - Array berisi objek data tanda tangan.
+   * @param {object} options - Opsi tambahan, misal: { displayQrCode, verificationUrl }.
+   * @returns {Promise<{signedFileBuffer: Buffer, publicUrl: string}>} Objek berisi buffer file final dan URL publiknya.
    */
-  async generateSignedPdf(documentVersionId, signaturesToEmbed) {
+  async generateSignedPdf(documentVersionId, signaturesToEmbed, options = {}) {
     const version = await this.versionRepository.findById(documentVersionId);
     if (!version) throw new Error("Versi dokumen tidak ditemukan.");
 
@@ -23,7 +27,20 @@ export class PDFService {
     }
 
     const pdfBuffer = await this.fileStorage.downloadFileAsBuffer(version.url);
-    const pdfDoc = await PDFDocument.load(pdfBuffer);
+      let pdfDoc;
+      try {
+          pdfDoc = await PDFDocument.load(pdfBuffer);
+      } catch (error) {
+          if (error.message && error.message.includes('is encrypted')) {
+              const encryptedError = new AppError(
+                  'Dokumen ini terproteksi kata sandi atau terenkripsi dan tidak dapat diubah.',
+                  403
+              );
+              encryptedError.code = "DOCUMENT_ENCRYPTED";
+              throw encryptedError; // ⬅️ HARUS AppError, jangan pakai new Error
+          }
+          throw error;
+      }
 
     for (const signature of signaturesToEmbed) {
       let imageBytes;
@@ -40,10 +57,7 @@ export class PDFService {
         const absoluteWidth = signature.width * pageWidth;
         const absoluteHeight = signature.height * pageHeight;
         const absoluteX = signature.positionX * pageWidth;
-
-        const absoluteY_from_top = signature.positionY * pageHeight;
-
-        const y_pdf = pageHeight - absoluteY_from_top - absoluteHeight;
+        const y_pdf = pageHeight - signature.positionY * pageHeight - absoluteHeight;
 
         page.drawImage(embeddedImage, {
           x: absoluteX,
@@ -54,14 +68,37 @@ export class PDFService {
       }
     }
 
-    const signedPdfBytes = await pdfDoc.save();
+    if (options.displayQrCode && options.verificationUrl) {
+      try {
+        const qrCodeDataURL = await QRCode.toDataURL(options.verificationUrl);
+        console.log("PDFService - QR Code Data URL berhasil dibuat (awal):", qrCodeDataURL.substring(0, 50) + "...");
+        const qrImageBytes = Buffer.from(qrCodeDataURL.split(",")[1], "base64");
+        const embeddedQrImage = await pdfDoc.embedPng(qrImageBytes);
 
-    const documentOwnerId = version.userId;
-    const safeTitle = version.document.title.replace(/[^a-z0-9]/gi, "_");
-    const signedFilePath = `${documentOwnerId}/signed/${safeTitle}-signed-${Date.now()}.pdf`;
+        const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
+        lastPage.drawImage(embeddedQrImage, {
+          x: 40,
+          y: 40,
+          width: 80,
+          height: 80,
+        });
 
-    const finalUrl = await this.fileStorage.uploadFile(signedFilePath, signedPdfBytes, "application/pdf");
+        console.log("PDFService - Gambar QR code berhasil ditempelkan ke PDF.");
+      } catch (err) {
+        console.error("Gagal membuat atau menempelkan QR code:", err);
+      }
+    }
 
-    return finalUrl;
+      const signedPdfBytes = await pdfDoc.save();
+      const documentOwnerId = version.userId;
+      const ext = path.extname(version.document.title);
+      const uniqueFileName = `${crypto.randomBytes(16).toString('hex')}${ext}`;
+      const signedFilePath = `signed-documents/${documentOwnerId}/${uniqueFileName}`;
+      const finalUrl = await this.fileStorage.uploadFile(signedFilePath, signedPdfBytes, "application/pdf");
+
+    return {
+      signedFileBuffer: Buffer.from(signedPdfBytes),
+      publicUrl: finalUrl,
+    };
   }
 }
