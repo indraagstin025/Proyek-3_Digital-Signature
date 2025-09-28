@@ -15,12 +15,19 @@ export const createDocumentController = (documentService) => {
         const file = req.file;
         const userId = req.user?.id;
 
-        if (!title || title.trim() === "") {
-          return res.status(400).json({ status: "error", message: "Judul dokumen wajib diisi" });
-        }
+          console.log("Menerima title dari frontend:", title);
+
+        //if (!title || title.trim() === "") {
+          // return res.status(400).json({ status: "error", message: "Judul dokumen wajib diisi" });
+        //}
+
         if (!file) {
           return res.status(400).json({ status: "error", message: "File dokumen wajib diunggah" });
         }
+
+          if (!title) {
+              return res.status(400).json({ status: "error", message: "Nama file tidak terdeteksi dalam request." });
+          }
 
         const document = await documentService.createDocument(userId, file, title);
         return res.status(201).json({ status: "success", message: "Dokumen berhasil diunggah.", data: document });
@@ -57,9 +64,9 @@ export const createDocumentController = (documentService) => {
         const { id: documentId } = req.params;
         const userId = req.user?.id;
         const updates = req.body;
-        const newFile = req.file;
+       // const newFile = req.file;
 
-        const updatedDocument = await documentService.updateDocument(documentId, userId, updates, newFile);
+        const updatedDocument = await documentService.updateDocument(documentId, userId, updates, null);
         return res.status(200).json({ status: "success", message: "Dokumen berhasil diperbaharui.", data: updatedDocument });
       } catch (error) {
         console.error("Error in updateDocument Controller:", error);
