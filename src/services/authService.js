@@ -1,58 +1,61 @@
+import AuthError from "../errors/AuthError.js";
+
 /**
  * @description Kelas layanan untuk menangani logika bisnis autentikasi pengguna.
- * Kelas ini bergantung pada sebuah abstraksi (AuthRepository)
- * dan tidak peduli dengan detail implementasi database atau autentikasi.
  */
 export class AuthService {
     /**
-     * @description Konstruktor untuk menginjeksi dependensi repository.
+     * @description Konstruktor untuk melakukan dependency injection pada repository.
      * @param {object} authRepository - Instance dari kelas yang mengimplementasikan AuthRepository.
      */
     constructor(authRepository) {
         if (!authRepository) {
-            throw new Error('AuthRepository harus disediakan.');
+            throw new Error('AuthRepository harus disediakan');
         }
         this.authRepository = authRepository;
     }
 
     /**
-     * @description Mendaftarkan pengguna baru.
+     * @description Fungsi ini buat user untuk melakukan
+     * registrasi dan ada kode validasi passwordnya.
      * @param {string} email
      * @param {string} password
      * @param {object} additionalData
-     * @returns {Promise<object>}
+     * @returns {Promise<*|Object>}
      */
     async registerUser(email, password, additionalData) {
-        if (password.length < 8) {
-            throw new Error('Password harus memiliki minimal 8 Karakter. ');
+        if (!password || password.length < 8 ) {
+            throw AuthError.PasswordTooWeak('Password harus memiliki minimal 8 karakter.');
         }
 
         if (!/\d/.test(password)) {
-            throw new Error('Paasword harus mengandung setidaknya satu angka. ');
+            throw AuthError.PasswordTooWeak('Password harus mengandung setidaknya satu angka.');
         }
+
         return this.authRepository.registerUser(email, password, additionalData);
     }
 
     /**
-     * @description Mengautentikasi pengguna.
+     * @description Fungsi untuk melakukan autentikasi atau login untuk User
+     * dengan memasukkan email dan password.
      * @param {string} email
      * @param {string} password
-     * @returns {Promise<object>}
+     * @returns {Promise<*|Object>}
      */
     async loginUser(email, password) {
         return this.authRepository.loginUser(email, password);
     }
 
     /**
-     * @description Melakukan logout pengguna.
+     * @description Buat logout User
      * @returns {Promise<void>}
      */
-    async logoutUser() {
+    async logoutUser(){
         return this.authRepository.logoutUser();
     }
 
     /**
-     * @description Meminta email untuk reset password.
+     * @description Fungsi ini buat user jika lupa password.
      * @param {string} email
      * @returns {Promise<object>}
      */
@@ -61,20 +64,12 @@ export class AuthService {
     }
 
     /**
-     * @description Mereset password pengguna menggunakan access token dari email.
-     * @param {string} token - Token reset password dari email
+     * @description Buat resep password pengguna.
+     * @param {string} token - Token reset password dari email.
      * @param {string} newPassword - Password baru
      * @returns {Promise<object>}
      */
     async resetPassword(token, newPassword) {
-        try {
-            const result = await this.authRepository.resetPassword(token, newPassword);
-            return result; // { message, data } dari repository
-        } catch (error) {
-            console.error("Reset password error (service):", error);
-            throw new Error(error.message || "Terjadi kesalahan saat mereset password.");
-        }
+        return this.authRepository.resetPassword(token, newPassword);
     }
-
-
 }

@@ -1,14 +1,16 @@
 import { supabase } from "../config/supabaseClient.js";
 import { PrismaClient } from "@prisma/client";
+import asyncHandler from "../utils/asyncHandler.js";
+import AuthError from "../errors/AuthError.js";
 
 const prisma = new PrismaClient();
 
-const authMiddleware = async (req, res, next) => {
-  try {
+const authMiddleware = asyncHandler(async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
+    // 1. Ganti res.json dengan throw AuthError
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Akses ditolak. Token tidak ditemukan." });
+        throw AuthError.MissingToken();
     }
 
     const token = authHeader.split(" ")[1];
@@ -16,48 +18,45 @@ const authMiddleware = async (req, res, next) => {
     const { data, error } = await supabase.auth.getUser(token);
 
     if (error) {
+        // 2. Ganti pengecekan string dengan error yang lebih spesifik
         if (error.message.toLowerCase().includes("jwt expired")) {
-            return res.status(401).json({
-                message: "Sesi Anda telah berakhir. Silahkan login kembali.",
-                code: "TOKEN_EXPIRED"
-            });
+            throw AuthError.TokenExpired();
         }
-        return res.status(401).json({ message: "Token otentikasi tidak valid.", code: "INVALID_TOKEN"});
+        throw AuthError.InvalidToken();
     }
 
     if (!data?.user) {
-        return res.status(401).json({ message: "Token otentikasi tidak valid.", code: "INVALID_TOKEN"});
+        throw AuthError.InvalidToken();
     }
 
     const supabaseUser = data.user;
 
     const localUser = await prisma.user.findUnique({
-      where: { id: supabaseUser.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        isSuperAdmin: true,
-      },
+        where: { id: supabaseUser.id },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            isSuperAdmin: true,
+        },
     });
 
+    // 3. Gunakan error yang lebih deskriptif
     if (!localUser) {
-      return res.status(404).json({ message: "Profil user tidak ditemukan di database." });
+        throw AuthError.UserNotFound("User valid di Supabase, tapi tidak ditemukan di database lokal.");
     }
 
+    // Jika semua berhasil, lampirkan data user ke request
     req.user = {
-      id: localUser.id,
-      email: localUser.email,
-      name: localUser.name,
-      role: localUser.isSuperAdmin ? "super_admin" : "basic_user",
-      supabase_metadata: supabaseUser.user_metadata,
+        id: localUser.id,
+        email: localUser.email,
+        name: localUser.name,
+        role: localUser.isSuperAdmin ? "super_admin" : "basic_user",
+        supabase_metadata: supabaseUser.user_metadata,
     };
 
+    // Lanjutkan ke controller berikutnya
     next();
-  } catch (err) {
-    console.error("Auth Middleware Error:", err);
-    res.status(500).json({ message: "Terjadi kesalahan pada autentikasi." });
-  }
-};
+});
 
 export default authMiddleware;
