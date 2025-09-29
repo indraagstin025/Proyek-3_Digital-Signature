@@ -6,7 +6,7 @@ import logger from "./utils/logger.js";
 import multer from "multer";
 
 // Impor client yang sudah terpusat
-import {Prisma, PrismaClient} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 import { supabase } from "./config/supabaseClient.js";
 
 // Impor BaseError untuk error handler
@@ -52,11 +52,12 @@ app.get("/", (req, res) => res.json({ message: "✅ API Signify sudah berjalan" 
 
 // --- Dependency Injection ---
 // Repositories
+const prisma = new PrismaClient();
 const authRepository = new SupabaseAuthRepository(supabase);
-const userRepository = new PrismaUserRepository(Prisma); // Sekarang 'prisma' sudah terdefinisi
-const documentRepository = new PrismaDocumentRepository(Prisma);
-const versionRepository = new PrismaVersionRepository(Prisma);
-const signatureRepository = new PrismaSignatureRepository(Prisma);
+const userRepository = new PrismaUserRepository(prisma); // Sekarang 'prisma' sudah terdefinisi
+const documentRepository = new PrismaDocumentRepository(prisma);
+const versionRepository = new PrismaVersionRepository(prisma);
+const signatureRepository = new PrismaSignatureRepository(prisma);
 const fileStorage = new SupabaseFileStorage(supabase);
 
 // Services

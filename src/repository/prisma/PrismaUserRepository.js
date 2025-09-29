@@ -34,7 +34,6 @@ export class PrismaUserRepository extends UserRepository {
     }
 
     async findById(id) {
-        // Pengecekan !user sekarang dilakukan di service layer, repository hanya mencari.
         return this.prisma.user.findUnique({
             where: { id },
             select: {
@@ -95,14 +94,11 @@ export class PrismaUserRepository extends UserRepository {
     }
 
     async setProfilePictureActive(userId, pictureId) {
-        // Gunakan transaksi untuk memastikan konsistensi data
         return this.prisma.$transaction(async (tx) => {
-            // 1. Nonaktifkan semua foto lain
             await tx.userProfilePicture.updateMany({
                 where: { userId, id: { not: pictureId } },
                 data: { isActive: false },
             });
-            // 2. Aktifkan foto yang dipilih
             return tx.userProfilePicture.update({
                 where: { id: pictureId },
                 data: { isActive: true },
