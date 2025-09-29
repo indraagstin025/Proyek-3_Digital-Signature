@@ -2,7 +2,7 @@ import { PDFDocument } from "pdf-lib";
 import QRCode from "qrcode";
 import crypto from "crypto";
 import path from "path";
-import AppError from "../validators/AppError.js";
+import AppError from "../errors/AppError.js";
 
 export class PDFService {
   constructor(versionRepository, signatureRepository, fileStorage) {

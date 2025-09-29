@@ -17,10 +17,6 @@ export const createDocumentController = (documentService) => {
 
           console.log("Menerima title dari frontend:", title);
 
-        //if (!title || title.trim() === "") {
-          // return res.status(400).json({ status: "error", message: "Judul dokumen wajib diisi" });
-        //}
-
         if (!file) {
           return res.status(400).json({ status: "error", message: "File dokumen wajib diunggah" });
         }

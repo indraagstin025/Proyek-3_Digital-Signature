@@ -4,7 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import logger from "./utils/logger.js";
 import multer from "multer";
-import AppError from "./validators/AppError.js";
+import AppError from "./errors/AppError.js";
 
 import { PrismaClient } from "@prisma/client";
 import { AuthService } from "./services/authService.js";
