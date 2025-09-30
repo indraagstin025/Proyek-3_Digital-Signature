@@ -1,80 +1,84 @@
+import AuthError from '../errors/AuthError.js';
+import CommonError from '../errors/CommonError.js'; // Mungkin diperlukan untuk error internal
+
 /**
- * @description Kelas layanan untuk menangani logika bisnis autentikasi pengguna.
- * Kelas ini bergantung pada sebuah abstraksi (AuthRepository)
- * dan tidak peduli dengan detail implementasi database atau autentikasi.
+ * @description Service untuk menangani logika bisnis autentikasi.
  */
 export class AuthService {
     /**
-     * @description Konstruktor untuk menginjeksi dependensi repository.
-     * @param {object} authRepository - Instance dari kelas yang mengimplementasikan AuthRepository.
+     * @param {AuthRepository} authRepository - Dependency yang diinject
      */
     constructor(authRepository) {
         if (!authRepository) {
-            throw new Error('AuthRepository harus disediakan.');
+            // Melempar error jika dependensi tidak ada adalah hal yang benar
+            throw CommonError.InternalServerError("AuthRepository harus disediakan.");
         }
         this.authRepository = authRepository;
     }
 
     /**
-     * @description Mendaftarkan pengguna baru.
-     * @param {string} email
-     * @param {string} password
-     * @param {object} additionalData
-     * @returns {Promise<object>}
+     * @description Registrasi user baru.
      */
     async registerUser(email, password, additionalData) {
-        if (password.length < 8) {
-            throw new Error('Password harus memiliki minimal 8 Karakter. ');
+        // ✅ Logika bisnis seperti ini TEPAT berada di service.
+        if (!/[0-9]/.test(password)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu angka.");
         }
+        if (!/[A-Z]/.test(password)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kapital.");
+        }
+        // ... validasi bisnis lainnya
 
-        if (!/\d/.test(password)) {
-            throw new Error('Paasword harus mengandung setidaknya satu angka. ');
-        }
+        // ❌ Blok try...catch dihapus.
+        // Kita percaya repository akan memberikan error yang benar jika gagal.
         return this.authRepository.registerUser(email, password, additionalData);
     }
 
     /**
-     * @description Mengautentikasi pengguna.
-     * @param {string} email
-     * @param {string} password
-     * @returns {Promise<object>}
+     * @description Login user
      */
     async loginUser(email, password) {
+        // ❌ Blok try...catch dihapus.
+        // Service hanya memanggil repository. Jika repository melempar AuthError.InvalidCredentials,
+        // error itu akan langsung diteruskan ke controller.
         return this.authRepository.loginUser(email, password);
     }
 
     /**
-     * @description Melakukan logout pengguna.
-     * @returns {Promise<void>}
+     * @description Logout user
      */
-    async logoutUser() {
-        return this.authRepository.logoutUser();
+    async logoutUser(token) {
+        // ✅ Validasi input sederhana tetap di sini.
+        if (!token) {
+            throw AuthError.MissingToken();
+        }
+        // ❌ Blok try...catch dihapus.
+        return this.authRepository.logoutUser(token);
     }
 
     /**
-     * @description Meminta email untuk reset password.
-     * @param {string} email
-     * @returns {Promise<object>}
+     * @description Request forgot password
      */
     async forgotPassword(email) {
+        if (!email) {
+            // Ini bisa dianggap validasi, tapi lebih baik ditangani oleh express-validator.
+            // Namun, tidak masalah jika tetap di sini.
+            throw AuthError.UserNotFound("Email wajib diisi.");
+        }
         return this.authRepository.forgotPassword(email);
     }
 
     /**
-     * @description Mereset password pengguna menggunakan access token dari email.
-     * @param {string} token - Token reset password dari email
-     * @param {string} newPassword - Password baru
-     * @returns {Promise<object>}
+     * @description Reset password dengan token dari email
      */
     async resetPassword(token, newPassword) {
-        try {
-            const result = await this.authRepository.resetPassword(token, newPassword);
-            return result; // { message, data } dari repository
-        } catch (error) {
-            console.error("Reset password error (service):", error);
-            throw new Error(error.message || "Terjadi kesalahan saat mereset password.");
+        // ✅ Validasi bisnis untuk password baru ada di sini.
+        if (!token) throw AuthError.ResetPasswordInvalid();
+        if (!newPassword || newPassword.length < 8) {
+            throw AuthError.PasswordTooWeak("Password minimal 8 karakter.");
         }
+
+        // ❌ Blok try...catch dihapus.
+        return this.authRepository.resetPassword(token, newPassword);
     }
-
-
 }

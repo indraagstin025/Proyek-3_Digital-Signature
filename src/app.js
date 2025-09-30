@@ -5,6 +5,10 @@ import morgan from "morgan";
 import logger from "./utils/logger.js";
 import multer from "multer";
 import AppError from "./errors/AppError.js";
+import AuthError from "./errors/AuthError.js";
+import CommonError from "./errors/CommonError.js";
+import errorHandler from "./middleware/errorHandler.js";
+import { supabase } from './config/supabaseClient.js';
 
 import { PrismaClient } from "@prisma/client";
 import { AuthService } from "./services/authService.js";
@@ -56,7 +60,7 @@ app.get("/", (req, res) => {
 
 const prisma = new PrismaClient();
 
-const authRepository = new SupabaseAuthRepository();
+const authRepository = new SupabaseAuthRepository(supabase, prisma);
 const userRepository = new PrismaUserRepository(prisma);
 const documentRepository = new PrismaDocumentRepository(prisma);
 const versionRepository = new PrismaVersionRepository(prisma);
@@ -69,7 +73,7 @@ const pdfService = new PDFService(versionRepository, signatureRepository, fileSt
 const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
 const documentService = new DocumentService(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService);
 
-const authController = createAuthController(authService);
+const authController = createAuthController(authService, { AuthError, CommonError});
 const userController = createUserController(userService);
 const adminController = createAdminController(userService);
 const documentController = createDocumentController(documentService);
@@ -120,6 +124,7 @@ app.use((err, req, res, next) => {
     });
 });
 
+app.use(errorHandler);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
