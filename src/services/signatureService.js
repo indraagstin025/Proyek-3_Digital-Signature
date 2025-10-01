@@ -1,1 +1,109 @@
-import { PDFDocument } from "pdf-lib";import QRCode from 'qrcode';/** * @description Layanan bisnis untuk menangani logika tanda tangan dan verifikasi dokumen. * Kelas ini bergantung pda abstraksi repository dan penyimpanan file. * sehingga mudah diuji dan fleksibel. */export class SignatureService {    /**     * @description Constructor untuk menginjeksi dependensi     * @param {object} signatureRepository - Instance dari kelas yang mengimplementasikan SignatureRepository.     * @param {object} fileStorage - Instance dari kelas yang mengimplementasikan FileStorage.     */    constructor(signatureRepository, fileStorage) {        if (!signatureRepository || !fileStorage) {            throw new Error('signatureRepository dan fileStorage harus disediakan. ');        }        this.signatureRepository = signatureRepository;        this.fileStorage = fileStorage;    }    /**     * @description Fungsi untuk menandatangani dokumen.     * @param {number|string} documentId - ID dokumen.     * @param {string} userId - ID user.     * @param {obejct} options - Opsi tanda tangan { method: 'canvas' | 'qrcode', signatureImage?, placements: [] }.     */    async signDocument(documentId, userId, options) {        const { method, signatureImage, placements } = options;        if (!placements || placements.length === 0) {            throw new Error('Informasi penempatan (placements) diperlukan.');        }        const document = await this.signatureRepository.getDocumentById(documentId);        if (!document) throw new Error('Dokumen tidak ditemukan.');        const fileBlob = await this.fileStorage.downloadFile(document.filePath);        let pdfBuffer;        if (Buffer.isBuffer(fileBlob)) {            pdfBuffer = fileBlob;        } else if (fileBlob.arrayBuffer) {            pdfBuffer = Buffer.from(await fileBlob.arrayBuffer());        } else {            throw new Error("Unsupported file type from fileStorage");        }        let pdfDoc;        try {            pdfDoc = await PDFDocument.load(pdfBuffer);        } catch (err) {            throw new Error("Gagal memproses PDF");        }        let embeddedImage;        let verificationData = null;        if (method === 'canvas') {            if (!signatureImage) {                throw new Error('Signature image tidak boleh kosong.');            }            const pngBytes = Buffer.from(                signatureImage.replace(/^data:image\/png;base64,/, ''),                'base64'            );            embeddedImage = await pdfDoc.embedPng(pngBytes);        } else if (method === 'qrcode') {            verificationData = `docId=${document.id}&userId=${userId}`;            const verificationUrl = `https://yoursite.com/verify?${verificationData}`;            const qrImageData = await QRCode.toDataURL(verificationUrl);            const qrImageBytes = Buffer.from(                qrImageData.replace(/^data:image\/png;base64,/, ''),                'base64'            );            embeddedImage = await pdfDoc.embedPng(qrImageBytes);        } else {            throw new Error('Metode tidak valid.');        }        // Tempatkan gambar pada halaman sesuai koordinat        for (const p of placements) {            const { page, x, y, width, height } = p;            const pdfPage = pdfDoc.getPage(page - 1);            const y_pdf = pdfPage.getSize().height - y - height; // Konversi koordinat Y            pdfPage.drawImage(embeddedImage, { x, y: y_pdf, width, height });        }        // Simpan PDF baru        const signedPdfBytes = await pdfDoc.save();        // Buat nama file yang aman (sanitize title)        const safeTitle = document.title.replace(/[^a-z0-9]/gi, "_");        const signedFilePath = `${userId}/signed/${safeTitle}-signed-${Date.now()}.pdf`;        // Upload file hasil tanda tangan        await this.fileStorage.uploadFile(signedFilePath, signedPdfBytes, 'application/pdf');        // Update status dokumen        const updatedDocument = await this.signatureRepository.updateDocument(documentId, {            status: 'completed',            filePath: signedFilePath,        });        return updatedDocument;    }    /**@description Verifikasi tanda tangan berbasis QR Code.     * @param {number|string} documentId - ID dokumen.     * @param {string} userId - ID user.     * @returns {Promise<object>} - Mengembalikan status verifikasi.     */    async verifySignature(documentId, userId) {        const signature = await this.signatureRepository.getSignatureDetails(documentId, userId);        if (!signature) {            return { valid: false, message: 'Tanda tangan tidak ditemukan atau tidak valid.'};        }        return {            valid: true,            message: 'Tanda tangan terverifikasi.',            data: {                documentTitle: signature.document.title,                signerName: signature.user.name,                signerEmail: signature.user.email,                signedAt: signature.signedAt,            },        };    }}
+import crypto from "crypto";
+// BARU: Impor semua kelas error yang relevan
+import SignatureError from "../errors/SignatureError.js";
+import CommonError from "../errors/CommonError.js";
+
+export class SignatureService {
+    constructor(signatureRepository, documentRepository, versionRepository, pdfService) {
+        this.signatureRepository = signatureRepository;
+        this.documentRepository = documentRepository;
+        this.versionRepository = versionRepository;
+        this.pdfService = pdfService;
+    }
+
+    async addPersonalSignature(userId, originalVersionId, signatureData, auditData, options = { displayQrCode: true }) {
+        let originalVersion;
+        try {
+            originalVersion = await this.versionRepository.findById(originalVersionId);
+        } catch (dbError) {
+            throw CommonError.DatabaseError(`Gagal mengambil data versi: ${dbError.message}`);
+        }
+
+        // REFAKTOR: Error dipisah agar lebih jelas dan akurat
+        if (!originalVersion) {
+            throw SignatureError.VersionNotFound(originalVersionId);
+        }
+        if (originalVersion.userId !== userId) {
+            throw SignatureError.Unauthorized();
+        }
+
+        let document;
+        try {
+            document = await this.documentRepository.findById(originalVersion.documentId);
+        } catch (dbError) {
+            throw CommonError.DatabaseError(`Gagal mengambil data dokumen: ${dbError.message}`);
+        }
+
+        // REFAKTOR: Gunakan error yang lebih spesifik jika dokumen tidak ditemukan (seharusnya tidak terjadi)
+        if (!document) {
+            throw CommonError.InternalServerError(`Inkonsistensi data: Dokumen dengan ID '${originalVersion.documentId}' tidak ditemukan.`);
+        }
+
+        // REFAKTOR: Gunakan error yang spesifik untuk aturan bisnis
+        if (document.status === "completed") {
+            throw SignatureError.AlreadyCompleted();
+        }
+
+        // Proses selanjutnya dibungkus dalam try...catch untuk menangani kegagalan penulisan data
+        try {
+            const newVersion = await this.versionRepository.create({
+                documentId: originalVersion.documentId,
+                userId: userId,
+                url: "",
+            });
+
+            const dataToSave = {
+                signer: { connect: { id: userId } },
+                documentVersion: { connect: { id: newVersion.id } },
+                ...signatureData,
+                ...auditData,
+                displayQrCode: options.displayQrCode,
+            };
+            const newSignatureRecord = await this.signatureRepository.createPersonal(dataToSave);
+
+            const verificationUrl = `https://websiteanda.com/verify/${newSignatureRecord.id}`;
+            const pdfOptions = { displayQrCode: options.displayQrCode, verificationUrl };
+
+            const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(originalVersionId, [signatureData], pdfOptions);
+
+            const signedHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
+
+            await this.versionRepository.update(newVersion.id, {
+                url: publicUrl,
+                signedFileHash: signedHash,
+            });
+
+            return this.documentRepository.update(originalVersion.documentId, {
+                currentVersionId: newVersion.id,
+                status: "completed",
+                signedFileUrl: publicUrl,
+            });
+        } catch (processError) {
+            // Menangkap semua kemungkinan error selama proses pembuatan versi & PDF
+            throw CommonError.InternalServerError(`Proses penandatanganan gagal: ${processError.message}`);
+        }
+    }
+
+    async getVerificationDetails(signatureId) {
+        let signature;
+        try {
+            signature = await this.signatureRepository.findById(signatureId);
+        } catch (dbError) {
+            throw CommonError.DatabaseError(`Gagal mengambil data tanda tangan: ${dbError.message}`);
+        }
+
+        // REFAKTOR: Gunakan error yang spesifik
+        if (!signature) {
+            throw SignatureError.NotFound(signatureId);
+        }
+
+        return {
+            signerName: signature.signer.name,
+            signerEmail: signature.signer.email,
+            documentTitle: signature.documentVersion.document.title,
+            signedAt: signature.signedAt,
+            signatureImageUrl: signature.signatureImageUrl,
+            ipAddress: signature.ipAddress,
+        };
+    }
+}

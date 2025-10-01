@@ -1,1 +1,189 @@
-import { supabase } from '../../config/supabaseClient.js';import { PrismaClient } from '@prisma/client';import AuthRepository from '../interface/AuthRepository.js';import { jwtDecode } from 'jwt-decode';import bcrypt from 'bcrypt';const prisma = new PrismaClient();/** * @description Implementasi AuthRepository menggunakan Supabase Auth + Prisma. */class SupabaseAuthRepository extends AuthRepository {    constructor() {        super();        this.supabaseClient = supabase;    }    /**     * Mendaftarkan pengguna baru ke Supabase Auth + DB lokal.     * @param {string} email     * @param {string} password     * @param {object} additionalData     * @returns {Promise<object>}     */    async registerUser(email, password, additionalData) {        const existingUser = await prisma.user.findUnique({ where: { email } });        if (existingUser) {            throw new Error('Email sudah terdaftar. Silakan gunakan email lain.');        }        const { data: authData, error: authError } = await this.supabaseClient.auth.signUp({            email,            password,        });        if (authError) throw new Error(`Supabase signup gagal: ${authError.message}`);        if (!authData.user) throw new Error('Registrasi berhasil tapi user Supabase tidak ditemukan.');        const newUserData = {            id: authData.user.id,            email: authData.user.email,            name: additionalData.name,            phoneNumber: additionalData.phoneNumber,            address: additionalData.address,        };        try {            return prisma.user.create({ data: newUserData });        } catch (dbError) {            console.error('Supabase user dibuat, tapi DB lokal gagal:', dbError);            await this.supabaseClient.auth.admin.deleteUser(authData.user.id);            throw new Error('Gagal menyimpan data pengguna lokal.');        }    }    /**     * Login user & ambil data dari DB lokal.     * @param {string} email     * @param {string} password     * @returns {Promise<object>}     */    async loginUser(email, password) {        // Helper retry        async function withRetry(fn, retries = 3, delay = 2000) {            for (let i = 0; i < retries; i++) {                try {                    return await fn();                } catch (err) {                    if (i === retries - 1) throw err;                    console.warn(`⚠️ Supabase fetch gagal, retry ke-${i + 1}...`);                    await new Promise((res) => setTimeout(res, delay));                }            }        }        try {            const { data: authData, error: authError } = await withRetry(() =>                this.supabaseClient.auth.signInWithPassword({ email, password })            );            if (authError) throw new Error(authError.message);            if (!authData.user) throw new Error('Login gagal: user Supabase tidak ditemukan.');            // Cari user di DB lokal            const localUser = await prisma.user.findUnique({                where: { id: authData.user.id },                select: { id: true, email: true, name: true, isSuperAdmin: true },            });            if (!localUser) throw new Error('User tidak ditemukan di DB lokal.');            return { session: authData.session, user: localUser };        } catch (err) {            // 🔹 Tangani error jaringan khusus            if (                err.code === 'UND_ERR_CONNECT_TIMEOUT' ||                err.message?.includes('fetch failed')            ) {                throw new Error('Koneksi ke server lambat atau tidak stabil. Coba lagi.');            }            // Error biasa (misalnya password salah)            throw err;        }    }    /** Logout dari Supabase */    async logoutUser() {        const { error } = await this.supabaseClient.auth.signOut();        if (error) throw new Error(`Logout gagal: ${error.message}`);        return { message: 'Logout berhasil' };    }    /** Minta email reset password */    async forgotPassword(email) {        const { error } = await this.supabaseClient.auth.resetPasswordForEmail(email, {            redirectTo: process.env.RESET_PASSWORD_URL,        });        if (error) return { data: null, error };        return { data: { message: 'Jika email terdaftar, link reset terkirim.' }, error: null };    }    /** Reset password via token */    async resetPassword(token, newPassword) {        if (!token) throw new Error('Token wajib.');        if (!newPassword) throw new Error('Password baru wajib.');        const decoded = jwtDecode(token);        const userId = decoded.sub;        const exp = decoded.exp;        if (!exp || Date.now() >= exp * 1000) throw new Error('Token reset kedaluwarsa.');        if (!userId) throw new Error('Token tidak valid.');        const { data: updatedUser, error: updateError } =            await this.supabaseClient.auth.admin.updateUserById(userId, { password: newPassword });        if (updateError) throw new Error(`Gagal update password Supabase: ${updateError.message}`);        return { message: 'Password berhasil diubah.', data: updatedUser };    }}export default SupabaseAuthRepository;
+import AuthRepository from "../interface/AuthRepository.js";
+import AuthError from "../../errors/AuthError.js";
+import CommonError from "../../errors/CommonError.js";
+
+/**
+ * @class SupabaseAuthRepository
+ * @extends {AuthRepository}
+ * @description Implementasi AuthRepository menggunakan Supabase Auth + Prisma.
+ * Layer ini bertanggung jawab untuk:
+ * - Menghubungkan ke Supabase Auth untuk autentikasi.
+ * - Menyimpan dan sinkronisasi data user ke database lokal melalui Prisma.
+ * - Menerjemahkan error dari Supabase/Prisma ke AuthError/CommonError.
+ */
+class SupabaseAuthRepository extends AuthRepository {
+  /**
+   * @param {import("@supabase/supabase-js").SupabaseClient} supabaseClient - Instance Supabase client
+   * @param {import("@prisma/client").PrismaClient} prismaClient - Instance Prisma client
+   */
+  constructor(supabaseClient, prismaClient) {
+    super();
+    if (!supabaseClient) throw CommonError.InternalServerError("SupabaseClient harus disediakan.");
+    if (!prismaClient) throw CommonError.InternalServerError("PrismaClient harus disediakan.");
+
+    this.supabaseClient = supabaseClient;
+    this.prisma = prismaClient;
+  }
+
+  /**
+   * @description Mendaftarkan user baru di Supabase Auth dan menyimpannya di database lokal.
+   * @param {string} email - Email pengguna
+   * @param {string} password - Password pengguna
+   * @param {{name: string, phoneNumber?: string, address?: string}} additionalData - Data tambahan pengguna
+   * @returns {Promise<object>} Data pengguna yang berhasil dibuat
+   * @throws {AuthError.EmailAlreadyExist|AuthError.PasswordTooWeak|CommonError.DatabaseError}
+   */
+  async registerUser(email, password, additionalData) {
+    try {
+      const { data: authData, error: authError } = await this.supabaseClient.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError) {
+        if (authError.message.includes("User already registered")) {
+          throw AuthError.EmailAlreadyExist();
+        }
+        if (authError.message.includes("Password should be at least")) {
+          throw AuthError.PasswordTooWeak(authError.message);
+        }
+        throw AuthError.SupabaseError(authError.message);
+      }
+
+      if (!authData.user) {
+        throw AuthError.SupabaseError("Registrasi Supabase berhasil tapi user tidak ditemukan.");
+      }
+
+      const newUserData = {
+        id: authData.user.id,
+        email: authData.user.email,
+        name: additionalData.name,
+        phoneNumber: additionalData.phoneNumber,
+        address: additionalData.address,
+      };
+
+      return await this.prisma.user.create({ data: newUserData });
+    } catch (dbError) {
+      if (dbError instanceof AuthError) {
+        throw dbError;
+      }
+
+      if (dbError.config?.data?.authData?.user?.id) {
+        await this.supabaseClient.auth.admin.deleteUser(dbError.config.data.authData.user.id);
+      }
+      throw CommonError.DatabaseError("Gagal menyimpan data pengguna ke database lokal.");
+    }
+  }
+
+  /**
+   * @description Melakukan login user melalui Supabase Auth.
+   * @param {string} email - Email pengguna
+   * @param {string} password - Password pengguna
+   * @returns {Promise<{session: object, user: object}>} Session aktif dan data pengguna
+   * @throws {AuthError.InvalidCredentials|AuthError.UserNotFound|CommonError.NetworkError}
+   */
+  async loginUser(email, password) {
+    try {
+      const { data, error } = await this.supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          throw AuthError.InvalidCredentials();
+        }
+        throw AuthError.SupabaseError(error.message);
+      }
+
+      if (!data.user || !data.session) {
+        throw AuthError.UserNotFound();
+      }
+
+      const localUser = await this.prisma.user.findUnique({
+        where: { id: data.user.id },
+        select: { id: true, email: true, name: true, isSuperAdmin: true },
+      });
+
+      if (!localUser) {
+        throw AuthError.UserNotFound("Autentikasi berhasil, tapi data user tidak ditemukan di sistem.");
+      }
+
+      return { session: data.session, user: localUser };
+    } catch (err) {
+      if (err instanceof AuthError) {
+        throw err;
+      }
+      if (err.message?.includes("fetch failed")) {
+        throw CommonError.NetworkError("Gagal menghubungi server autentikasi.");
+      }
+      throw CommonError.InternalServerError(err.message);
+    }
+  }
+
+  /**
+   * @description Melakukan logout user dari Supabase.
+   * @returns {Promise<{message: string}>} Pesan konfirmasi logout
+   * @throws {AuthError.SupabaseError}
+   */
+  async logoutUser() {
+    const { error } = await this.supabaseClient.auth.signOut();
+    if (error) {
+      throw AuthError.SupabaseError("Terjadi kesalahan saat proses logout.");
+    }
+    return { message: "Logout berhasil" };
+  }
+
+  /**
+   * @description Mengirimkan email untuk reset password pengguna.
+   * @param {string} email - Email pengguna
+   * @returns {Promise<{message: string}>} Pesan konfirmasi
+   * @throws {AuthError.SupabaseError}
+   */
+  async forgotPassword(email) {
+    const { error } = await this.supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: process.env.RESET_PASSWORD_URL,
+    });
+    if (error) {
+      throw AuthError.SupabaseError("Gagal memproses permintaan reset password.");
+    }
+    return { message: "Jika email terdaftar, link reset terkirim." };
+  }
+
+  /**
+   * @description Melakukan reset password berdasarkan token Supabase.
+   * @param {string} token - Token reset password dari Supabase
+   * @param {string} newPassword - Password baru
+   * @returns {Promise<{message: string}>} Pesan konfirmasi keberhasilan reset password
+   * @throws {AuthError.ResetPasswordExpired|AuthError.ResetPasswordInvalid|AuthError.SupabaseError}
+   */
+  async resetPassword(token, newPassword) {
+    try {
+      const { data: userData, error: userError } = await this.supabaseClient.auth.getUser(token);
+
+      if (userError) {
+        if (userError.message.includes("expired")) {
+          throw AuthError.ResetPasswordExpired();
+        }
+        throw AuthError.ResetPasswordInvalid();
+      }
+
+      const userId = userData.user.id;
+
+      const { error: updateError } = await this.supabaseClient.auth.admin.updateUserById(userId, { password: newPassword });
+
+      if (updateError) {
+        throw AuthError.SupabaseError(`Gagal memperbarui password: ${updateError.message}`);
+      }
+
+      return { message: "Password berhasil diubah." };
+    } catch (err) {
+      if (err instanceof AuthError) {
+        throw err;
+      }
+      throw CommonError.InternalServerError(err.message);
+    }
+  }
+}
+
+export default SupabaseAuthRepository;

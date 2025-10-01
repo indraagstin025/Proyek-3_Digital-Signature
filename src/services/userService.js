@@ -1,36 +1,51 @@
 import crypto from "crypto";
+import UserError from "../errors/UserError.js";
+import CommonError from "../errors/CommonError.js";
 
 /**
- * @description Kelas UserService berisi semua logika bisnis yang terkait dengan pengguna.
- * Ini bertindak sebagai perantara antara controller dan lapisan data (repository).
+ * @description Service untuk menangani logika bisnis pengguna.
+ * Menjadi perantara antara controller dan repository (lapisan data).
  */
 export class UserService {
   /**
-   * @param {object} userRepository - Instance repository untuk operasi database pengguna.
-   * @param {object} fileStorage - Instance service untuk operasi penyimpanan file (upload/delete).
+   * @param {object} userRepository - Repository untuk operasi database pengguna.
+   *   Harus menyediakan method:
+   *   - findById, update, findProfilePictureByHash, createProfilePicture,
+   *   - deactivateOtherProfilePictures, findProfilePictureById,
+   *   - setProfilePictureActive, findAllProfilePictures, deleteProfilePicture.
+   * @param {object} fileStorage - Service penyimpanan file.
+   *   Harus menyediakan method:
+   *   - uploadProfilePicture(file, userId), deleteFile(fileUrl).
    */
   constructor(userRepository, fileStorage) {
-    if (!userRepository) throw new Error("UserRepository harus disediakan.");
-    if (!fileStorage) throw new Error("FileStorage harus disediakan.");
-
+    if (!userRepository || !fileStorage) {
+      throw CommonError.InternalServerError("Dependensi untuk UserService tidak lengkap.");
+    }
     this.userRepository = userRepository;
     this.fileStorage = fileStorage;
   }
 
   /**
-   * @description Mengambil data profil lengkap seorang pengguna berdasarkan ID.
+   * @description Mengambil data profil lengkap pengguna berdasarkan ID.
+   * @async
    * @param {string} userId - ID unik pengguna.
    * @returns {Promise<object>} Objek data pengguna.
+   * @throws {UserError.NotFound} Jika pengguna tidak ditemukan.
    */
   async getMyProfile(userId) {
-    return this.userRepository.findById(userId);
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw UserError.NotFound();
+    }
+    return user;
   }
 
   /**
    * @description Memperbarui data teks profil pengguna (tanpa mengubah foto).
+   * @async
    * @param {string} userId - ID pengguna yang akan diperbarui.
-   * @param {object} profileData - Objek berisi data baru (misal: name, address).
-   * @returns {Promise<object>} Objek pengguna yang telah diperbarui.
+   * @param {object} profileData - Data baru (misalnya: { name, phoneNumber, title, address }).
+   * @returns {Promise<object>} Objek pengguna yang sudah diperbarui.
    */
   async updateUserProfile(userId, profileData) {
     const allowedUpdates = {};
@@ -47,111 +62,109 @@ export class UserService {
   }
 
   /**
-   * @description Memperbarui profil pengguna beserta unggahan foto profil baru.
-   * Proses ini meliputi validasi, hashing file, pengecekan duplikat, upload, dan update database.
+   * @description Memperbarui profil pengguna dengan foto baru (unggahan).
+   * @async
    * @param {string} userId - ID pengguna.
-   * @param {object} profileData - Objek berisi data teks baru.
-   * @param {object} file - Objek file yang diunggah (misal: dari multer).
-   * @returns {Promise<object>} Objek pengguna yang telah diperbarui.
+   * @param {object} profileData - Data teks profil (misalnya: { name, title, address }).
+   * @param {object} file - File upload dari user.
+   * @param {Buffer} file.buffer - Buffer file gambar.
+   * @returns {Promise<object>} Objek pengguna yang sudah diperbarui.
+   * @throws {CommonError.InvalidInput} Jika file tidak valid.
+   * @throws {UserError.DuplicateProfilePicture} Jika foto sudah ada di riwayat (hash sama).
+   * @throws {CommonError.ServiceUnavailable} Jika gagal upload ke storage.
    */
   async updateUserProfileWithNewPicture(userId, profileData, file) {
-    try {
-      if (!userId || typeof userId !== "string" || !/^[0-9a-fA-F-]{36}$/.test(userId)) {
-        throw new Error("ID user tidak valid. Pastikan Anda sudah login.");
-      }
-
-      const allowedUpdates = {};
-      if (profileData.name !== undefined) allowedUpdates.name = profileData.name;
-      if (profileData.phoneNumber !== undefined) allowedUpdates.phoneNumber = profileData.phoneNumber;
-      if (profileData.title !== undefined) allowedUpdates.title = profileData.title;
-      if (profileData.address !== undefined) allowedUpdates.address = profileData.address;
-
-      const fileBuffer = file.buffer || Buffer.from(await file.arrayBuffer());
-      if (!Buffer.isBuffer(fileBuffer)) {
-        throw new Error("File yang diupload tidak valid.");
-      }
-
-      const hash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
-
-      const existingPicture = await this.userRepository.findProfilePictureByHash(userId, hash);
-      if (existingPicture) {
-        throw new Error("Foto ini sudah pernah diupload, gunakan foto lama dari history.");
-      }
-
-      const publicUrl = await this.fileStorage.uploadProfilePicture(file, userId);
-      if (!publicUrl || typeof publicUrl !== "string") {
-        throw new Error("Gagal mengunggah foto ke storage.");
-      }
-
-      const newPicture = await this.userRepository.createProfilePicture(userId, {
-        url: publicUrl,
-        hash,
-        isActive: true,
-      });
-
-      if (!newPicture || !newPicture.id) {
-        throw new Error("Gagal menyimpan data foto di database.");
-      }
-
-      await this.userRepository.deactivateOtherProfilePictures(userId, newPicture.id);
-
-      allowedUpdates.profilePictureUrl = newPicture.url;
-
-      return this.userRepository.update(userId, allowedUpdates);
-    } catch (error) {
-      console.error("[SERVICE_ERROR] Gagal update profil dengan foto baru:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @description Memperbarui profil pengguna dengan memilih foto lama dari riwayat.
-   * @param {string} userId - ID pengguna.
-   * @param {object} profileData - Objek berisi data teks baru.
-   * @param {string} profilePictureId - ID dari foto di riwayat yang akan diaktifkan.
-   * @returns {Promise<object>} Objek pengguna yang telah diperbarui.
-   */
-  async updateUserProfileWithOldPicture(userId, profileData, profilePictureId) {
     const allowedUpdates = {};
     if (profileData.name !== undefined) allowedUpdates.name = profileData.name;
     if (profileData.phoneNumber !== undefined) allowedUpdates.phoneNumber = profileData.phoneNumber;
     if (profileData.title !== undefined) allowedUpdates.title = profileData.title;
     if (profileData.address !== undefined) allowedUpdates.address = profileData.address;
 
+    if (!file || !file.buffer) {
+      throw CommonError.InvalidInput("File untuk diunggah tidak valid atau tidak ada.");
+    }
+
+    const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
+
+    const existingPicture = await this.userRepository.findProfilePictureByHash(userId, hash);
+    if (existingPicture) {
+      throw UserError.DuplicateProfilePicture();
+    }
+
+    const publicUrl = await this.fileStorage.uploadProfilePicture(file, userId);
+    if (!publicUrl) {
+      throw CommonError.ServiceUnavailable("Layanan penyimpanan file gagal.");
+    }
+
+    const newPicture = await this.userRepository.createProfilePicture(userId, {
+      url: publicUrl,
+      hash,
+      isActive: true,
+    });
+
+    await this.userRepository.deactivateOtherProfilePictures(userId, newPicture.id);
+
+    allowedUpdates.profilePictureUrl = newPicture.url;
+
+    return this.userRepository.update(userId, allowedUpdates);
+  }
+
+  /**
+   * @description Memperbarui profil pengguna dengan memilih foto lama dari riwayat.
+   * @async
+   * @param {string} userId - ID pengguna.
+   * @param {object} profileData - Data teks profil (misalnya: { name, title, address }).
+   * @param {string} profilePictureId - ID foto di riwayat yang akan diaktifkan.
+   * @returns {Promise<object>} Objek pengguna yang sudah diperbarui.
+   * @throws {UserError.PictureNotFound} Jika foto tidak ditemukan.
+   */
+  async updateUserProfileWithOldPicture(userId, profileData, profilePictureId) {
     const picture = await this.userRepository.findProfilePictureById(userId, profilePictureId);
-    if (!picture) throw new Error("Foto profil tidak ditemukan atau bukan milik Anda.");
+    if (!picture) {
+      throw UserError.PictureNotFound();
+    }
 
     await this.userRepository.deactivateOtherProfilePictures(userId, picture.id);
     await this.userRepository.setProfilePictureActive(picture.id);
 
+    const allowedUpdates = { ...profileData };
     allowedUpdates.profilePictureUrl = picture.url;
 
     return this.userRepository.update(userId, allowedUpdates);
   }
 
   /**
-   * @description Mengambil semua riwayat foto profil milik seorang pengguna.
+   * @description Mengambil semua riwayat foto profil pengguna.
+   * @async
    * @param {string} userId - ID pengguna.
-   * @returns {Promise<Array<object>>} Sebuah array berisi objek-objek foto.
+   * @returns {Promise<Array<object>>} Array objek foto profil.
    */
   async getUserProfilePictures(userId) {
     return this.userRepository.findAllProfilePictures(userId);
   }
 
   /**
-   * @description Menghapus sebuah foto dari riwayat foto profil dan storage.
+   * @description Menghapus sebuah foto dari riwayat profil dan storage.
+   * @async
    * @param {string} userId - ID pengguna.
    * @param {string} pictureId - ID foto yang akan dihapus.
-   * @returns {Promise<object>} Mengembalikan data pengguna terbaru setelah operasi hapus selesai.
+   * @returns {Promise<object>} Data pengguna terbaru setelah foto dihapus.
+   * @throws {UserError.PictureNotFound} Jika foto tidak ditemukan.
+   * @throws {UserError.CannotDeleteActivePicture} Jika mencoba menghapus foto yang aktif.
    */
   async deleteUserProfilePicture(userId, pictureId) {
     const picture = await this.userRepository.findProfilePictureById(userId, pictureId);
-    if (!picture) throw new Error("Foto profil tidak ditemukan atau bukan milik Anda.");
+    if (!picture) {
+      throw UserError.PictureNotFound();
+    }
+
+    if (picture.isActive) {
+      throw UserError.CannotDeleteActivePicture();
+    }
 
     await this.fileStorage.deleteFile(picture.url);
-    await this.userRepository.deletePictureInTransaction(userId, pictureId, picture.isActive);
+    await this.userRepository.deleteProfilePicture(userId, pictureId);
 
-    const freshUserData = await this.userRepository.findById(userId);
-    return freshUserData;
+    return this.userRepository.findById(userId);
   }
 }

@@ -1,134 +1,139 @@
+import asyncHandler from "../utils/asyncHandler.js";
+
 /**
- * @description Sebuah factory function yang membuat dan mengembalikan objek controller
- * dengan semua fungsi handler rute yang dibutuhkan.
- * @param {object} authService - Instance dari AuthService yang telah terinisialisasi.
- * @returns {object} - Objek yang berisi semua handler controller.
+ * Membuat objek controller untuk autentikasi.
+ * Controller ini berfungsi sebagai jembatan antara request (client)
+ * dengan service (logika utama autentikasi).
+ *
+ * @param {import('../services/authService.js').AuthService} authService - Instance dari AuthService yang berisi logika autentikasi.
+ * @returns {object} - Kumpulan fungsi handler autentikasi untuk digunakan di routing.
  */
 export const createAuthController = (authService) => {
-    return {
-        /**
-         * Controller untuk menangani registrasi pengguna.
-         * Validasi input sudah ditangani oleh middleware di level rute.
-         */
-        register: async (req, res) => {
-            try {
-                // Validasi manual dihapus, karena sudah ditangani oleh express-validator.
-                const { email, password, name, phoneNumber, address } = req.body;
-                const additionalData = { name, phoneNumber, address };
-                const newUser = await authService.registerUser(email, password, additionalData);
+  return {
+    /**
+     * Registrasi user baru.
+     *
+     * - Email dan password wajib diisi
+     * - Data tambahan (nama, nomor telepon, alamat) bisa ditambahkan
+     * - Jika berhasil, user baru dibuat dan dikirimkan instruksi verifikasi email
+     *
+     * @route POST /auth/register
+     * @param {import("express").Request} req - Request dari client (berisi email, password, name, phoneNumber, address).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya (untuk error handling).
+     * @returns {Promise<object>} Response JSON berisi user baru.
+     */
+    register: asyncHandler(async (req, res, next) => {
+      const { email, password, name, phoneNumber, address } = req.body;
+      const additionalData = { name, phoneNumber, address };
 
-                // Buat objek respons yang bersih tanpa password hash
-                const userResponse = {
-                    id: newUser.id,
-                    name: newUser.name,
-                    email: newUser.email,
-                };
+      const newUser = await authService.registerUser(email, password, additionalData);
 
-                return res.status(201).json({
-                    message: 'Registrasi berhasil. Silakan cek email Anda untuk verifikasi.',
-                    data: userResponse,
-                });
-            } catch (error) {
-                console.error("Error di controller register:", error);
-                if (error.message.includes("Email sudah terdaftar")) {
-                    return res.status(409).json({ message: error.message });
-                }
-                return res.status(400).json({ message: error.message || "Registrasi gagal." });
-            }
+      res.status(201).json({
+        success: true,
+        message: "Registrasi berhasil. Silakan cek email Anda untuk verifikasi.",
+        data: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
         },
+      });
+    }),
 
-        /**
-         * Controller untuk menangani login pengguna.
-         */
-        login: async (req, res) => {
-            try {
-                const { email, password } = req.body;
-                const result = await authService.loginUser(email, password);
+    /**
+     * Login user.
+     *
+     * - User memasukkan email dan password
+     * - Jika sesuai, session/token login dikembalikan
+     * - Data user juga ikut dikembalikan
+     *
+     * @route POST /auth/login
+     * @param {import("express").Request} req - Request dari client (berisi email dan password).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya.
+     * @returns {Promise<object>} Response JSON berisi session dan data user.
+     */
+    login: asyncHandler(async (req, res, next) => {
+      const { email, password } = req.body;
 
-                return res.status(200).json({
-                    success: true,
-                    message: 'Login berhasil',
-                    session: result.session,
-                    user: result.user,
-                });
-            } catch (error) {
-                console.error("❌ Login error:", error.message);
+      const result = await authService.loginUser(email, password);
 
-                return res.status(401).json({
-                    success: false,
-                    message: error.message || "Email atau password salah."
-                });
-            }
+      res.status(200).json({
+        success: true,
+        message: "Login berhasil",
+        data: {
+          session: result.session,
+          user: result.user,
         },
+      });
+    }),
 
+    /**
+     * Logout user.
+     *
+     * - Token diambil dari header Authorization
+     * - Token dihapus/invalidasi dari sistem
+     *
+     * @route POST /auth/logout
+     * @param {import("express").Request} req - Request dari client (berisi header Authorization dengan Bearer token).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya.
+     * @returns {Promise<object>} Response JSON konfirmasi logout.
+     */
+    logout: asyncHandler(async (req, res, next) => {
+      const token = req.headers.authorization?.split(" ")[1];
+      await authService.logoutUser(token);
 
-        /**
-         * Controller untuk menangani logout pengguna.
-         * Token diverifikasi oleh authMiddleware.
-         */
-        logout: async (req, res) => {
-            try {
-                // Tidak perlu lagi mengambil token dari header secara manual.
-                await authService.logoutUser();
-                res.status(200).json({ message: 'Anda telah berhasil Logout.' });
-            } catch (error) {
-                res.status(500).json({ message: 'Logout gagal, terjadi kesalahan pada server.' });
-            }
-        },
+      res.status(200).json({
+        success: true,
+        message: "Anda telah berhasil Logout.",
+      });
+    }),
 
-        /**
-         * @description Controller untuk menangani permintaan reset password.
-         */
-        forgotPassword: async (req, res) => {
-            const { email } = req.body;
+    /**
+     * Lupa password.
+     *
+     * - User memasukkan email
+     * - Jika email terdaftar, sistem akan mengirimkan link reset password
+     *
+     * @route POST /auth/forgot-password
+     * @param {import("express").Request} req - Request dari client (berisi email).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya.
+     * @returns {Promise<object>} Response JSON konfirmasi pengiriman link reset password.
+     */
+    forgotPassword: asyncHandler(async (req, res, next) => {
+      const { email } = req.body;
 
-            if (!email) {
-                return res.status(400).json({ message: 'Email wajib diisi.' });
-            }
+      await authService.forgotPassword(email);
 
-            try {
-                const { error } = await authService.forgotPassword(email);
+      res.status(200).json({
+        success: true,
+        message: "Jika email terdaftar, link reset password sudah dikirim.",
+      });
+    }),
 
-                if (error) {
-                    console.error(error);
-                    return res.status(400).json({ message: error.message });
-                }
+    /**
+     * Reset password.
+     *
+     * - User memasukkan token dan password baru
+     * - Jika token valid, password user diperbarui
+     *
+     * @route POST /auth/reset-password
+     * @param {import("express").Request} req - Request dari client (berisi token reset dan password baru).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya.
+     * @returns {Promise<object>} Response JSON konfirmasi bahwa password sudah diubah.
+     */
+    resetPassword: asyncHandler(async (req, res, next) => {
+      const { token, newPassword } = req.body;
 
-                return res.status(200).json({
-                    message: 'Jika email terdaftar, link untuk reset password sudah dikirimkan.',
-                });
-            } catch (error) {
-                console.error(error);
-                return res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
-            }
-        },
+      const result = await authService.resetPassword(token, newPassword);
 
-        /**
-         * @description Controller untuk menangani proses reset password.
-         */
-        resetPassword: async (req, res) => {
-            const { token, newPassword } = req.body;
-            if (!token || !newPassword) {
-                console.warn("⚠️ Token atau password baru tidak ada");
-                return res.status(400).json({
-                    message: 'Token dan password baru wajib diisi.'
-                });
-            }
-
-            try {
-                const result = await authService.resetPassword(token, newPassword);
-                return res.status(200).json({
-                    message: result.message || 'Password berhasil diubah. Silakan login kembali.'
-                });
-            } catch (error) {
-                console.error("❌ Reset password error (controller):", error);
-
-                return res.status(500).json({
-                    message: error.message || 'Terjadi kesalahan pada server.'
-                });
-            }
-        }
-
-
-    };
+      res.status(200).json({
+        success: true,
+        message: result.message || "Password berhasil diubah. Silakan login kembali.",
+      });
+    }),
+  };
 };
