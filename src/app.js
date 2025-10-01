@@ -8,7 +8,7 @@ import AppError from "./errors/AppError.js";
 import AuthError from "./errors/AuthError.js";
 import CommonError from "./errors/CommonError.js";
 import errorHandler from "./middleware/errorHandler.js";
-import { supabase } from './config/supabaseClient.js';
+import { supabase, supabaseBucket } from './config/supabaseClient.js';
 
 import { PrismaClient } from "@prisma/client";
 import { AuthService } from "./services/authService.js";
@@ -18,7 +18,7 @@ import { SignatureService } from "./services/signatureService.js";
 import { PDFService } from "./services/pdfService.js";
 
 import PrismaUserRepository from "./repository/prisma/PrismaUserRepository.js";
-import { PrismaDocumentRepository } from "./repository/prisma/PrismaDocumentRepository.js";
+import {PrismaDocumentRepository} from "./repository/prisma/PrismaDocumentRepository.js";
 import { PrismaVersionRepository } from "./repository/prisma/PrismaVersionRepository.js";
 import { PrismaSignatureRepository } from "./repository/prisma/PrismaSignatureRepository.js";
 import SupabaseAuthRepository from "./repository/supabase/SupabaseAuthRepository.js";
@@ -36,6 +36,8 @@ import createDocumentRoutes from "./routes/documentRoutes.js";
 import createSignatureRoutes from "./routes/signatureRoutes.js";
 
 const app = express();
+
+
 
 const stream = {
   write: (message) => logger.http(message.trim()),
@@ -58,14 +60,13 @@ app.get("/", (req, res) => {
   });
 });
 
-const prisma = new PrismaClient();
 
 const authRepository = new SupabaseAuthRepository(supabase, prisma);
 const userRepository = new PrismaUserRepository(prisma);
 const documentRepository = new PrismaDocumentRepository(prisma);
 const versionRepository = new PrismaVersionRepository(prisma);
 const signatureRepository = new PrismaSignatureRepository(prisma);
-const fileStorage = new SupabaseFileStorage();
+const fileStorage = new SupabaseFileStorage(prisma, supabaseBucket);
 
 const authService = new AuthService(authRepository);
 const userService = new UserService(userRepository, fileStorage);

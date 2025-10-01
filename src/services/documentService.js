@@ -1,15 +1,20 @@
 import crypto from "crypto";
+import DocumentError from "../errors/DocumentError.js";
 
 /**
- * @description Kelas DocumentService dengan fungsionalitas riwayat versi dan tanda tangan.
+ * @class DocumentService
+ * @description Service untuk mengelola dokumen, termasuk membuat, memperbarui, menghapus,
+ * mengelola versi dokumen, serta integrasi dengan tanda tangan digital.
  */
 export class DocumentService {
   /**
-   * @param {object} documentRepository
-   * @param {object} versionRepository
-   * @param {object} signatureRepository
-   * @param {object} fileStorage
-   * @param {object} pdfService
+   * @constructor
+   * @param {import('../repositories/documentRepository.js').DocumentRepository} documentRepository - Repository untuk operasi dokumen utama.
+   * @param {import('../repositories/versionRepository.js').VersionRepository} versionRepository - Repository untuk mengelola versi dokumen.
+   * @param {import('../repositories/signatureRepository.js').SignatureRepository} signatureRepository - Repository untuk tanda tangan dokumen.
+   * @param {object} fileStorage - Service untuk penyimpanan file (upload & delete).
+   * @param {object} pdfService - Service tambahan untuk manipulasi PDF.
+   * @throws {Error} Jika salah satu dependency tidak diberikan.
    */
   constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService) {
     if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService) {
@@ -23,27 +28,37 @@ export class DocumentService {
   }
 
   /**
+   * @function createDocument
    * @description Membuat dokumen baru beserta versi pertamanya.
+   * @param {string} userId - ID pengguna yang mengunggah dokumen.
+   * @param {object} file - File dokumen yang diunggah (buffer, mimetype, dll).
+   * @param {string} title - Judul dokumen.
+   * @throws {DocumentError.AlreadyExists} Jika dokumen dengan hash file yang sama sudah pernah diunggah.
+   * @returns {Promise<object>} Dokumen baru yang berhasil dibuat.
    */
   async createDocument(userId, file, title) {
-    if (!file) throw new Error("File dokumen wajib diunggah.");
-    // if (!title || title.trim() === "") throw new Error("Judul dokumen wajib diisi.");
+    if (!file) {
+      throw new Error("File dokumen wajib diunggah.");
+    }
 
     const fileBuffer = file.buffer;
     const hash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
 
     const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
     if (existingVersion) {
-      throw new Error("Dokumen dengan konten yang sama sudah pernah diunggah.");
+      throw DocumentError.AlreadyExists();
     }
 
     const publicUrl = await this.fileStorage.uploadDocument(file, userId);
-
     return this.documentRepository.createWithFirstVersion(userId, title, publicUrl, hash);
   }
 
   /**
-   * @description Mengambil semua dokumen milik user, beserta detail versi terkininya.
+   * @function getAllDocuments
+   * @description Mengambil semua dokumen milik user.
+   * @param {string} userId - ID pengguna.
+   * @throws {Error} Jika userId tidak diberikan.
+   * @returns {Promise<object[]>} Daftar dokumen milik user.
    */
   async getAllDocuments(userId) {
     if (!userId) throw new Error("ID user tidak ditemukan.");
@@ -51,57 +66,70 @@ export class DocumentService {
   }
 
   /**
-   * @description Mengambil detail dokumen berdasarkan ID, beserta versi terkininya.
+   * @function getDocumentById
+   * @description Mengambil dokumen berdasarkan ID (dengan validasi kepemilikan).
+   * @param {string} documentId - ID dokumen.
+   * @param {string} userId - ID pengguna pemilik dokumen.
+   * @throws {DocumentError.NotFound} Jika dokumen tidak ditemukan.
+   * @throws {DocumentError.UnauthorizedAccess} Jika dokumen bukan milik user.
+   * @returns {Promise<object>} Dokumen yang ditemukan.
    */
   async getDocumentById(documentId, userId) {
-    const document = await this.documentRepository.findById(documentId, userId);
+    const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      throw new Error("Dokumen tidak ditemukan atau Anda tidak memiliki akses.");
+      throw DocumentError.NotFound(documentId);
+    }
+    if (document.userId !== userId) {
+      throw DocumentError.UnauthorizedAccess();
     }
     return document;
   }
 
-
-    /**
-     * @description Memperbarui metadata dokumen (misalnya, judul).
-     * Fungsi ini tidak lagi menangani unggahan file baru.
-     * @param {string} documentId - ID dokumen yang akan diperbarui.
-     * @param {string} userId - ID pengguna untuk verifikasi kepemilikan.
-     * @param {object} updates - Objek berisi data yang akan diperbarui, misal: { title: "Judul Baru" }.
-     */
-    async updateDocument(documentId, userId, updates) {
-        await this.getDocumentById(documentId, userId);
-        const dataToUpdate = {};
-
-        if (updates && updates.title) {
-            dataToUpdate.title = updates.title;
-        }
-
-        if (Object.keys(dataToUpdate).length === 0) {
-            return this.getDocumentById(documentId, userId);
-        }
-
-        return this.documentRepository.update(documentId, dataToUpdate);
-    }
-
   /**
-   * @description Menghapus dokumen beserta SEMUA versinya dan filenya di storage.
+   * @function updateDocument
+   * @description Memperbarui data dokumen (misalnya judul).
+   * @param {string} documentId - ID dokumen.
+   * @param {string} userId - ID pengguna.
+   * @param {object} updates - Data update (contoh: { title }).
+   * @returns {Promise<object>} Dokumen yang sudah diperbarui.
    */
-  async deleteDocument(documentId, userId) {
+  async updateDocument(documentId, userId, updates) {
     await this.getDocumentById(documentId, userId);
 
-    const allVersions = await this.versionRepository.findAllByDocumentId(documentId);
+    const dataToUpdate = {};
+    if (updates && updates.title) {
+      dataToUpdate.title = updates.title;
+    }
+    if (Object.keys(dataToUpdate).length === 0) {
+      return this.getDocumentById(documentId, userId);
+    }
+    return this.documentRepository.update(documentId, dataToUpdate);
+  }
 
+  /**
+   * @function deleteDocument
+   * @description Menghapus dokumen beserta semua versinya dari database dan storage.
+   * @param {string} documentId - ID dokumen.
+   * @param {string} userId - ID pengguna.
+   * @returns {Promise<{message: string}>} Pesan konfirmasi penghapusan.
+   */
+  async deleteDocument(documentId, userId) {
+    const document = await this.getDocumentById(documentId, userId);
+
+    const allVersions = await this.versionRepository.findAllByDocumentId(document.id);
     for (const version of allVersions) {
       await this.fileStorage.deleteFile(version.url);
     }
-
-    await this.documentRepository.deleteById(documentId);
+    await this.documentRepository.deleteById(document.id);
     return { message: "Dokumen dan semua riwayatnya berhasil dihapus." };
   }
 
   /**
-   * @description Mengambil semua riwayat versi dari satu dokumen.
+   * @function getDocumentHistory
+   * @description Mengambil semua riwayat versi dari sebuah dokumen.
+   * @param {string} documentId - ID dokumen.
+   * @param {string} userId - ID pengguna.
+   * @returns {Promise<object[]>} Daftar versi dokumen.
    */
   async getDocumentHistory(documentId, userId) {
     await this.getDocumentById(documentId, userId);
@@ -109,7 +137,13 @@ export class DocumentService {
   }
 
   /**
-   * @description Mengganti versi aktif ke versi lama dari riwayat.
+   * @function useOldVersion
+   * @description Menggunakan versi lama dari dokumen sebagai versi aktif.
+   * @param {string} documentId - ID dokumen.
+   * @param {string} versionId - ID versi lama yang akan digunakan.
+   * @param {string} userId - ID pengguna.
+   * @throws {DocumentError.InvalidVersion} Jika versi tidak valid untuk dokumen tersebut.
+   * @returns {Promise<object>} Dokumen dengan versi yang diperbarui.
    */
   async useOldVersion(documentId, versionId, userId) {
     await this.getDocumentById(documentId, userId);
@@ -119,13 +153,11 @@ export class DocumentService {
     });
 
     if (!version || version.documentId !== documentId) {
-      throw new Error("Versi tidak valid untuk dokumen ini.");
+      throw DocumentError.InvalidVersion(versionId, documentId);
     }
 
     const isTargetVersionSigned = version.signaturesPersonal && version.signaturesPersonal.length > 0;
     const newStatus = isTargetVersionSigned ? "completed" : "draft";
-
-    console.log(`Mengganti ke Versi ID: ${versionId}. Versi ini ditandatangani: ${isTargetVersionSigned}. Status baru: ${newStatus}`);
 
     return this.documentRepository.update(documentId, {
       currentVersionId: versionId,
@@ -135,23 +167,29 @@ export class DocumentService {
   }
 
   /**
-   * @description Menghapus satu versi spesifik dari riwayat.
+   * @function deleteVersion
+   * @description Menghapus salah satu versi dokumen (selain versi aktif).
+   * @param {string} documentId - ID dokumen.
+   * @param {string} versionId - ID versi dokumen yang akan dihapus.
+   * @param {string} userId - ID pengguna.
+   * @throws {DocumentError.DeleteActiveVersionFailed} Jika mencoba menghapus versi yang sedang aktif.
+   * @throws {DocumentError.InvalidVersion} Jika versi tidak sesuai dengan dokumen.
+   * @returns {Promise<{message: string}>} Pesan konfirmasi penghapusan versi.
    */
   async deleteVersion(documentId, versionId, userId) {
     const document = await this.getDocumentById(documentId, userId);
 
     if (document.currentVersion.id === versionId) {
-      throw new Error("Tidak dapat menghapus versi yang sedang aktif. Ganti ke versi lain terlebih dahulu.");
+      throw DocumentError.DeleteActiveVersionFailed();
     }
 
     const versionToDelete = await this.versionRepository.findById(versionId);
     if (!versionToDelete || versionToDelete.documentId !== documentId) {
-      throw new Error("Versi tidak ditemukan dalam riwayat dokumen ini.");
+      throw DocumentError.InvalidVersion(versionId, documentId);
     }
 
     await this.fileStorage.deleteFile(versionToDelete.url);
     await this.versionRepository.deleteById(versionId);
-
     return { message: "Versi dokumen berhasil dihapus." };
   }
 }

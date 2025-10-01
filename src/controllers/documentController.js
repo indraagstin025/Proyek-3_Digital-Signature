@@ -1,133 +1,216 @@
 /**
  * @file Controller untuk menangani semua request yang berhubungan dengan dokumen.
+ * Controller ini bertugas sebagai penghubung antara request (client)
+ * dan service (logika utama yang mengatur data).
  */
 
+import asyncHandler from "../utils/asyncHandler.js";
+
 /**
- * @description Factory function yang membuat dan mengembalikan objek controller.
- * @param {import('../services/documentService.js').DocumentService} documentService - Instance dari DocumentService.
- * @returns {object} - Objek yang berisi semua handler controller.
+ * Membuat objek controller untuk dokumen.
+ * Controller ini menyediakan berbagai handler (fungsi) untuk:
+ * - Mengunggah dokumen baru
+ * - Mengambil daftar dokumen
+ * - Mengambil detail dokumen
+ * - Memperbarui dokumen
+ * - Menghapus dokumen
+ * - Mengelola versi dokumen
+ *
+ * @param {import('../services/documentService.js').DocumentService} documentService - Instance dari DocumentService yang berisi logika utama.
+ * @returns {object} - Kumpulan fungsi handler yang siap digunakan pada routing.
  */
 export const createDocumentController = (documentService) => {
   return {
-    createDocument: async (req, res) => {
-      try {
-        const { title } = req.body;
-        const file = req.file;
-        const userId = req.user?.id;
+    /**
+     * Mengunggah dokumen baru.
+     *
+     * - File wajib diunggah
+     * - Judul wajib diisi
+     * - User ID diambil dari `req.user`
+     *
+     * @route POST /documents
+     * @param {import("express").Request} req - Request dari client (berisi body, file, dan user).
+     * @param {import("express").Response} res - Response ke client.
+     * @param {Function} next - Middleware berikutnya (untuk error handling).
+     * @returns {Promise<object>} Response JSON berisi detail dokumen baru.
+     */
+    createDocument: asyncHandler(async (req, res, next) => {
+      const { title } = req.body;
+      const file = req.file;
+      const userId = req.user?.id;
 
-          console.log("Menerima title dari frontend:", title);
-
-        if (!file) {
-          return res.status(400).json({ status: "error", message: "File dokumen wajib diunggah" });
-        }
-
-          if (!title) {
-              return res.status(400).json({ status: "error", message: "Nama file tidak terdeteksi dalam request." });
-          }
-
-        const document = await documentService.createDocument(userId, file, title);
-        return res.status(201).json({ status: "success", message: "Dokumen berhasil diunggah.", data: document });
-      } catch (error) {
-        console.error("Error in createDocument Controller:", error);
-        return res.status(400).json({ status: "error", message: error.message });
+      if (!file) {
+        return res.status(400).json({
+          status: "fail",
+          code: "FILE_REQUIRED",
+          message: "File dokumen wajib diunggah",
+        });
       }
-    },
 
-    getAllDocuments: async (req, res) => {
-      try {
-        const userId = req.user?.id;
-        const documents = await documentService.getAllDocuments(userId);
-        return res.status(200).json({ status: "success", data: documents });
-      } catch (error) {
-        console.error("Error in getAllDocuments Controller:", error);
-        return res.status(500).json({ status: "error", message: "Gagal mengambil daftar dokumen." });
+      if (!title) {
+        return res.status(400).json({
+          status: "fail",
+          code: "TITLE_REQUIRED",
+          message: "Judul file wajib diisi.",
+        });
       }
-    },
 
-    getDocumentById: async (req, res) => {
-      try {
-        const { id: documentId } = req.params;
-        const userId = req.user?.id;
-        const document = await documentService.getDocumentById(documentId, userId);
-        return res.status(200).json({ status: "success", message: "Dokumen berhasil diambil.", data: document });
-      } catch (error) {
-        return res.status(404).json({ status: "error", message: error.message });
-      }
-    },
+      const document = await documentService.createDocument(userId, file, title);
 
-    updateDocument: async (req, res) => {
-      try {
-        const { id: documentId } = req.params;
-        const userId = req.user?.id;
-        const updates = req.body;
-       // const newFile = req.file;
-
-        const updatedDocument = await documentService.updateDocument(documentId, userId, updates, null);
-        return res.status(200).json({ status: "success", message: "Dokumen berhasil diperbaharui.", data: updatedDocument });
-      } catch (error) {
-        console.error("Error in updateDocument Controller:", error);
-        return res.status(400).json({ status: "error", message: error.message });
-      }
-    },
-
-    deleteDocument: async (req, res) => {
-      try {
-        const { id: documentId } = req.params;
-        const userId = req.user?.id;
-        await documentService.deleteDocument(documentId, userId);
-        return res.status(200).json({ status: "success", message: "Dokumen dan semua riwayatnya berhasil dihapus." });
-      } catch (error) {
-        return res.status(404).json({ status: "error", message: error.message });
-      }
-    },
+      return res.status(201).json({
+        status: "success",
+        message: "Dokumen berhasil diunggah.",
+        data: document,
+      });
+    }),
 
     /**
-     * Menangani request untuk mengambil riwayat versi dari sebuah dokumen.
-     * @route GET /api/documents/:documentId/versions
+     * Mengambil semua dokumen milik user yang sedang login.
+     *
+     * @route GET /documents
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON berisi daftar dokumen.
      */
-    getDocumentHistory: async (req, res) => {
-      try {
-        const { documentId } = req.params;
-        const userId = req.user?.id;
-        const history = await documentService.getDocumentHistory(documentId, userId);
-        return res.status(200).json({ status: "success", data: history });
-      } catch (error) {
-        return res.status(404).json({ status: "error", message: error.message });
-      }
-    },
+    getAllDocuments: asyncHandler(async (req, res, next) => {
+      const userId = req.user?.id;
+      const documents = await documentService.getAllDocuments(userId);
+
+      return res.status(200).json({
+        status: "success",
+        data: documents,
+      });
+    }),
 
     /**
-     * Menangani request untuk menjadikan versi lama sebagai versi aktif.
-     * @route POST /api/documents/:documentId/versions/:versionId/use
+     * Mengambil detail dokumen berdasarkan ID.
+     *
+     * @route GET /documents/:id
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON berisi detail dokumen.
      */
-    useOldVersion: async (req, res) => {
-      try {
-        const { documentId, versionId } = req.params;
-        const userId = req.user?.id;
-        const updatedDocument = await documentService.useOldVersion(documentId, versionId, userId);
-        return res.status(200).json({ status: "success", message: "Versi dokumen berhasil diganti.", data: updatedDocument });
-      } catch (error) {
-        return res.status(404).json({ status: "error", message: error.message });
-      }
-    },
+    getDocumentById: asyncHandler(async (req, res, next) => {
+      const { id: documentId } = req.params;
+      const userId = req.user?.id;
+
+      const document = await documentService.getDocumentById(documentId, userId);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen berhasil diambil.",
+        data: document,
+      });
+    }),
 
     /**
-     * Menangani request untuk menghapus satu versi spesifik dari riwayat.
-     * @route DELETE /api/documents/:documentId/versions/:versionId
+     * Memperbarui detail dokumen.
+     *
+     * @route PUT /documents/:id
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON berisi dokumen yang sudah diperbarui.
      */
-    deleteVersion: async (req, res) => {
-      try {
-        const { documentId, versionId } = req.params;
-        const userId = req.user?.id;
-        await documentService.deleteVersion(documentId, versionId, userId);
-        return res.status(200).json({ status: "success", message: "Versi dokumen berhasil dihapus." });
-      } catch (error) {
-        return res.status(400).json({ status: "error", message: error.message });
-      }
-    },
+    updateDocument: asyncHandler(async (req, res, next) => {
+      const { id: documentId } = req.params;
+      const userId = req.user?.id;
+      const updates = req.body;
 
-    uploadSignedDocument: async (req, res) => {
-      return res.status(501).json({ status: "info", message: "Fitur ini belum diimplementasikan." });
-    },
+      const updatedDocument = await documentService.updateDocument(documentId, userId, updates);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen berhasil diperbaharui.",
+        data: updatedDocument,
+      });
+    }),
+
+    /**
+     * Menghapus dokumen beserta semua versi/riwayatnya.
+     *
+     * @route DELETE /documents/:id
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON konfirmasi penghapusan.
+     */
+    deleteDocument: asyncHandler(async (req, res, next) => {
+      const { id: documentId } = req.params;
+      const userId = req.user?.id;
+
+      await documentService.deleteDocument(documentId, userId);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen dan semua riwayatnya berhasil dihapus.",
+      });
+    }),
+
+    /**
+     * Mengambil riwayat versi dokumen.
+     *
+     * @route GET /documents/:documentId/history
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON berisi daftar riwayat versi dokumen.
+     */
+    getDocumentHistory: asyncHandler(async (req, res, next) => {
+      const { documentId } = req.params;
+      const userId = req.user?.id;
+
+      const history = await documentService.getDocumentHistory(documentId, userId);
+
+      return res.status(200).json({
+        status: "success",
+        data: history,
+      });
+    }),
+
+    /**
+     * Mengganti dokumen ke versi lama tertentu.
+     *
+     * @route PUT /documents/:documentId/use-version/:versionId
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON berisi dokumen setelah diganti ke versi lama.
+     */
+    useOldVersion: asyncHandler(async (req, res, next) => {
+      const { documentId, versionId } = req.params;
+      const userId = req.user?.id;
+
+      const updatedDocument = await documentService.useOldVersion(documentId, versionId, userId);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Versi dokumen berhasil diganti.",
+        data: updatedDocument,
+      });
+    }),
+
+    /**
+     * Menghapus salah satu versi dokumen.
+     *
+     * @route DELETE /documents/:documentId/versions/:versionId
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {Function} next
+     * @returns {Promise<object>} Response JSON konfirmasi penghapusan versi.
+     */
+    deleteVersion: asyncHandler(async (req, res, next) => {
+      const { documentId, versionId } = req.params;
+      const userId = req.user?.id;
+
+      await documentService.deleteVersion(documentId, versionId, userId);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Versi dokumen berhasil dihapus.",
+      });
+    }),
   };
 };

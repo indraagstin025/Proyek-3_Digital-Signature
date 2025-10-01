@@ -1,93 +1,98 @@
 import { VersionRepository } from "../interface/VersionRepository.js";
+import  VersionError  from "../../errors/StorageError.js";
 
 /**
  * @description Implementasi Repository untuk model 'DocumentVersion' menggunakan Prisma.
  */
-
 export class PrismaVersionRepository extends VersionRepository {
-  constructor(prisma) {
-    super();
-    this.prisma = prisma;
-  }
+    constructor(prisma) {
+        super();
+        if (!prisma) throw VersionError.InternalServerError("Prisma client tidak ditemukan.");
+        this.prisma = prisma;
+    }
 
-  /**
-   * @description Membuat record versi dokumen baru.
-   * Digunakan saat user mengunggah file baru untuk dokumen yang sudah ada.
-   */
-  async create(data) {
-    return this.prisma.documentVersion.create({
-      data: {
-        documentId: data.documentId,
-        userId: data.userId,
-        url: data.url,
-        hash: data.hash,
-      },
-    });
-  }
+    async create(data) {
+        try {
+            return await this.prisma.documentVersion.create({
+                data: {
+                    documentId: data.documentId,
+                    userId: data.userId,
+                    url: data.url,
+                    hash: data.hash,
+                },
+            });
+        } catch (err) {
+            throw VersionError.InternalServerError(`Gagal membuat versi baru: ${err.message}`);
+        }
+    }
 
-  /**
-   * @description Mencari versi dokumen berdasarkan hash untuk user tertentu.
-   */
-  async findByUserAndHash(userId, hash) {
-    return this.prisma.documentVersion.findUnique({
-      where: {
-        user_document_version_hash_unique: {
-          userId,
-          hash,
-        },
-      },
-    });
-  }
+    async findByUserAndHash(userId, hash) {
+        try {
+            return await this.prisma.documentVersion.findUnique({
+                where: {
+                    user_document_version_hash_unique: {
+                        userId,
+                        hash,
+                    },
+                },
+            });
+        } catch (err) {
+            throw VersionError.InternalServerError(`Gagal mengecek versi: ${err.message}`);
+        }
+    }
 
-  /**
-   * @description Mencari satu versi dokumen berdasarkan ID-nya, beserta tanda tangannya.
-   */
-  async findById(versionId) {
-    return this.prisma.documentVersion.findUnique({
-      where: { id: versionId },
+    async findById(versionId) {
+        try {
+            const version = await this.prisma.documentVersion.findUnique({
+                where: { id: versionId },
+                include: {
+                    document: true,
+                    signaturesPersonal: true,
+                    signaturesGroup: true,
+                },
+            });
+            if (!version) throw VersionError.NotFound("Versi dokumen tidak ditemukan.");
+            return version;
+        } catch (err) {
+            if (err instanceof VersionError) throw err;
+            throw VersionError.InternalServerError(`Gagal mengambil versi dokumen: ${err.message}`);
+        }
+    }
 
-      include: {
-        document: true,
-        signaturesPersonal: true,
-        signaturesGroup: true,
-      },
-    });
-  }
+    async findAllByDocumentId(documentId) {
+        try {
+            return await this.prisma.documentVersion.findMany({
+                where: { documentId },
+                orderBy: { createdAt: "desc" },
+                include: {
+                    document: true,
+                    signaturesPersonal: true,
+                    signaturesGroup: true,
+                },
+            });
+        } catch (err) {
+            throw VersionError.InternalServerError(`Gagal mengambil semua versi dokumen: ${err.message}`);
+        }
+    }
 
-  /**
-   * @description Mengambil semua versi dari satu dokumen, beserta tanda tangannya.
-   */
-  async findAllByDocumentId(documentId) {
-    return this.prisma.documentVersion.findMany({
-      where: { documentId },
-      orderBy: { createdAt: "desc" },
-      include: {
-        document: true,
-        signaturesPersonal: true,
-        signaturesGroup: true,
-      },
-    });
-  }
+    async update(versionId, data) {
+        try {
+            return await this.prisma.documentVersion.update({
+                where: { id: versionId },
+                data,
+            });
+        } catch (err) {
+            throw VersionError.InternalServerError(`Gagal memperbarui versi dokumen: ${err.message}`);
+        }
+    }
 
-  /**
-   * @description Memperbarui data pada record versi dokumen.
-   * @param {string} versionId - ID versi yang akan diperbarui.
-   * @param {object} data - Data untuk diperbarui.
-   * @returns {Promise<object>}
-   */
-  async update(versionId, data) {
-    return this.prisma.documentVersion.update({
-      where: { id: versionId },
-      data: data,
-    });
-  }
-
-  /**
-   * @description Menghapus satu versi dokumen dari database.
-   */
-  async deleteById(versionId) {
-    return this.prisma.documentVersion.delete({
-      where: { id: versionId },
-    });
-  }
+    async deleteById(versionId) {
+        try {
+            return await this.prisma.documentVersion.delete({
+                where: { id: versionId },
+            });
+        } catch (err) {
+            throw VersionError.InternalServerError(`Gagal menghapus versi dokumen: ${err.message}`);
+        }
+    }
 }
