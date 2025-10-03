@@ -7,9 +7,9 @@ node_modules
 server.js
 .idea
 
-logs/
-coverage/
-reports/
+logs
+coverage
+reports
 
 
 
