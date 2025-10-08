@@ -31,11 +31,10 @@ class AuthRepository {
     /**
      * Melakukan logout pengguna.
      * @abstract
-     * @param {string} token - Token sesi atau akses pengguna.
      * @returns {Promise<void>} Konfirmasi logout berhasil.
      * @throws {Error} Jika metode belum diimplementasikan.
      */
-    async logoutUser(token) {
+    async logoutUser() {
         throw new Error("Metode logoutUser belum diimplementasikan.");
     }
 
@@ -51,15 +50,14 @@ class AuthRepository {
     }
 
     /**
-     * Mereset password pengguna dengan token valid.
+     * Menukarkan kode verifikasi dari email dengan sesi pengguna yang valid.
      * @abstract
-     * @param {string} token - Token untuk verifikasi reset password.
-     * @param {string} newPassword - Password baru yang akan disimpan.
-     * @returns {Promise<void>} Konfirmasi reset password berhasil.
+     * @param {string} code - Kode verifikasi dari URL reset password.
+     * @returns {Promise<object>} Objek berisi sesi dan data pengguna.
      * @throws {Error} Jika metode belum diimplementasikan.
      */
-    async resetPassword(token, newPassword) {
-        throw new Error("Metode resetPassword belum diimplementasikan.");
+    async exchangeCodeForSession(code) { // <-- DIUBAH: Menggantikan resetPassword
+        throw new Error("Metode exchangeCodeForSession belum diimplementasikan.");
     }
 }
 

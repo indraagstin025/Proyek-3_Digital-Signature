@@ -1,98 +1,116 @@
 import AuthError from "../errors/AuthError.js";
 import CommonError from "../errors/CommonError.js";
+import { supabase } from "../config/supabaseClient.js"; // Pastikan path ini benar
 
 /**
  * @class AuthService
  * @description Service untuk menangani logika bisnis autentikasi.
  */
 export class AuthService {
-  /**
-   * @constructor
-   * @param {import('../repositories/authRepository.js').AuthRepository} authRepository - Dependency repository autentikasi yang di-inject.
-   * @throws {CommonError} Jika repository tidak disediakan.
-   */
-  constructor(authRepository) {
-    if (!authRepository) {
-      throw CommonError.InternalServerError("AuthRepository harus disediakan.");
-    }
-    this.authRepository = authRepository;
-  }
-
-  /**
-   * @function registerUser
-   * @description Registrasi user baru. Memvalidasi kekuatan password sebelum mendaftarkan.
-   * @param {string} email - Email user baru.
-   * @param {string} password - Password user (harus mengandung huruf kapital & angka).
-   * @param {object} additionalData - Data tambahan (misalnya nama, role, dll).
-   * @throws {AuthError.PasswordTooWeak} Jika password tidak memenuhi kriteria.
-   * @returns {Promise<object>} Data user yang berhasil terdaftar.
-   */
-  async registerUser(email, password, additionalData) {
-    if (!/[0-9]/.test(password)) {
-      throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu angka.");
-    }
-    if (!/[A-Z]/.test(password)) {
-      throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kapital.");
+    /**
+     * @constructor
+     * @param {import('../repositories/authRepository.js').AuthRepository} authRepository - Dependency repository autentikasi yang di-inject.
+     * @throws {CommonError} Jika repository tidak disediakan.
+     */
+    constructor(authRepository) {
+        if (!authRepository) {
+            throw CommonError.InternalServerError("AuthRepository harus disediakan.");
+        }
+        this.authRepository = authRepository;
     }
 
-    return this.authRepository.registerUser(email, password, additionalData);
-  }
+    /**
+     * @function registerUser
+     * @description Registrasi user baru. Memvalidasi kekuatan password sebelum mendaftarkan.
+     */
+    async registerUser(email, password, additionalData) {
+        if (!password || password.length < 8) {
+            throw AuthError.PasswordTooWeak("Password minimal 8 karakter.");
+        }
+        if (!/[0-9]/.test(password)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu angka.");
+        }
+        if (!/[A-Z]/.test(password)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kapital.");
+        }
+        if (!/[a-z]/.test(password)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kecil.");
+        }
 
-  /**
-   * @function loginUser
-   * @description Melakukan login user berdasarkan email dan password.
-   * @param {string} email - Email user.
-   * @param {string} password - Password user.
-   * @returns {Promise<object>} Data login (misalnya token JWT, info user).
-   */
-  async loginUser(email, password) {
-    return this.authRepository.loginUser(email, password);
-  }
-
-  /**
-   * @function logoutUser
-   * @description Logout user dengan menghapus/invalidasi token.
-   * @param {string} token - Token autentikasi yang akan di-logout.
-   * @throws {AuthError.MissingToken} Jika token tidak disediakan.
-   * @returns {Promise<void>} Hasil logout (misalnya token dihapus dari DB atau cache).
-   */
-  async logoutUser(token) {
-    if (!token) {
-      throw AuthError.MissingToken();
+        return this.authRepository.registerUser(email, password, additionalData);
     }
 
-    return this.authRepository.logoutUser(token);
-  }
-
-  /**
-   * @function forgotPassword
-   * @description Meminta reset password dengan email (mengirim token reset ke email user).
-   * @param {string} email - Email user yang ingin reset password.
-   * @throws {AuthError.UserNotFound} Jika email tidak disediakan.
-   * @returns {Promise<object>} Informasi proses reset password (misalnya status email terkirim).
-   */
-  async forgotPassword(email) {
-    if (!email) {
-      throw AuthError.UserNotFound("Email wajib diisi.");
-    }
-    return this.authRepository.forgotPassword(email);
-  }
-
-  /**
-   * @function resetPassword
-   * @description Reset password user menggunakan token yang dikirim via email.
-   * @param {string} token - Token reset password yang valid.
-   * @param {string} newPassword - Password baru minimal 8 karakter.
-   * @throws {AuthError.ResetPasswordInvalid} Jika token tidak valid.
-   * @throws {AuthError.PasswordTooWeak} Jika password baru terlalu lemah.
-   * @returns {Promise<object>} Hasil update password user.
-   */
-  async resetPassword(token, newPassword) {
-    if (!token) throw AuthError.ResetPasswordInvalid();
-    if (!newPassword || newPassword.length < 8) {
-      throw AuthError.PasswordTooWeak("Password minimal 8 karakter.");
+    /**
+     * @function loginUser
+     * @description Melakukan login user berdasarkan email dan password.
+     */
+    async loginUser(email, password) {
+        return this.authRepository.loginUser(email, password);
     }
 
-    return this.authRepository.resetPassword(token, newPassword);
-  }
+    /**
+     * @function logoutUser
+     * @description Logout user dengan menghapus/invalidasi token.
+     */
+    async logoutUser() {
+        // Dengan sistem cookie, parameter 'token' tidak lagi relevan dari controller
+        return this.authRepository.logoutUser();
+    }
+
+    /**
+     * @function forgotPassword
+     * @description Meminta reset password dengan email.
+     */
+    async forgotPassword(email) {
+        if (!email) {
+            throw AuthError.UserNotFound("Email wajib diisi.");
+        }
+        return this.authRepository.forgotPassword(email);
+    }
+
+    /**
+     * @function resetPassword
+     * @description Reset password user menggunakan 'code' verifikasi dari email.
+     */
+    async resetPassword(accessToken, refreshToken, newPassword) {
+        if (!accessToken || !refreshToken) {
+            throw AuthError.ResetPasswordInvalid("Access token atau refresh token tidak ditemukan.");
+        }
+
+        // Validasi password
+        if (!newPassword || newPassword.length < 8) {
+            throw AuthError.PasswordTooWeak("Password minimal 8 karakter.");
+        }
+        if (!/[0-9]/.test(newPassword)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu angka.");
+        }
+        if (!/[A-Z]/.test(newPassword)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kapital.");
+        }
+        if (!/[a-z]/.test(newPassword)) {
+            throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kecil.");
+        }
+
+        // Langkah 1: Aktifkan session berdasarkan token dari email
+        const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        });
+
+        if (sessionError) {
+            console.error("Gagal setSession:", sessionError);
+            throw AuthError.ResetPasswordInvalid("Tautan reset password sudah tidak valid atau kedaluwarsa.");
+        }
+
+        // Langkah 2: Update password setelah session aktif
+        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+
+        if (updateError) {
+            console.error("Gagal update password:", updateError);
+            throw AuthError.ResetPasswordInvalid("Password tidak memenuhi syarat atau token sudah tidak valid.");
+        }
+
+        return { message: "Password berhasil diubah." };
+    }
+
 }

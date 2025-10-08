@@ -1692,3 +1692,1192 @@ Unknown argument `versions`. Available options are marked with ?.
     at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
     at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
     at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 19:12:50:1250 error: 401 - Token otentikasi tidak valid. - /api/documents/bb882314-994a-4b80-8c8e-cf0405d36b18 - GET - ::1
+2025-10-04 19:12:50:1250 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-04 19:12:50:1250 error: 401 - Token otentikasi tidak valid. - /api/documents/bb882314-994a-4b80-8c8e-cf0405d36b18 - GET - ::1
+2025-10-04 19:12:50:1250 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-04 19:12:52:1252 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-04 19:12:52:1252 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 19:12:52:1252 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-04 19:12:52:1252 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 19:12:52:1252 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-04 19:12:52:1252 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 19:12:52:1252 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-04 19:12:52:1252 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 20:17:43:1743 error: 401 - Token otentikasi tidak valid. - /api/documents/bb882314-994a-4b80-8c8e-cf0405d36b18 - GET - ::1
+2025-10-04 20:17:43:1743 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-04 20:17:43:1743 error: 401 - Token otentikasi tidak valid. - /api/documents/bb882314-994a-4b80-8c8e-cf0405d36b18 - GET - ::1
+2025-10-04 20:17:43:1743 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-04 20:17:45:1745 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-04 20:17:45:1745 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 20:17:45:1745 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-04 20:17:45:1745 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 20:17:45:1745 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-04 20:17:45:1745 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 20:17:45:1745 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-04 20:17:45:1745 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-04 21:18:08:188 error: 401 - Token otentikasi tidak valid. - /api/signatures/personal - POST - ::1
+2025-10-04 21:18:08:188 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-05 04:56:26:5626 error: 401 - Token otentikasi tidak valid. - /api/signatures/personal - POST - ::1
+2025-10-05 04:56:26:5626 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-05 05:58:13:5813 error: 401 - Token otentikasi tidak valid. - /api/documents/4660ab6b-c9cf-45fa-8704-a4d8c0e603f1 - GET - ::1
+2025-10-05 05:58:13:5813 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-05 05:58:14:5814 error: 401 - Token otentikasi tidak valid. - /api/documents/4660ab6b-c9cf-45fa-8704-a4d8c0e603f1 - GET - ::1
+2025-10-05 05:58:14:5814 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-05 05:58:15:5815 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-05 05:58:15:5815 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-05 05:58:15:5815 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/documents - GET - ::1
+2025-10-05 05:58:15:5815 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-05 05:58:15:5815 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-05 05:58:15:5815 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-05 05:58:15:5815 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/users/me - GET - ::1
+2025-10-05 05:58:15:5815 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-06 19:06:55:655 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-06 19:06:55:655 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:44:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:94:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 19:45:16:4516 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 19:45:16:4516 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:74:25)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 19:45:52:4552 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 19:45:52:4552 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:74:25)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 19:47:47:4747 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 19:47:47:4747 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:71:29)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 19:49:48:4948 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 19:49:48:4948 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:29)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 19:54:54:5454 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 19:54:54:5454 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:29)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 19:56:25:5625 error: 409 - Email sudah terdaftar. - /api/auth/register - POST - ::1
+2025-10-06 19:56:25:5625 error: Error: Email sudah terdaftar.
+    at AuthError.EmailAlreadyExist (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:40:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 20:01:08:18 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-06 20:01:08:18 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:44:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:94:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:03:50:350 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-06 20:03:50:350 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:44:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:94:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:11:07:117 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-06 20:11:07:117 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:94:35)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:15:46:1546 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-06 20:15:46:1546 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:114:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:19:06:196 error: 409 - Email sudah terdaftar. - /api/auth/register - POST - ::1
+2025-10-06 20:19:06:196 error: Error: Email sudah terdaftar.
+    at AuthError.EmailAlreadyExist (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:45:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 20:19:58:1958 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-06 20:19:58:1958 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:114:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:29:25:2925 error: 409 - Email sudah terdaftar. - /api/auth/register - POST - ::1
+2025-10-06 20:29:25:2925 error: Error: Email sudah terdaftar.
+    at AuthError.EmailAlreadyExist (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:45:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 20:48:35:4835 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 20:48:35:4835 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:48:58:4858 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 20:48:58:4858 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:49:04:494 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 20:49:04:494 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:50:10:5010 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-06 20:50:10:5010 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:114:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:50:22:5022 error: 409 - Email sudah terdaftar. - /api/auth/register - POST - ::1
+2025-10-06 20:50:22:5022 error: Error: Email sudah terdaftar.
+    at AuthError.EmailAlreadyExist (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:45:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:69:31)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 20:55:25:5525 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-06 20:55:25:5525 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:109:25)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:57:44:5744 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-06 20:57:44:5744 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:109:25)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 20:57:57:5757 error: 500 - Gagal menyimpan data pengguna ke database lokal. - /api/auth/register - POST - ::1
+2025-10-06 20:57:57:5757 error: Error: Gagal menyimpan data pengguna ke database lokal.
+    at CommonError.DatabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:25:16)
+    at SupabaseAuthRepository.registerUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:74:25)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:30:23
+2025-10-06 21:07:30:730 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:07:30:730 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:07:41:741 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:07:41:741 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:07:41:741 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:07:41:741 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:07:55:755 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:07:55:755 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:08:32:832 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:08:32:832 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:09:37:937 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:09:37:937 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:09:38:938 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:09:38:938 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:09:38:938 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:09:38:938 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:09:39:939 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:09:39:939 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:09:47:947 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:09:47:947 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:10:34:1034 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:10:34:1034 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:10:35:1035 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:10:35:1035 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:10:44:1044 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:10:44:1044 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:11:04:114 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:11:04:114 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:14:55:1455 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:14:55:1455 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:15:34:1534 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:15:34:1534 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:16:30:1630 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:16:30:1630 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:18:28:1828 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:18:28:1828 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:22:09:229 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:22:09:229 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:22:25:2225 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:22:25:2225 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:24:06:246 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:24:06:246 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:24:14:2414 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-06 21:24:14:2414 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:96:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:24:26:2426 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-06 21:24:26:2426 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:94:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:42:30:4230 error: 500 - Metode loginUser belum diimplementasikan. - /api/auth/login - POST - ::1
+2025-10-06 21:42:30:4230 error: Error: Metode loginUser belum diimplementasikan.
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/interface/AuthRepository.js:28:15)
+    at AuthService.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:56:32)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:40
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-06 21:44:47:4447 error: 502 - Email not confirmed - /api/auth/login - POST - ::1
+2025-10-06 21:44:47:4447 error: Error: Email not confirmed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:109:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-06 21:51:46:5146 error: 401 - Akses ditolak. Token tidak ditemukan. - /api/auth/logout - POST - ::1
+2025-10-06 21:51:46:5146 error: Error: Akses ditolak. Token tidak ditemukan.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:11:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-06 21:52:20:5220 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-06 21:52:20:5220 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 21:53:08:538 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-06 21:53:08:538 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 21:53:20:5320 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-06 21:53:20:5320 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:00:21:021 error: 400 - Invalid JWT structure - /api/auth/reset-password - POST - ::1
+2025-10-06 22:00:21:021 error: Error: Invalid JWT structure
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:229:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:02:18:218 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-06 22:02:18:218 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:233:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:02:57:257 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-06 22:02:57:257 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:233:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:04:05:45 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-06 22:04:05:45 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:233:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:05:17:517 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-06 22:05:17:517 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:233:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-06 22:12:14:1214 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-06 22:12:14:1214 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:238:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:14:38:1438 error: 400 - Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-07 10:14:38:1438 error: Error: Auth session missing!
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:238:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:19:22:1922 error: 502 - Gagal memperbarui password: Auth session missing! - /api/auth/reset-password - POST - ::1
+2025-10-07 10:19:22:1922 error: Error: Gagal memperbarui password: Auth session missing!
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:233:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:21:47:2147 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-07 10:21:47:2147 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:24:11:2411 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-07 10:24:11:2411 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:25:31:2531 error: 400 - Token reset password tidak valid. - /api/auth/reset-password - POST - ::1
+2025-10-07 10:25:31:2531 error: Error: Token reset password tidak valid.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at SupabaseAuthRepository.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:221:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:131:22
+2025-10-07 10:33:18:3318 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-07 10:33:18:3318 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:59:22
+2025-10-07 11:16:42:1642 error: 500 - 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `127.0.0.1:5432`
+
+Please make sure your database server is running at `127.0.0.1:5432`. - /api/users/me - GET - ::1
+2025-10-07 11:16:42:1642 error: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `127.0.0.1:5432`
+
+Please make sure your database server is running at `127.0.0.1:5432`.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:27:23
+2025-10-07 11:16:45:1645 error: 500 - 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `127.0.0.1:5432`
+
+Please make sure your database server is running at `127.0.0.1:5432`. - /api/users/me - GET - ::1
+2025-10-07 11:16:45:1645 error: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findUnique()` invocation:
+
+
+Can't reach database server at `127.0.0.1:5432`
+
+Please make sure your database server is running at `127.0.0.1:5432`.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:27:23
+2025-10-07 15:38:49:3849 error: 502 - Gagal mengunggah dokumen: Bucket not found - /api/documents - POST - ::1
+2025-10-07 15:38:49:3849 error: Error: Gagal mengunggah dokumen: Bucket not found
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 15:45:17:4517 error: 502 - Gagal mengunggah dokumen: Bucket not found - /api/documents - POST - ::1
+2025-10-07 15:45:17:4517 error: Error: Gagal mengunggah dokumen: Bucket not found
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 15:47:21:4721 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/documents - GET - ::1
+2025-10-07 15:47:21:4721 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:21:4721 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/users/me - GET - ::1
+2025-10-07 15:47:21:4721 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:21:4721 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/documents - GET - ::1
+2025-10-07 15:47:21:4721 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:21:4721 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/users/me - GET - ::1
+2025-10-07 15:47:21:4721 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:29:4729 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/auth/logout - POST - ::1
+2025-10-07 15:47:29:4729 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:29:4729 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/users/me - GET - ::1
+2025-10-07 15:47:29:4729 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:30:4730 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/auth/logout - POST - ::1
+2025-10-07 15:47:30:4730 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 15:47:37:4737 error: 502 - Invalid API key - /api/auth/login - POST - ::1
+2025-10-07 15:47:37:4737 error: Error: Invalid API key
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-07 15:48:10:4810 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-07 15:48:10:4810 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-07 15:48:37:4837 error: 502 - Gagal mengunggah dokumen: Bucket not found - /api/documents - POST - ::1
+2025-10-07 15:48:37:4837 error: Error: Gagal mengunggah dokumen: Bucket not found
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 15:54:28:5428 error: 502 - Gagal mengunggah dokumen: Bucket not found - /api/documents - POST - ::1
+2025-10-07 15:54:28:5428 error: Error: Gagal mengunggah dokumen: Bucket not found
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 15:58:36:5836 error: 502 - Gagal mengunggah dokumen: Bucket not found - /api/documents - POST - ::1
+2025-10-07 15:58:36:5836 error: Error: Gagal mengunggah dokumen: Bucket not found
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 15:59:30:5930 error: 502 - Gagal mengunggah dokumen: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-07 15:59:30:5930 error: Error: Gagal mengunggah dokumen: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 16:39:54:3954 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/users/me - GET - ::1
+2025-10-07 16:39:54:3954 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 16:39:54:3954 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/documents - GET - ::1
+2025-10-07 16:39:54:3954 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 16:39:55:3955 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/users/me - GET - ::1
+2025-10-07 16:39:55:3955 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 16:39:55:3955 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/documents - GET - ::1
+2025-10-07 16:39:55:3955 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 16:40:00:400 error: 401 - Sesi Anda tidak valid atau telah kadaluarsa. - /api/auth/logout - POST - ::1
+2025-10-07 16:40:00:400 error: Error: Sesi Anda tidak valid atau telah kadaluarsa.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:25
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-07 16:40:07:407 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-07 16:40:07:407 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-07 16:51:43:5143 error: 502 - Email not confirmed - /api/auth/login - POST - ::1
+2025-10-07 16:51:43:5143 error: Error: Email not confirmed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-07 16:52:19:5219 error: 502 - Gagal mengunggah dokumen: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-07 16:52:19:5219 error: Error: Gagal mengunggah dokumen: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 17:53:27:5327 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-07 17:53:27:5327 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-07 17:53:54:5354 error: 502 - Gagal mengunggah dokumen: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-07 17:53:54:5354 error: Error: Gagal mengunggah dokumen: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 17:54:36:5436 error: 502 - Gagal mengunggah dokumen: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-07 17:54:36:5436 error: Error: Gagal mengunggah dokumen: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-07 17:56:16:5616 error: 502 - Gagal mengunggah dokumen: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-07 17:56:16:5616 error: Error: Gagal mengunggah dokumen: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:52:23)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:58:24
+2025-10-08 16:11:33:1133 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-08 16:11:33:1133 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 16:49:07:497 error: 404 - User account is valid but not found in our system. - /api/auth/logout - POST - ::1
+2025-10-08 16:49:07:497 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 16:51:46:5146 error: 502 - Gagal mengunggah file: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-08 16:51:46:5146 error: Error: Gagal mengunggah file: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadFile (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:28:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:30)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:49:53)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:42:30
+2025-10-08 16:51:55:5155 error: 502 - Gagal mengunggah file: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-08 16:51:55:5155 error: Error: Gagal mengunggah file: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadFile (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:28:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:30)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:49:53)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:42:30
+2025-10-08 16:52:59:5259 error: 502 - Gagal mengunggah file: new row violates row-level security policy - /api/documents - POST - ::1
+2025-10-08 16:52:59:5259 error: Error: Gagal mengunggah file: new row violates row-level security policy
+    at CommonError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at SupabaseFileStorage.uploadFile (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:28:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async SupabaseFileStorage.uploadDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseFileStorage.js:50:30)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:49:53)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:42:30
+2025-10-08 16:53:33:5333 error: 500 - 
+Invalid `prisma.document.create()` invocation:
+
+{
+  data: {
+    userId: "dd222fe6-7b2c-4005-9d31-5a08d9b155c5",
+    title: {
+      title: "DP_2_1_Practice.pdf",
+      storagePath: "documents/dd222fe6-7b2c-4005-9d31-5a08d9b155c5/46da1f4ee62235fd0b967cb40885aa4f.pdf",
+      originalName: "DP_2_1_Practice.pdf",
+      hash: "e41d9eb0ee5a686a9f0645b778a79860e972a8bf0e878aa7164da0f449f46949"
+    }
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  }
+}
+
+Argument `title`: Invalid value provided. Expected String, provided Object. - /api/documents - POST - ::1
+2025-10-08 16:53:33:5333 error: PrismaClientValidationError: 
+Invalid `prisma.document.create()` invocation:
+
+{
+  data: {
+    userId: "dd222fe6-7b2c-4005-9d31-5a08d9b155c5",
+    title: {
+      title: "DP_2_1_Practice.pdf",
+      storagePath: "documents/dd222fe6-7b2c-4005-9d31-5a08d9b155c5/46da1f4ee62235fd0b967cb40885aa4f.pdf",
+      originalName: "DP_2_1_Practice.pdf",
+      hash: "e41d9eb0ee5a686a9f0645b778a79860e972a8bf0e878aa7164da0f449f46949"
+    }
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  }
+}
+
+Argument `title`: Invalid value provided. Expected String, provided Object.
+    at Nn (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6911)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/prisma/PrismaDocumentRepository.js:19:24
+    at async Proxy._transactionWithCallback (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:8120)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:42:30
+2025-10-08 17:09:08:98 error: 500 - Cannot read properties of undefined (reading 'createSignedUrl') - /api/documents/588e3ebf-ce6a-445c-a3f7-755fa76630ba/download - GET - ::1
+2025-10-08 17:09:08:98 error: TypeError: Cannot read properties of undefined (reading 'createSignedUrl')
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:106:52
+2025-10-08 17:15:04:154 error: 404 - User account is valid but not found in our system. - /api/documents - GET - ::1
+2025-10-08 17:15:04:154 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:32:1532 error: 404 - User account is valid but not found in our system. - /api/users/me - GET - ::1
+2025-10-08 17:15:32:1532 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:32:1532 error: 404 - User account is valid but not found in our system. - /api/documents - GET - ::1
+2025-10-08 17:15:32:1532 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:32:1532 error: 404 - User account is valid but not found in our system. - /api/documents - GET - ::1
+2025-10-08 17:15:32:1532 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:32:1532 error: 404 - User account is valid but not found in our system. - /api/users/me - GET - ::1
+2025-10-08 17:15:32:1532 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:45:1545 error: 404 - User account is valid but not found in our system. - /api/auth/logout - POST - ::1
+2025-10-08 17:15:45:1545 error: Error: User account is valid but not found in our system.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:37:25
+2025-10-08 17:15:52:1552 error: 404 - Autentikasi berhasil, tapi data user tidak ditemukan di sistem. - /api/auth/login - POST - ::1
+2025-10-08 17:15:52:1552 error: Error: Autentikasi berhasil, tapi data user tidak ditemukan di sistem.
+    at AuthError.UserNotFound (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:41:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:144:33)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 17:15:54:1554 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-08 17:15:54:1554 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 17:16:00:160 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-08 17:16:00:160 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 17:16:21:1621 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-08 17:16:21:1621 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 17:17:27:1727 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-08 17:17:27:1727 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-08 18:02:16:216 error: 400 - Tautan reset password tidak valid atau password tidak memenuhi syarat. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:02:16:216 error: Error: Tautan reset password tidak valid atau password tidak memenuhi syarat.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:105:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:28
+2025-10-08 18:03:17:317 error: 400 - Tautan reset password tidak valid atau password tidak memenuhi syarat. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:03:17:317 error: Error: Tautan reset password tidak valid atau password tidak memenuhi syarat.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:105:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:28
+2025-10-08 18:08:14:814 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:08:14:814 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:08:20:820 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:08:20:820 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:08:23:823 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:08:23:823 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:08:39:839 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:08:39:839 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:19:58:1958 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:19:58:1958 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:29:54:2954 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:29:54:2954 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:29:56:2956 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:29:56:2956 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:29:56:2956 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:29:56:2956 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:29:57:2957 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:29:57:2957 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:30:39:3039 error: 400 - Password harus mengandung minimal satu huruf kapital. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:30:39:3039 error: Error: Password harus mengandung minimal satu huruf kapital.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:88:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:33:41:3341 error: 400 - Tautan reset password tidak valid atau password tidak memenuhi syarat. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:33:41:3341 error: Error: Tautan reset password tidak valid atau password tidak memenuhi syarat.
+    at AuthError.ResetPasswordInvalid (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:66:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:105:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:28
+2025-10-08 18:36:34:3634 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:36:34:3634 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:37:14:3714 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:37:14:3714 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:37:33:3733 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:37:33:3733 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:38:36:3836 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:38:36:3836 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:38:37:3837 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:38:37:3837 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:39:20:3920 error: 400 - Password minimal 8 karakter. - /api/auth/reset-password - POST - ::1
+2025-10-08 18:39:20:3920 error: Error: Password minimal 8 karakter.
+    at AuthError.PasswordTooWeak (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:53:16)
+    at AuthService.resetPassword (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/authService.js:82:29)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:135:46
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:10:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at validate (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/validate.js:14:5)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at middleware (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\express-validator\lib\middlewares\check.js:16:13)
+2025-10-08 18:49:16:4916 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:49:16:4916 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25
+2025-10-08 18:49:17:4917 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:49:17:4917 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25
+2025-10-08 18:49:28:4928 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:49:28:4928 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25
+2025-10-08 18:49:28:4928 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:49:28:4928 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25
+2025-10-08 18:51:01:511 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:51:01:511 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25
+2025-10-08 18:51:01:511 error: 500 - 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database. - /api/documents - GET - ::1
+2025-10-08 18:51:01:511 error: PrismaClientKnownRequestError: 
+Invalid `prisma.document.findMany()` invocation:
+
+
+The column `documents.signed_file_url` does not exist in the current database.
+    at ei.handleRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:78:25

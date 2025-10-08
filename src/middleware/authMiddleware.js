@@ -1,29 +1,28 @@
-import { supabase } from "../config/supabaseClient.js";
+import {supabase} from "../config/supabaseClient.js";
 import prisma from "../config/prismaClient.js";
 import AuthError from "../errors/AuthError.js";
-import asyncHandler from "../utils/asyncHandler.js"; // <-- 1. Import asyncHandler
+import asyncHandler from "../utils/asyncHandler.js";
+import {parse} from "cookie";
 
-const authMiddleware = asyncHandler(async (req, res, next) => { // <-- 2. Wrap with asyncHandler
-    // Outer try...catch is no longer needed
-
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        throw AuthError.MissingToken();
+const authMiddleware = asyncHandler(async (req, res, next) => {
+    const cookies = req.headers.cookie;
+    if(!cookies) {
+        throw AuthError.MissingToken("Sesi tidak ditemukan. Silahkan login kembali.");
     }
 
-    const token = authHeader.split(" ")[1];
+    const parsedCookies = parse(cookies);
+    const token = parsedCookies["sb-access-token"];
 
-    // 🔹 Verify the token with Supabase
+    if(!token) {
+        throw AuthError.MissingToken("Token autentikasi tidak ditemukan dalam sesi.");
+    }
+
     const { data, error } = await supabase.auth.getUser(token);
 
-    // 🔹 Simplify error handling
-    // If there's any error (expired, invalid, etc.) or the user is not found,
-    // the token is effectively invalid.
     if (error || !data?.user) {
-        throw AuthError.InvalidToken();
+        throw AuthError.InvalidToken("Sesi Anda tidak valid atau telah kadaluarsa.");
     }
 
-    // 🔹 Sync with our local database
     const localUser = await prisma.user.findUnique({
         where: { id: data.user.id },
         select: {
@@ -35,17 +34,17 @@ const authMiddleware = asyncHandler(async (req, res, next) => { // <-- 2. Wrap w
     });
 
     if (!localUser) {
-        throw AuthError.UserNotFound("User account is valid but not found in our system.");
+        throw AuthError.UserNotFound(
+            "User account is valid but not found in our system."
+        );
     }
 
-    // 🔹 Inject user data into the request object
     req.user = {
         id: localUser.id,
         email: localUser.email,
         name: localUser.name,
         role: localUser.isSuperAdmin ? "super_admin" : "basic_user",
     };
-
     next();
 });
 
