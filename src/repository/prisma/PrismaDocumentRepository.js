@@ -11,7 +11,7 @@ export class PrismaDocumentRepository {
    * @param {string} userId - ID pemilik.
    * @param {string} title - Judul dokumen.
    * @param {string} url - URL file untuk versi pertama.
-   * @param {string} hash - Hash file untuk versi pertama.
+   * @param {string} hash - Hash file untuk versi pertama
    * @returns {Promise<object>} Objek dokumen yang baru dibuat, termasuk data versi pertamanya.
    */
   async createWithFirstVersion(userId, title, url, hash) {

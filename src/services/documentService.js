@@ -49,8 +49,8 @@ export class DocumentService {
       throw DocumentError.AlreadyExists();
     }
 
-    const publicUrl = await this.fileStorage.uploadDocument(file, userId);
-    return this.documentRepository.createWithFirstVersion(userId, title, publicUrl, hash);
+    const filePath = await this.fileStorage.uploadDocument(file, userId);
+    return this.documentRepository.createWithFirstVersion(userId, title, filePath, hash);
   }
 
   /**
@@ -192,4 +192,38 @@ export class DocumentService {
     await this.versionRepository.deleteById(versionId);
     return { message: "Versi dokumen berhasil dihapus." };
   }
+// Di dalam file: src/services/documentService.js (Backend)
+// Tambahkan fungsi ini di dalam class DocumentService Anda
+
+    /**
+     * @function getVersionFileUrl
+     * @description Mendapatkan signed URL untuk sebuah versi dokumen spesifik setelah validasi.
+     * @param {string} documentId - ID dokumen.
+     * @param {string} versionId - ID versi.
+     * @param {string} userId - ID pengguna untuk validasi kepemilikan.
+     * @returns {Promise<string>} Signed URL yang valid untuk diakses.
+     * @throws {DocumentError} Jika dokumen/versi tidak ditemukan atau akses ditolak.
+     */
+    // Di dalam file: src/services/documentService.js
+
+    async getVersionFileUrl(documentId, versionId, userId) {
+        // --- DEBUGGING LOG #3 ---
+        console.log("✅ SERVICE: Masuk ke getVersionFileUrl.");
+
+        console.log("    - Memvalidasi kepemilikan dokumen...");
+        await this.getDocumentById(documentId, userId);
+        console.log("    - Validasi kepemilikan berhasil.");
+
+        console.log("    - Mencari versi berdasarkan versionId...");
+        const version = await this.versionRepository.findById(versionId);
+        console.log("    - Hasil pencarian versi:", version ? `Ditemukan versi dengan URL: ${version.url}` : "Versi TIDAK ditemukan.");
+
+        if (!version || version.documentId !== documentId) {
+            console.error("❌ SERVICE: Validasi gagal! Versi tidak ditemukan atau tidak cocok dengan dokumen.");
+            throw DocumentError.InvalidVersion(versionId, documentId);
+        }
+
+        console.log("    - Memanggil fileStorage.getSignedUrl dengan path:", version.url);
+        return this.fileStorage.getSignedUrl(version.url, 60);
+    }
 }

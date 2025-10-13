@@ -9,6 +9,7 @@ import AuthError from "./errors/AuthError.js";
 import CommonError from "./errors/CommonError.js";
 import errorHandler from "./middleware/errorHandler.js";
 import { supabase, supabaseBucket } from './config/supabaseClient.js';
+import cookieParser from "cookie-parser";
 
 import { PrismaClient } from "@prisma/client";
 import { AuthService } from "./services/authService.js";
@@ -16,7 +17,11 @@ import { UserService } from "./services/userService.js";
 import { DocumentService } from "./services/documentService.js";
 import { SignatureService } from "./services/signatureService.js";
 import { PDFService } from "./services/pdfService.js";
+import { AdminService } from "./services/adminService.js";
 
+
+
+import { PrismaAdminRepository } from "./repository/prisma/PrismaAdminRepository.js";
 import PrismaUserRepository from "./repository/prisma/PrismaUserRepository.js";
 import {PrismaDocumentRepository} from "./repository/prisma/PrismaDocumentRepository.js";
 import { PrismaVersionRepository } from "./repository/prisma/PrismaVersionRepository.js";
@@ -34,10 +39,9 @@ import createAuthRoutes from "./routes/authRoutes.js";
 import createUserRoutes from "./routes/userRoutes.js";
 import createDocumentRoutes from "./routes/documentRoutes.js";
 import createSignatureRoutes from "./routes/signatureRoutes.js";
+import createAdminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
-
-
 
 const stream = {
   write: (message) => logger.http(message.trim()),
@@ -53,6 +57,8 @@ app.use(
   })
 );
 
+app.use(cookieParser());
+
 app.get("/", (req, res) => {
   res.json({
     message: "✅ API sudah berjalan",
@@ -63,6 +69,7 @@ app.get("/", (req, res) => {
 
 
 const authRepository = new SupabaseAuthRepository(supabase, prisma);
+const adminRepository = new PrismaAdminRepository(prisma);
 const userRepository = new PrismaUserRepository(prisma);
 const documentRepository = new PrismaDocumentRepository(prisma);
 const versionRepository = new PrismaVersionRepository(prisma);
@@ -70,6 +77,7 @@ const signatureRepository = new PrismaSignatureRepository(prisma);
 const fileStorage = new SupabaseFileStorage(prisma, supabaseBucket);
 
 const authService = new AuthService(authRepository);
+const adminService = new AdminService(adminRepository);
 const userService = new UserService(userRepository, fileStorage);
 const pdfService = new PDFService(versionRepository, signatureRepository, fileStorage);
 const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
@@ -77,12 +85,13 @@ const documentService = new DocumentService(documentRepository, versionRepositor
 
 const authController = createAuthController(authService, { AuthError, CommonError});
 const userController = createUserController(userService);
-const adminController = createAdminController(userService);
-const documentController = createDocumentController(documentService);
+const adminController = createAdminController(adminService);
+const documentController = createDocumentController(documentService, fileStorage);
 const signatureController = createSignatureController(documentService, signatureService);
 
 app.use("/api/auth", createAuthRoutes(authController));
 app.use("/api/users", createUserRoutes(userController, adminController));
+app.use("/api/admin", createAdminRoutes(adminController));
 app.use("/api/documents", createDocumentRoutes(documentController));
 app.use("/api/signatures", createSignatureRoutes(signatureController));
 
@@ -126,7 +135,14 @@ app.use((err, req, res, next) => {
     });
 });
 
+app.post("/api/logs/forbidden", (req, res) => {
+    console.log(`[CLIENT FORBIDDEN PAGE] User opened forbidden page at ${new Date().toISOString()}`);
+    res.sendStatus(204);
+});
+
 app.use(errorHandler);
+
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

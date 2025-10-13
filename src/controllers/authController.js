@@ -9,7 +9,7 @@ import { serialize } from "cookie";
 /**
  * Membuat instance dari Auth Controller.
  * @param {import('../services/authService.js').AuthService} authService - Instance dari AuthService.
- * @returns {object} Kumpulan metode controller untuk rute autentikasi.
+ * @returns {object} Kumpulan metode controller untuk rute autentikasi
  */
 export const createAuthController = (authService) => {
     return {
@@ -130,7 +130,7 @@ export const createAuthController = (authService) => {
          * @param {Function} next - Middleware Express berikutnya.
          */
         resetPassword: asyncHandler(async (req, res, next) => {
-            const { accessToken, refreshToken, newPassword } = req.body; // tambahkan refreshToken
+            const { accessToken, refreshToken, newPassword } = req.body;
 
             const result = await authService.resetPassword(accessToken, refreshToken, newPassword);
 

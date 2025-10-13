@@ -57,7 +57,7 @@ model User {
   administeredGroups Group[]             @relation("AdminToGroup")
   documents          Document[]
   signaturesPersonal SignaturePersonal[]
-  signaturesGroup    SignatureGroup[]    @relation("UserSignaturesGroup") // ✅ Diberi nama
+  signaturesGroup    SignatureGroup[]    @relation("UserSignaturesGroup")
   groupMemberships   GroupMember[]
   profilePictures    UserProfilePicture[]
   sentInvitations    GroupInvitation[]   @relation("SentByInviter")
@@ -90,7 +90,7 @@ model Document {
   groupId          Int?             @map("group_id")
   versions         DocumentVersion[]
   currentVersion   DocumentVersion? @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
-  currentVersionId String?          @unique @map("current_version_id") @db.Uuid // ✅ Ditambah @db.Uuid
+  currentVersionId String?          @unique @map("current_version_id") @db.Uuid
   @@map("documents")
 }
 

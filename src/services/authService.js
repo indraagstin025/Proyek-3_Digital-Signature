@@ -1,6 +1,6 @@
 import AuthError from "../errors/AuthError.js";
 import CommonError from "../errors/CommonError.js";
-import { supabase } from "../config/supabaseClient.js"; // Pastikan path ini benar
+import supabaseAuth from "../config/supabaseAuth.js";
 
 /**
  * @class AuthService
@@ -92,7 +92,7 @@ export class AuthService {
         }
 
         // Langkah 1: Aktifkan session berdasarkan token dari email
-        const { error: sessionError } = await supabase.auth.setSession({
+        const { error: sessionError } = await supabaseAuth.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
         });
@@ -103,7 +103,7 @@ export class AuthService {
         }
 
         // Langkah 2: Update password setelah session aktif
-        const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+        const { error: updateError } = await supabaseAuth.auth.updateUser({ password: newPassword });
 
         if (updateError) {
             console.error("Gagal update password:", updateError);

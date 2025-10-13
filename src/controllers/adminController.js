@@ -1,26 +1,39 @@
-/**
- * @description Factory function untuk membuat admin controller.
- * Controller ini menangani semua logika yang berkaitan dengan rute admin.
- * @param {object} userService - Instance dari service pengguna yang menyediakan metode untuk interaksi data pengguna.
- * @returns {object} Objek yang berisi metode-metode controller untuk admin.
- */
-export const createAdminController = (userService) => {
-  return {
-    /**
-     * @description Mengambil semua data pengguna dalam sistem.
-     * Didesain untuk digunakan pada rute yang dilindungi dan hanya bisa diakses oleh admin.
-     * @param {object} req - Objek request dari Express.
-     * @param {object} res - Objek response dari Express.
-     * @returns {Promise<void>} Mengirimkan respons JSON berisi daftar pengguna atau pesan error.
-     */
-    getAllUsers: async (req, res) => {
-      try {
-        const users = await userService.getAllUsers();
-        res.status(200).json({ data: users });
-      } catch (error) {
-        console.error("Error fetching all users:", error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server saat mengambil semua pengguna.' });
-      }
-    },
-  };
+import asyncHandler from "../utils/asyncHandler.js";
+
+export const createAdminController = (adminService) => {
+    return {
+        getAllUsers: asyncHandler(async (req, res) => {
+            const users = await adminService.getAllUsers();
+            res.status(200).json({ success: true, count: users.length, data: users });
+        }),
+
+        createUser: asyncHandler(async (req, res) => {
+            const { email, password, name, isSuperAdmin } = req.body;
+            const newUser = await adminService.createNewUser({ email, password, name, isSuperAdmin });
+            res.status(201).json({
+                success: true,
+                message: 'User berhasil dibuat oleh admin.',
+                data: newUser
+            });
+        }),
+
+        updateUser: asyncHandler(async (req, res) => {
+            const { userId } = req.params;
+            const updatedUser = await adminService.updateUser(userId, req.body);
+            res.status(200).json({
+                success: true,
+                message: 'User berhasil diperbaharui.',
+                data: updatedUser
+            });
+        }),
+
+        deleteUser: asyncHandler(async (req, res) => {
+            const { userId } = req.params;
+            await adminService.deleteUser(userId);
+            res.status(200).json({
+                success: true,
+                message: `User dengan ID ${userId} berhasil dihapus`
+            });
+        }),
+    };
 };

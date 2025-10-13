@@ -229,7 +229,6 @@ class SupabaseAuthRepository extends AuthRepository {
     }
 
 
-
 }
 
 export default SupabaseAuthRepository;

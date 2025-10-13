@@ -7,14 +7,14 @@ class FileStorage {
   /**
    * Membuat instance FileStorage.
    * @param {import('@supabase/supabase-js').SupabaseClient} supabaseClient - Instance Supabase.
-   * @throws {Error} Jika Supabase client tidak diberikan.
+   * @throws {Error} Jika Supabase client tidak diberikan
    */
   constructor(supabaseClient) {
     if (!supabaseClient) {
       throw new Error("Supabase client harus diberikan.");
     }
     this.supabase = supabaseClient;
-    this.bucketName = "profile-bucket"; // sesuaikan dengan nama bucket di Supabase
+    this.bucketName = "profile-bucket";
   }
 
   /**

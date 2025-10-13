@@ -1,23 +1,19 @@
-import {supabase} from "../config/supabaseClient.js";
+// src/middleware/authMiddleware.js
+import supabaseAuth from "../config/supabaseAuth.js";
 import prisma from "../config/prismaClient.js";
 import AuthError from "../errors/AuthError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import {parse} from "cookie";
+// 'parse' dari 'cookie' tidak lagi dibutuhkan
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
-    const cookies = req.headers.cookie;
-    if(!cookies) {
-        throw AuthError.MissingToken("Sesi tidak ditemukan. Silahkan login kembali.");
+    // ✅ LEBIH SEDERHANA: Langsung baca dari objek req.cookies
+    const token = req.cookies["sb-access-token"];
+
+    if (!token) {
+        throw AuthError.MissingToken("Sesi tidak ditemukan atau token autentikasi tidak ada.");
     }
 
-    const parsedCookies = parse(cookies);
-    const token = parsedCookies["sb-access-token"];
-
-    if(!token) {
-        throw AuthError.MissingToken("Token autentikasi tidak ditemukan dalam sesi.");
-    }
-
-    const { data, error } = await supabase.auth.getUser(token);
+    const { data, error } = await supabaseAuth.auth.getUser(token);
 
     if (error || !data?.user) {
         throw AuthError.InvalidToken("Sesi Anda tidak valid atau telah kadaluarsa.");
