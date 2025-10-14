@@ -41,22 +41,6 @@ export const createDocumentController = (documentService, fileStorage) => { // â
             const file = req.file;
             const userId = req.user?.id;
 
-            if (!file) {
-                return res.status(400).json({
-                    status: "fail",
-                    code: "FILE_REQUIRED",
-                    message: "File dokumen wajib diunggah",
-                });
-            }
-
-            if (!title) {
-                return res.status(400).json({
-                    status: "fail",
-                    code: "TITLE_REQUIRED",
-                    message: "Judul file wajib diisi.",
-                });
-            }
-
             const document = await documentService.createDocument(userId, file, title);
 
             return res.status(201).json({

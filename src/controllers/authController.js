@@ -51,8 +51,9 @@ export const createAuthController = (authService) => {
          * @param {import("express").Response} res - Response object dari Express.
          * @param {Function} next - Middleware Express berikutnya.
          */
-        login: asyncHandler(async (req, res, next) => {
+        login: asyncHandler(async (req, res) => {
             const { email, password } = req.body;
+
             const { session, user } = await authService.loginUser(email, password);
 
             const cookieOptions = {
@@ -62,7 +63,6 @@ export const createAuthController = (authService) => {
                 secure: process.env.NODE_ENV === "production",
             };
 
-            // Atur cookie di header, bukan mengirim session di body
             res.setHeader("Set-Cookie", [
                 serialize("sb-access-token", session.access_token, {
                     ...cookieOptions,
@@ -80,6 +80,7 @@ export const createAuthController = (authService) => {
                 data: { user },
             });
         }),
+
 
         /**
          * @route   POST /api/auth/logout

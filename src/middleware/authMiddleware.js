@@ -1,9 +1,8 @@
-// src/middleware/authMiddleware.js
 import supabaseAuth from "../config/supabaseAuth.js";
 import prisma from "../config/prismaClient.js";
 import AuthError from "../errors/AuthError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-// 'parse' dari 'cookie' tidak lagi dibutuhkan
+
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
     // ✅ LEBIH SEDERHANA: Langsung baca dari objek req.cookies
@@ -15,9 +14,21 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
 
     const { data, error } = await supabaseAuth.auth.getUser(token);
 
-    if (error || !data?.user) {
-        throw AuthError.InvalidToken("Sesi Anda tidak valid atau telah kadaluarsa.");
+    if (error) {
+        if (error.message?.toLowerCase().includes("jwt expired")) {
+            // ✅ PERUBAHAN DI SINI: Lempar error dengan kode yang jelas
+            const sessionError = AuthError.SessionExpired("Sesi Anda telah berakhir. Silakan login kembali.");
+            sessionError.code = "SESSION_EXPIRED"; // Tambahkan properti 'code'
+            throw sessionError;
+        } else {
+            throw AuthError.InvalidToken("Token otentikasi tidak valid.");
+        }
     }
+
+    if (!data?.user) {
+        throw AuthError.InvalidToken("Token otentikasi tidak valid.");
+    }
+
 
     const localUser = await prisma.user.findUnique({
         where: { id: data.user.id },

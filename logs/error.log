@@ -7069,3 +7069,1531 @@ Inconsistent column data: Error creating UUID, invalid character: expected an op
     at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
     at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
     at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 10:05:17:517 error: 500 - Proses penandatanganan gagal: DocumentError.Encrypted is not a function - /api/signatures/personal - POST - ::1
+2025-10-14 10:05:17:517 error: Error: Proses penandatanganan gagal: DocumentError.Encrypted is not a function
+    at CommonError.InternalServerError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:37:16)
+    at SignatureService.addPersonalSignature (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/signatureService.js:83:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/signatureController.js:65:31
+2025-10-14 10:23:47:2347 error: 500 - File PDF tidak valid atau korup. - /api/documents - POST - ::1
+2025-10-14 10:23:47:2347 error: Error: File PDF tidak valid atau korup.
+    at isPdfEncrypted (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/pdfValidator.js:23:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:47:48)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:29:28:2928 error: 500 - File PDF anda terenkripsi, Silahkan cek kembali file yang anda ingin upload. - /api/documents - POST - ::1
+2025-10-14 10:29:28:2928 error: Error: File PDF anda terenkripsi, Silahkan cek kembali file yang anda ingin upload.
+    at isPdfEncrypted (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/pdfValidator.js:23:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:47:48)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:32:08:328 error: 500 - File PDF tidak valid atau korup. - /api/documents - POST - ::1
+2025-10-14 10:32:08:328 error: Error: File PDF tidak valid atau korup.
+    at isPdfEncrypted (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/pdfValidator.js:23:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:47:50)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:33:57:3357 error: 500 - CommonError is not defined - /api/documents - POST - ::1
+2025-10-14 10:33:57:3357 error: ReferenceError: CommonError is not defined
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:67:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:34:47:3447 error: 400 - File PDF tidak valid atau korup. - /api/documents - POST - ::1
+2025-10-14 10:34:47:3447 error: Error: File PDF tidak valid atau korup.
+    at CommonError.BadRequest (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:68:29)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:38:49:3849 error: 400 - File PDF tidak valid atau korup. - /api/documents - POST - ::1
+2025-10-14 10:38:49:3849 error: Error: File PDF tidak valid atau korup.
+    at CommonError.BadRequest (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/CommonError.js:21:16)
+    at DocumentService._validateFile (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:55:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:73:9)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:30
+2025-10-14 10:51:52:5152 error: 500 - Cannot read properties of null (reading 'nonExistentProperty') - /api/documents - POST - ::1
+2025-10-14 10:51:52:5152 error: TypeError: Cannot read properties of null (reading 'nonExistentProperty')
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:69:31)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:52
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at done (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:507:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+2025-10-14 10:56:06:566 error: 500 - Cannot read properties of null (reading 'nonExistentProperty') - /api/documents - POST - ::1
+2025-10-14 10:56:06:566 error: TypeError: Cannot read properties of null (reading 'nonExistentProperty')
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:69:31)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:52
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at done (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:507:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+2025-10-14 11:00:11:011 error: 500 - Cannot read properties of null (reading 'nonExistentProperty') - /api/documents - POST - ::1
+2025-10-14 11:00:11:011 error: TypeError: Cannot read properties of null (reading 'nonExistentProperty')
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:69:31)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:52
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at done (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:507:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+2025-10-14 11:00:29:029 error: 500 - Cannot read properties of null (reading 'nonExistentProperty') - /api/documents - POST - ::1
+2025-10-14 11:00:29:029 error: TypeError: Cannot read properties of null (reading 'nonExistentProperty')
+    at DocumentService.createDocument (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/services/documentService.js:69:31)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/documentController.js:44:52
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at done (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:507:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+2025-10-14 11:15:17:1517 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:15:17:1517 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 11:26:01:261 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:26:01:261 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 11:27:11:2711 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:27:11:2711 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 11:27:22:2722 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:27:22:2722 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 11:29:00:290 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/users/me - GET - ::1
+2025-10-14 11:29:00:290 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:29:00:290 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/admin/users - GET - ::1
+2025-10-14 11:29:00:290 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:29:00:290 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/admin/users - GET - ::1
+2025-10-14 11:29:00:290 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:30:27:3027 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/users/me/profile-pictures - GET - ::1
+2025-10-14 11:30:27:3027 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:30:27:3027 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/users/me/profile-pictures - GET - ::1
+2025-10-14 11:30:27:3027 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:30:27:3027 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:30:27:3027 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:30:27:3027 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:30:27:3027 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:30:31:3031 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:30:31:3031 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:30:31:3031 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:30:31:3031 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:30:41:3041 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/auth/logout - POST - ::1
+2025-10-14 11:30:41:3041 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:32:55:3255 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:32:55:3255 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:32:55:3255 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:32:55:3255 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:33:13:3313 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me/profile-pictures - GET - ::1
+2025-10-14 11:33:13:3313 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:33:13:3313 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me/profile-pictures - GET - ::1
+2025-10-14 11:33:13:3313 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:35:40:3540 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/auth/logout - POST - ::1
+2025-10-14 11:35:40:3540 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:37:06:376 error: 401 - Sesi Anda telah berakhir. Silakan login kembali. - /api/documents - GET - ::1
+2025-10-14 11:37:06:376 error: Error: Sesi Anda telah berakhir. Silakan login kembali.
+    at AuthError.SessionExpired (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:27:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:21:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 11:37:08:378 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:37:08:378 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:37:08:378 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:37:08:378 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:37:12:3712 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:37:12:3712 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:37:12:3712 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:37:12:3712 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:37:31:3731 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/auth/logout - POST - ::1
+2025-10-14 11:37:31:3731 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:42:19:4219 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:42:19:4219 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:42:19:4219 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:42:19:4219 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:42:21:4221 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:42:21:4221 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:42:21:4221 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:42:21:4221 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:42:24:4224 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/auth/logout - POST - ::1
+2025-10-14 11:42:24:4224 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:44:00:440 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:44:00:440 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:44:00:440 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:44:00:440 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:44:00:440 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:44:00:440 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:44:00:440 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:44:00:440 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:04:494 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:49:04:494 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:19:4919 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:49:19:4919 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:25:4925 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:49:25:4925 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:25:4925 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:49:25:4925 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:25:4925 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:49:25:4925 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:25:4925 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 11:49:25:4925 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:49:29:4929 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/auth/logout - POST - ::1
+2025-10-14 11:49:29:4929 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:50:46:5046 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:50:46:5046 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:50:46:5046 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:50:46:5046 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:52:19:5219 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:52:19:5219 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:52:21:5221 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 11:52:21:5221 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 11:56:42:5642 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:56:42:5642 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 11:57:39:5739 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 11:57:39:5739 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:01:07:17 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 12:01:07:17 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:01:54:154 error: 401 - Token otentikasi tidak valid. - /api/documents - GET - ::1
+2025-10-14 12:01:54:154 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 12:01:54:154 error: 401 - Token otentikasi tidak valid. - /api/documents - GET - ::1
+2025-10-14 12:01:54:154 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 12:02:38:238 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:02:38:238 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:02:38:238 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:02:38:238 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:00:30 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:00:30 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:00:30 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:00:30 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:03:33 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:03:33 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:03:33 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:03:33 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:03:33 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:03:33 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:03:33 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:03:33 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:09:39 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:09:39 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:09:39 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:09:39 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:12:312 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:12:312 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:12:312 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:12:312 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:12:312 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:12:312 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:12:312 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:12:312 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:15:315 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:15:315 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:15:315 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:15:315 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:15:315 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:03:15:315 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:15:315 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:03:15:315 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:03:47:347 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 12:03:47:347 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:04:55:455 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:04:55:455 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:04:55:455 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:04:55:455 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:04:59:459 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:04:59:459 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:04:59:459 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:04:59:459 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:05:00:50 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:05:00:50 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:05:00:50 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:05:00:50 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:05:00:50 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:05:00:50 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:05:00:50 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:05:00:50 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:23:623 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:06:23:623 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:23:623 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:06:23:623 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:23:623 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:06:23:623 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:23:623 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:06:23:623 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:28:628 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:06:28:628 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:28:628 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:06:28:628 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:28:628 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:06:28:628 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:06:28:628 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:06:28:628 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:07:56:756 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:07:56:756 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:07:56:756 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:07:56:756 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:09:13:913 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:09:13:913 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:09:13:913 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:09:13:913 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:12:00:120 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:12:00:120 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:15:1415 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:14:15:1415 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:15:1415 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:14:15:1415 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:21:1421 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:14:21:1421 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:21:1421 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:14:21:1421 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:21:1421 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:14:21:1421 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:21:1421 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:14:21:1421 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:14:49:1449 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:14:49:1449 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:15:12:1512 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:15:12:1512 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:15:12:1512 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 12:15:12:1512 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:15:20:1520 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 12:15:20:1520 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:16:24:1624 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 12:16:24:1624 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:16:42:1642 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 12:16:42:1642 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 12:18:00:180 error: 401 - Token otentikasi tidak valid. - /api/documents - GET - ::1
+2025-10-14 12:18:00:180 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 12:18:04:184 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:18:04:184 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:18:04:184 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:18:04:184 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:18:13:1813 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:18:13:1813 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:18:16:1816 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:18:16:1816 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 12:18:19:1819 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 12:18:19:1819 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 14:44:35:4435 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 14:44:35:4435 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 14:44:47:4447 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 14:44:47:4447 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 14:52:35:5235 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 14:52:35:5235 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 14:52:47:5247 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 14:52:47:5247 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 14:53:56:5356 error: 401 - Token otentikasi tidak valid. - /api/documents - GET - ::1
+2025-10-14 14:53:56:5356 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 14:53:57:5357 error: 401 - Token otentikasi tidak valid. - /api/documents - GET - ::1
+2025-10-14 14:53:57:5357 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:23:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 14:59:04:594 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 14:59:04:594 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 14:59:07:597 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 14:59:07:597 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 14:59:07:597 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 14:59:07:597 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 14:59:07:597 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 14:59:07:597 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 14:59:07:597 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 14:59:07:597 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:00:27:027 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 15:00:27:027 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:00:30:030 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 15:00:30:030 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:00:30:030 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 15:00:30:030 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:00:30:030 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 15:00:30:030 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:00:30:030 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 15:00:30:030 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:05:28:528 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/documents - GET - ::1
+2025-10-14 15:05:28:528 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:13:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:05:39:539 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 15:05:39:539 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:06:51:651 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/users/me - GET - ::1
+2025-10-14 15:06:51:651 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:12:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:157:13)
+    at Route.dispatch (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\route.js:117:3)
+    at handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:435:11)
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:295:15
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+2025-10-14 15:06:51:651 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/admin/users - GET - ::1
+2025-10-14 15:06:51:651 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:12:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:342:13)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:297:9
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:291:5)
+    at router.handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:186:3)
+    at router (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:60:12)
+2025-10-14 15:06:51:651 error: 401 - Sesi tidak ditemukan atau token autentikasi tidak ada. - /api/admin/users - GET - ::1
+2025-10-14 15:06:51:651 error: Error: Sesi tidak ditemukan atau token autentikasi tidak ada.
+    at AuthError.MissingToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:19:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:12:25
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/utils/asyncHandler.js:8:21
+    at Layer.handleRequest (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:342:13)
+    at C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:297:9
+    at processParams (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:582:12)
+    at next (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:291:5)
+    at router.handle (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:186:3)
+    at router (C:\Users\DELL\Documents\Persiapan Proyek 3\Backend-DigiSign\node_modules\router\index.js:60:12)
+2025-10-14 15:07:59:759 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:07:59:759 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:08:09:89 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:08:09:89 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:16:20:1620 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:16:20:1620 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:17:07:177 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:17:07:177 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:18:16:1816 error: 401 - Token otentikasi tidak valid. - /api/auth/logout - POST - ::1
+2025-10-14 15:18:16:1816 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:24:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 15:18:17:1817 error: 401 - Token otentikasi tidak valid. - /api/auth/logout - POST - ::1
+2025-10-14 15:18:17:1817 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:24:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 15:18:18:1818 error: 401 - Token otentikasi tidak valid. - /api/auth/logout - POST - ::1
+2025-10-14 15:18:18:1818 error: Error: Token otentikasi tidak valid.
+    at AuthError.InvalidToken (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:23:16)
+    at file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/middleware/authMiddleware.js:24:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-10-14 15:18:53:1853 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:18:53:1853 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:20:16:2016 error: 502 - fetch failed - /api/auth/login - POST - ::1
+2025-10-14 15:20:16:2016 error: Error: fetch failed
+    at AuthError.SupabaseError (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:70:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:121:33)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:20:27:2027 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 15:20:27:2027 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
+2025-10-14 15:20:33:2033 error: 401 - Email atau Password salah. - /api/auth/login - POST - ::1
+2025-10-14 15:20:33:2033 error: Error: Email atau Password salah.
+    at AuthError.InvalidCredentials (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/errors/AuthError.js:49:16)
+    at SupabaseAuthRepository.loginUser (file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/repository/supabase/SupabaseAuthRepository.js:119:37)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/DELL/Documents/Persiapan%20Proyek%203/Backend-DigiSign/src/controllers/authController.js:56:39
