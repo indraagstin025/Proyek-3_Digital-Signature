@@ -225,15 +225,39 @@ export class DocumentService {
      * @param {string} userId - ID pengguna untuk validasi kepemilikan.
      * @returns {Promise<string>} Signed URL yang valid untuk diakses.
      */
+// di DocumentService
     async getVersionFileUrl(documentId, versionId, userId) {
-        await this.getDocumentById(documentId, userId);
-
+        // validasi document & version
+        const document = await this.getDocumentById(documentId, userId);
         const version = await this.versionRepository.findById(versionId);
 
         if (!version || version.documentId !== documentId) {
             throw DocumentError.InvalidVersion(versionId, documentId);
         }
 
-        return this.fileStorage.getSignedUrl(version.url, 60);
+        // Ambil versionNumber yang valid; jika tidak ada/invalid, hitung berdasarkan urutan createdAt
+        let versionNumber = version.versionNumber;
+        if (!versionNumber || typeof versionNumber !== "number") {
+            try {
+                const allVersions = await this.versionRepository.findAllByDocumentId(documentId);
+                // pastikan urut berdasarkan createdAt ascending (v1 paling awal)
+                allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                const idx = allVersions.findIndex((v) => v.id === versionId);
+                if (idx >= 0) versionNumber = idx + 1;
+                else versionNumber = 1;
+            } catch (err) {
+                // fallback aman
+                versionNumber = version.versionNumber || 1;
+            }
+        }
+
+        const sanitizedTitle = document.title.replace(/\.pdf$/i, "").replace(/[\s/\\?%*:|"<>]/g, "_");
+        const customFilename = `signed-${sanitizedTitle}-v${versionNumber}.pdf`;
+
+        // Debug log supaya mudah divalidasi di server log
+        console.log(`[DocumentService] getVersionFileUrl: doc=${documentId}, ver=${versionId}, versionNumber=${versionNumber}, filename=${customFilename}`);
+
+        return this.fileStorage.getSignedUrl(version.url, 60, customFilename);
     }
+
 }

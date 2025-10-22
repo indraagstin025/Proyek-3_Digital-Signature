@@ -212,42 +212,47 @@ export const createDocumentController = (documentService, fileStorage) => { // �
             const { documentId } = req.params;
             const userId = req.user?.id;
 
-            if (!userId) {
-                return res.status(401).json({ success: false, error: "Unauthorized" });
+            // Ambil dokumen beserta versi aktif
+            const document = await documentService.getDocumentById(documentId, userId);
+
+            if (!document.currentVersion || !document.currentVersion.url) {
+                throw new Error("Data dokumen tidak lengkap, URL file tidak dapat ditemukan");
             }
 
-            try {
-                // Service akan memvalidasi kepemilikan dan mengambil detail dokumen
-                const document = await documentService.getDocumentById(documentId, userId);
-
-                // Validasi data integrity: pastikan versi aktif dan URL-nya ada
-                if (!document.currentVersion || !document.currentVersion.url) {
-                    throw new Error("Data dokumen tidak lengkap, URL file tidak dapat ditemukan.");
+            // 🔹 Tentukan nomor versi aktif
+            let versionNumber = document.currentVersion.versionNumber;
+            if (!versionNumber || typeof versionNumber !== "number") {
+                try {
+                    const allVersions = await versionRepository.findAllByDocumentId(documentId);
+                    allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    const idx = allVersions.findIndex(v => v.id === document.currentVersion.id);
+                    versionNumber = idx >= 0 ? idx + 1 : 1;
+                } catch (err) {
+                    versionNumber = 1; // fallback aman
                 }
-
-                // Generate signed URL (berlaku 60 detik)
-                const signedUrl = await fileStorage.getSignedUrl(document.currentVersion.url, 60);
-
-                return res.status(200).json({
-                    success: true,
-                    url: signedUrl,
-                    expiresIn: 60
-                });
-            } catch (error) {
-                // Tangani error yang sudah kita antisipasi (misal: dokumen tidak ditemukan)
-                if (
-                    error.code === "DOCUMENT_NOT_FOUND" ||
-                    error.code === "UNAUTHORIZED_DOCUMENT_ACCESS"
-                ) {
-                    return res.status(404).json({
-                        success: false,
-                        error: "Dokumen tidak ditemukan atau tidak diizinkan"
-                    });
-                }
-                // Lempar error lain ke global error handler
-                next(error);
             }
+
+            // 🔹 Buat nama file custom
+            const sanitizedTitle = document.title
+                .replace(/\.pdf$/i, "")
+                .replace(/[\s/\\?%*:|"<>]/g, "_");
+            const customFilename = `signed-${sanitizedTitle}-v${versionNumber}.pdf`;
+
+            // 🔹 Buat signed URL dengan custom filename
+            const signedUrl = await fileStorage.getSignedUrl(document.currentVersion.url, 60, customFilename);
+
+            // 🔹 Log untuk debugging
+            console.log(`[getDocumentFile] docId=${documentId}, versionId=${document.currentVersion.id}, versionNumber=${versionNumber}, filename=${customFilename}`);
+
+            // 🔹 Kirim response JSON
+            return res.status(200).json({
+                success: true,
+                url: signedUrl,
+                expiresIn: 60,
+            });
         }),
+
+
 
         /**
          * Menghasilkan signed URL untuk file dari versi DOKUMEN SPESIFIK.
@@ -279,5 +284,6 @@ export const createDocumentController = (documentService, fileStorage) => { // �
                 next(error);
             }
         }),
+
     };
 };

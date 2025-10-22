@@ -1,94 +1,100 @@
 import path from "path";
 
 /**
- * @description Abstraksi untuk operasi penyimpanan file (unggah, unduh, hapus) menggunakan Supabase Storage.
+ * @description Abstraksi untuk operasi penyimpanan file PROFIL PENGGUNA.
+ * Disesuaikan untuk bekerja dengan bucket private menggunakan Signed URL.
+ * Pola ini konsisten dengan SupabaseFileStorage untuk dokumen.
  */
 class FileStorage {
-  /**
-   * Membuat instance FileStorage.
-   * @param {import('@supabase/supabase-js').SupabaseClient} supabaseClient - Instance Supabase.
-   * @throws {Error} Jika Supabase client tidak diberikan
-   */
-  constructor(supabaseClient) {
-    if (!supabaseClient) {
-      throw new Error("Supabase client harus diberikan.");
+    /**
+     * Membuat instance FileStorage.
+     * @param {import('@supabase/supabase-js').SupabaseClient} supabaseClient - Instance Supabase.
+     * @throws {Error} Jika Supabase client tidak diberikan.
+     */
+    constructor(supabaseClient) {
+        if (!supabaseClient) {
+            throw new Error("Supabase client harus diberikan.");
+        }
+        this.supabase = supabaseClient;
+        // Anda bisa memindahkan nama bucket ke file konfigurasi agar lebih rapi
+        this.bucketName = "profile-pictures";
     }
-    this.supabase = supabaseClient;
-    this.bucketName = "profile-bucket";
-  }
 
-  /**
-   * Unduh file dari storage.
-   * @param {string} filePath - Lokasi file di storage (path relatif di bucket).
-   * @returns {Promise<Buffer>} Isi file dalam bentuk Buffer.
-   * @throws {Error} Jika gagal mengunduh file.
-   */
-  async downloadFile(filePath) {
-    const { data, error } = await this.supabase.storage.from(this.bucketName).download(filePath);
+    /**
+     * ✅ BARU: Generate signed URL untuk akses file private.
+     * Ini adalah "link" sementara yang aman untuk menampilkan gambar.
+     * @param {string} filePath - Path relatif file di bucket (mis: 'profile/user-id/123.jpg').
+     * @param {number} expiresIn - Masa berlaku dalam detik (default: 3600 detik / 1 jam).
+     * @returns {Promise<string|null>} Signed URL atau null jika gagal.
+     */
+    async getSignedUrl(filePath, expiresIn = 3600) {
+        if (!filePath) {
+            return null;
+        }
 
-    if (error) throw new Error(`Gagal download file: ${error.message}`);
-    return Buffer.from(await data.arrayBuffer());
-  }
+        const { data, error } = await this.supabase.storage
+            .from(this.bucketName)
+            .createSignedUrl(filePath, expiresIn);
 
-  /**
-   * Upload file ke storage.
-   * @param {string} filePath - Lokasi file di storage (path relatif di bucket).
-   * @param {Buffer} buffer - Isi file dalam bentuk Buffer.
-   * @param {string} contentType - MIME type file (contoh: 'image/png').
-   * @returns {Promise<void>}
-   * @throws {Error} Jika gagal mengunggah file.
-   */
-  async uploadFile(filePath, buffer, contentType) {
-    const { error } = await this.supabase.storage.from(this.bucketName).upload(filePath, buffer, { contentType, upsert: true });
-
-    if (error) throw new Error(`Gagal upload file: ${error.message}`);
-  }
-
-  /**
-   * Upload foto profil dan mengembalikan URL publik.
-   * @param {Express.Multer.File} file - File dari middleware multer (req.file).
-   * @param {string} userId - ID pengguna untuk membuat nama file unik.
-   * @returns {Promise<string>} URL publik file yang dapat diakses.
-   * @throws {Error} Jika gagal mengunggah file atau mengambil URL publik.
-   */
-  async uploadProfilePicture(file, userId) {
-    const ext = path.extname(file.originalname);
-    const fileName = `${userId}-${Date.now()}${ext}`;
-    const filePath = `profile/${fileName}`;
-
-    // Upload ke Supabase
-    const { error } = await this.supabase.storage.from(this.bucketName).upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-      upsert: true,
-    });
-
-    if (error) throw new Error(`Gagal upload ke Supabase: ${error.message}`);
-
-    const { data, error: urlError } = this.supabase.storage.from(this.bucketName).getPublicUrl(filePath);
-
-    if (urlError) throw new Error(`Gagal mendapatkan public URL: ${urlError.message}`);
-
-    return data.publicUrl; // ✅ selalu string
-  }
-
-  /**
-   * Hapus file dari storage.
-   * @param {string} fileUrl - URL publik file yang akan dihapus.
-   * @returns {Promise<void>}
-   * @throws {void} Jika URL tidak valid, hanya menampilkan warning.
-   */
-  async deleteFile(fileUrl) {
-    try {
-      const url = new URL(fileUrl);
-      const filePath = url.pathname.replace(/^\/+/, ""); // hapus leading slash
-
-      const { error } = await this.supabase.storage.from(this.bucketName).remove([filePath]);
-
-      if (error) console.warn("Gagal hapus file Supabase:", error.message);
-    } catch (err) {
-      console.warn("URL tidak valid, tidak bisa dihapus:", err.message);
+        if (error) {
+            // Ganti console.error dengan sistem logging Anda jika ada
+            console.error("Gagal generate signed URL:", error.message);
+            // Melempar error lebih baik agar bisa ditangkap oleh error handler global
+            throw new Error(`Gagal generate signed URL: ${error.message}`);
+        }
+        return data.signedUrl;
     }
-  }
+
+    /**
+     * 🔄 UBAH: Upload foto profil dan kembalikan PATH FILE.
+     * Tidak lagi mengembalikan URL publik.
+     * @param {Express.Multer.File} file - File dari middleware multer.
+     * @param {string} userId - ID pengguna untuk membuat folder unik.
+     * @returns {Promise<string>} Path file relatif yang akan disimpan ke database.
+     * @throws {Error} Jika gagal mengunggah file.
+     */
+    async uploadProfilePicture(file, userId) {
+        if (!file) throw new Error("File untuk diunggah tidak ditemukan.");
+
+        const ext = path.extname(file.originalname);
+        // Menggunakan folder `profile-pictures` agar konsisten dengan `SupabaseFileStorage`
+        const fileName = `${Date.now()}${ext}`;
+        const filePath = `profile-pictures/${userId}/${fileName}`;
+
+        const { error } = await this.supabase.storage.from(this.bucketName).upload(filePath, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false, // upsert: false lebih aman untuk menghindari overwrite
+        });
+
+        if (error) {
+            throw new Error(`Gagal upload foto profil ke Supabase: ${error.message}`);
+        }
+
+        // ✅ Mengembalikan path file, bukan URL publik
+        return filePath;
+    }
+
+    /**
+     * 🔄 UBAH: Hapus file dari storage berdasarkan PATH FILE.
+     * Lebih robust dan tidak bergantung pada parsing URL.
+     * @param {string} filePath - Path relatif file yang akan dihapus.
+     * @returns {Promise<void>}
+     */
+    async deleteFile(filePath) {
+        if (!filePath || typeof filePath !== 'string') {
+            console.warn("deleteFile dipanggil dengan filePath yang tidak valid, proses dilewati.");
+            return;
+        }
+
+        const { error } = await this.supabase.storage
+            .from(this.bucketName)
+            .remove([filePath]);
+
+        if (error) {
+            // Sebaiknya lempar error agar bisa ditangani di lapisan service
+            throw new Error(`Gagal hapus file di Supabase: ${error.message}`);
+        }
+    }
 }
 
 export default FileStorage;

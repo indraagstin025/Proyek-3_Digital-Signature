@@ -61,13 +61,18 @@ class SupabaseFileStorage {
      * @description Generate signed URL untuk akses file private.
      * @param {string} filePath - Relative path file di bucket.
      * @param {number} expiresIn - Masa berlaku dalam detik (default: 60).
+     * @param {string} [downloadFilename] - Opsional: Nama file kustom untuk diunduh.
      * @returns {Promise<string>} Signed URL.
      * @throws {CommonError.SupabaseError}
      */
-    async getSignedUrl(filePath, expiresIn = 60) {
+    async getSignedUrl(filePath, expiresIn = 60, downloadFilename = null) {
+        const options = downloadFilename
+            ? { transform: {}, download: downloadFilename } // ✅ gunakan nama custom
+            : { transform: {} }; // ❌ jangan pakai download:true
+
         const { data, error } = await supabaseAdmin.storage
             .from(supabaseBucket)
-            .createSignedUrl(filePath, expiresIn);
+            .createSignedUrl(filePath, expiresIn, options);
 
         if (error) {
             throw CommonError.SupabaseError(`Gagal generate signed URL: ${error.message}`);
@@ -75,6 +80,8 @@ class SupabaseFileStorage {
 
         return data.signedUrl;
     }
+
+
 
     /**
      * @description Download file dan mengembalikannya sebagai buffer.
@@ -136,6 +143,8 @@ class SupabaseFileStorage {
 
         return fileName; // ✅ kembalikan relative path
     }
+
+
 }
 
 export default SupabaseFileStorage;

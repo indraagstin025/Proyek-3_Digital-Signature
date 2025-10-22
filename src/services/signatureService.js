@@ -1,5 +1,4 @@
 import crypto from "crypto";
-// BARU: Impor semua kelas error yang relevan
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
