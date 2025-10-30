@@ -16,6 +16,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@pdf-lib/upng": "^1.0.1",
     "@prisma/client": "^6.15.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.54.0",
@@ -30,6 +31,7 @@
     "jwt-decode": "^4.0.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "node-signpdf": "^3.0.0",
     "pdf-lib": "^1.17.1",
     "pg": "^8.16.3",
     "qrcode": "^1.5.4",
@@ -58,6 +60,9 @@
       "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
     },
     "testEnvironment": "node",
-    "testPathIgnorePatterns": ["/node_modules/", "/test.js"]
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/test.js"
+    ]
   }
 }

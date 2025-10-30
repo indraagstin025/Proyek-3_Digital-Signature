@@ -42,6 +42,7 @@ import { SignatureService } from './services/signatureService.js';
 import { PDFService } from './services/pdfService.js';
 import { AdminService } from './services/adminService.js';
 
+
 // --- Impor Lapisan Aplikasi (Controllers) ---
 import { createAuthController } from './controllers/authController.js';
 import { createUserController } from './controllers/userController.js';
@@ -108,6 +109,8 @@ app.use(cookieParser());
  */
 
 // -- 1. Repositories (Lapisan Akses Data) --
+
+
 const authRepository = new SupabaseAuthRepository(supabase, prisma);
 const adminRepository = new PrismaAdminRepository(prisma);
 const userRepository = new PrismaUserRepository(prisma);
@@ -124,11 +127,12 @@ const pdfService = new PDFService(versionRepository, signatureRepository, fileSt
 const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
 const documentService = new DocumentService(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService);
 
+
 // -- 3. Controllers (Lapisan Presentasi) --
 const authController = createAuthController(authService, { AuthError, CommonError });
 const userController = createUserController(userService);
 const adminController = createAdminController(adminService);
-const documentController = createDocumentController(documentService, fileStorage);
+const documentController = createDocumentController(documentService, fileStorage, versionRepository);
 const signatureController = createSignatureController(documentService, signatureService);
 
 
@@ -169,6 +173,8 @@ app.get("/", (req, res) => {
  * dan mengirimkan respons error yang terstruktur.
  */
 app.use(errorHandler);
+app.set('trust proxy', true);
+
 
 
 // =================================================================

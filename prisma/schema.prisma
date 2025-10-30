@@ -99,6 +99,7 @@ model DocumentVersion {
   url                String              @db.Text
   hash               String?
   signedFileHash     String?             @unique @map("signed_file_hash")
+  digitalSignature   String?             @map("digital_signature") @db.Text
   createdAt          DateTime            @default(now()) @map("created_at")
   document           Document            @relation(fields: [documentId], references: [id], onDelete: Cascade)
   documentId         String              @map("document_id") @db.Uuid
@@ -123,6 +124,7 @@ model SignaturePersonal {
   signedAt          DateTime        @default(now()) @map("signed_at")
   ipAddress         String?         @map("ip_address")
   userAgent         String?         @map("user_agent") @db.Text
+  signerPublicKey   String?         @map("signer_public_key") @db.Text
   displayQrCode     Boolean         @default(true) @map("display_qr_code")
   documentVersionId String          @map("document_version_id") @db.Uuid // ✅ Ditambah @db.Uuid
   documentVersion   DocumentVersion @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)

@@ -19,9 +19,10 @@ import DocumentError from "../errors/DocumentError.js"; // âœ… tambahkan import 
  *
  * @param {import('../services/documentService.js').DocumentService} documentService - Instance dari DocumentService yang berisi logika utama.
  * @param {import('../repository/supabase/SupabaseFileStorage.js').default} fileStorage - Instance file storage untuk generate signed URL.
+ * @param {import('../repository/interface/VersionRepository.js').VersionRepository} versionRepository - Instance dari VersionRepository.
  * @returns {object} - Kumpulan fungsi handler yang siap digunakan pada routing.
  */
-export const createDocumentController = (documentService, fileStorage) => { // âœ… tambahkan fileStorage sebagai dependency
+export const createDocumentController = (documentService, fileStorage, versionRepository) => { // âœ… tambahkan fileStorage sebagai dependency
     return {
         /**
          * Mengunggah dokumen baru.
@@ -223,6 +224,7 @@ export const createDocumentController = (documentService, fileStorage) => { // â
             let versionNumber = document.currentVersion.versionNumber;
             if (!versionNumber || typeof versionNumber !== "number") {
                 try {
+                    // MENGGUNAKAN versionRepository yang sudah di-inject
                     const allVersions = await versionRepository.findAllByDocumentId(documentId);
                     allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
                     const idx = allVersions.findIndex(v => v.id === document.currentVersion.id);
@@ -252,8 +254,6 @@ export const createDocumentController = (documentService, fileStorage) => { // â
             });
         }),
 
-
-
         /**
          * Menghasilkan signed URL untuk file dari versi DOKUMEN SPESIFIK.
          * @route GET /documents/:documentId/versions/:versionId/file
@@ -263,6 +263,7 @@ export const createDocumentController = (documentService, fileStorage) => { // â
             const userId = req.user?.id;
 
             try {
+                // Logika di service (documentService.getVersionFileUrl) sudah benar, tidak perlu diubah
                 const signedUrl = await documentService.getVersionFileUrl(documentId, versionId, userId);
 
                 return res.status(200).json({

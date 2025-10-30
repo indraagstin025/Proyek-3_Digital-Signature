@@ -1,140 +1,176 @@
-import { PDFDocument } from "pdf-lib";
+import pkg from "pdf-lib";
+const { PDFDocument, StandardFonts, rgb, Permissions } = pkg;
 import QRCode from "qrcode";
 import crypto from "crypto";
 import path from "path";
+import fs from "fs";
+import signerPkg from "node-signpdf";
+const signer = signerPkg.default;
+import { plainAddPlaceholder } from "node-signpdf/dist/helpers/index.js";
+
 import DocumentError from "../errors/DocumentError.js";
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
-/**
- * @description Service untuk memproses file PDF, menambahkan tanda tangan digital, 
- * serta menyisipkan QR Code untuk verifikasi dokumen.
- */
+const CERT_PATH =
+    process.env.CERT_FILE_PATH ||
+    path.join(process.cwd(), "config", "certs", "signer_cert.p12");
+const CERT_PASSWORD = process.env.CERT_PASSWORD;
+
 export class PDFService {
-  /**
-   * @param {object} versionRepository - Repository untuk mengelola versi dokumen.
-   * @param {object} signatureRepository - Repository untuk mengelola tanda tangan.
-   * @param {object} fileStorage - Service penyimpanan file (misalnya Supabase, S3, dsb).
-   */
-  constructor(versionRepository, signatureRepository, fileStorage) {
-    this.versionRepository = versionRepository;
-    this.signatureRepository = signatureRepository;
-    this.fileStorage = fileStorage;
-  }
-
-  /**
-   * @description Menghasilkan PDF baru dengan tanda tangan yang sudah ditempelkan dan (opsional) QR Code.
-   * 
-   * @async
-   * @param {string} documentVersionId - ID versi dokumen asli.
-   * @param {Array<object>} signaturesToEmbed - Daftar tanda tangan yang akan ditempel.
-   * @param {number} signaturesToEmbed[].pageNumber - Nomor halaman tempat tanda tangan ditempel (1-based).
-   * @param {number} signaturesToEmbed[].positionX - Posisi horizontal relatif (0-1) dari tanda tangan di halaman.
-   * @param {number} signaturesToEmbed[].positionY - Posisi vertikal relatif (0-1) dari tanda tangan di halaman.
-   * @param {number} signaturesToEmbed[].width - Lebar relatif (0-1) tanda tangan dibandingkan dengan lebar halaman.
-   * @param {number} signaturesToEmbed[].height - Tinggi relatif (0-1) tanda tangan dibandingkan dengan tinggi halaman.
-   * @param {string} signaturesToEmbed[].method - Metode tanda tangan (contoh: "canvas").
-   * @param {string} signaturesToEmbed[].signatureImageUrl - Data base64 atau URL gambar tanda tangan.
-   * @param {object} [options={}] - Opsi tambahan.
-   * @param {boolean} [options.displayQrCode=false] - Apakah menampilkan QR Code pada halaman terakhir.
-   * @param {string} [options.verificationUrl] - URL yang akan dikodekan ke dalam QR Code.
-   * 
-   * @returns {Promise<{signedFileBuffer: Buffer, publicUrl: string}>} 
-   * Objek berisi buffer file PDF final dan URL publik dari file yang diupload.
-   * 
-   * @throws {DocumentError.NotFound} Jika versi dokumen tidak ditemukan.
-   * @throws {SignatureError.MissingSignatureData} Jika tidak ada data tanda tangan yang diberikan.
-   * @throws {DocumentError.Encrypted} Jika dokumen PDF terenkripsi.
-   * @throws {CommonError.DatabaseError} Jika gagal mengambil versi dokumen dari repository.
-   * @throws {CommonError.InternalServerError} Jika terjadi kesalahan internal saat memproses PDF.
-   */
-  async generateSignedPdf(documentVersionId, signaturesToEmbed, options = {}) {
-    let version;
-    try {
-      version = await this.versionRepository.findById(documentVersionId);
-    } catch (dbError) {
-      throw CommonError.DatabaseError(`Gagal mengambil versi dokumen: ${dbError.message}`);
+    constructor(versionRepository, signatureRepository, fileStorage) {
+        this.versionRepository = versionRepository;
+        this.signatureRepository = signatureRepository;
+        this.fileStorage = fileStorage;
     }
 
-    if (!version) {
-      throw DocumentError.NotFound(`Versi dokumen dengan ID '${documentVersionId}'`);
-    }
+    async generateSignedPdf(documentVersionId, signaturesToEmbed, options = {}) {
+        let version;
+        try {
+            version = await this.versionRepository.findById(documentVersionId);
+        } catch (err) {
+            throw CommonError.DatabaseError(
+                `Gagal mengambil versi dokumen: ${err.message}`
+            );
+        }
 
-    if (!signaturesToEmbed || signaturesToEmbed.length === 0) {
-      throw SignatureError.MissingSignatureData();
-    }
+        if (!version)
+            throw DocumentError.NotFound(
+                `Versi dokumen dengan ID '${documentVersionId}'`
+            );
 
-    const pdfBuffer = await this.fileStorage.downloadFileAsBuffer(version.url);
-    let pdfDoc;
-    try {
-      pdfDoc = await PDFDocument.load(pdfBuffer);
-    } catch (error) {
-      if (error.message && error.message.includes("is encrypted")) {
-        throw DocumentError.Encrypted();
-      }
+        if (!signaturesToEmbed?.length)
+            throw SignatureError.MissingSignatureData();
 
-      throw CommonError.InternalServerError(`Gagal memproses PDF: ${error.message}`);
-    }
+        const pdfBuffer = await this.fileStorage.downloadFileAsBuffer(version.url);
 
-    for (const signature of signaturesToEmbed) {
-      let imageBytes;
-      if (signature.method === "canvas") {
-        const base64Data = signature.signatureImageUrl.replace(/^data:image\/png;base64,/, "");
-        imageBytes = Buffer.from(base64Data, "base64");
-      }
+        let pdfDoc;
+        try {
+            pdfDoc = await PDFDocument.load(pdfBuffer);
+        } catch (error) {
+            if (error.message?.includes("is encrypted"))
+                throw DocumentError.Encrypted();
+            throw CommonError.InternalServerError(
+                `Gagal memproses PDF: ${error.message}`
+            );
+        }
 
-      if (imageBytes) {
-        const embeddedImage = await pdfDoc.embedPng(imageBytes);
-        const page = pdfDoc.getPage(signature.pageNumber - 1);
-        const { width: pageWidth, height: pageHeight } = page.getSize();
+        for (const sig of signaturesToEmbed) {
+            if (!sig.signatureImageUrl) continue;
 
-        const absoluteWidth = signature.width * pageWidth;
-        const absoluteHeight = signature.height * pageHeight;
-        const absoluteX = signature.positionX * pageWidth;
-        const y_pdf = pageHeight - signature.positionY * pageHeight - absoluteHeight;
+            const base64Data = sig.signatureImageUrl.replace(
+                /^data:image\/png;base64,/,
+                ""
+            );
+            const imageBytes = Buffer.from(base64Data, "base64");
+            const embeddedImage = await pdfDoc.embedPng(imageBytes);
+            const page = pdfDoc.getPage(sig.pageNumber - 1);
+            const { width: pw, height: ph } = page.getSize();
+            const { width: imgWidth, height: imgHeight } = embeddedImage.size();
+            const imgRatio = imgWidth / imgHeight;
+            const boxWidth = sig.width * pw;
+            const boxHeight = sig.height * ph;
+            const boxRatio = boxWidth / boxHeight;
 
-        page.drawImage(embeddedImage, {
-          x: absoluteX,
-          y: y_pdf,
-          width: absoluteWidth,
-          height: absoluteHeight,
+            let finalWidth, finalHeight;
+            if (imgRatio > boxRatio) {
+                finalWidth = boxWidth;
+                finalHeight = finalWidth / imgRatio;
+            } else {
+                finalHeight = boxHeight;
+                finalWidth = finalHeight * imgRatio;
+            }
+
+            const xPadding = (boxWidth - finalWidth) / 2;
+            const yPadding = (boxHeight - finalHeight) / 2;
+            const x = (sig.positionX * pw) + xPadding;
+            const y_from_top = (sig.positionY * ph) + yPadding;
+            const y = ph - y_from_top - finalHeight;
+
+            page.drawImage(embeddedImage, {
+                x,
+                y,
+                width: finalWidth,
+                height: finalHeight,
+            });
+        }
+
+        if (options.displayQrCode && options.verificationUrl) {
+            try {
+                const qrDataUrl = await QRCode.toDataURL(options.verificationUrl);
+                const qrBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
+                const embeddedQr = await pdfDoc.embedPng(qrBytes);
+                const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
+                lastPage.drawImage(embeddedQr, { x: 40, y: 40, width: 80, height: 80 });
+            } catch (err) {
+                console.error("Gagal membuat atau menempelkan QR code:", err);
+            }
+        }
+
+        try {
+            pdfDoc.encrypt({
+                ownerPassword: CERT_PASSWORD || "readonly",
+                permissions: {
+                    printing: Permissions.HighResolution,
+                    modifying: false,
+                    copying: false,
+                    annotating: false,
+                    fillingForms: false,
+                    contentAccessibility: false,
+                    documentAssembly: false,
+                },
+            });
+        } catch (err) {
+            console.warn(
+                "Gagal mengunci PDF, lanjut tanpa proteksi:",
+                err.message
+            );
+        }
+
+        const pdfVisualBytes = await pdfDoc.save({
+            useObjectStreams: false,
         });
-      }
-    }
 
-    // Tambahkan QR Code jika diminta
-    if (options.displayQrCode && options.verificationUrl) {
-      try {
-        const qrCodeDataURL = await QRCode.toDataURL(options.verificationUrl);
-        console.log("PDFService - QR Code Data URL berhasil dibuat (awal):", qrCodeDataURL.substring(0, 50) + "...");
-        const qrImageBytes = Buffer.from(qrCodeDataURL.split(",")[1], "base64");
-        const embeddedQrImage = await pdfDoc.embedPng(qrImageBytes);
-
-        const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
-        lastPage.drawImage(embeddedQrImage, {
-          x: 40,
-          y: 40,
-          width: 80,
-          height: 80,
+        const pdfWithPlaceholder = plainAddPlaceholder({
+            pdfBuffer: Buffer.from(pdfVisualBytes),
+            reason: "Digital Signature by DigiSign Service",
+            contactInfo: "support@websiteanda.com",
+            name: "DigiSign System",
+            location: "Indonesia",
         });
 
-        console.log("PDFService - Gambar QR code berhasil ditempelkan ke PDF.");
-      } catch (err) {
-        console.error("Gagal membuat atau menempelkan QR code:", err);
-      }
+        if (!fs.existsSync(CERT_PATH)) {
+            throw CommonError.InternalServerError(
+                `File sertifikat P12 tidak ditemukan: ${CERT_PATH}`
+            );
+        }
+
+        let signedPdfBuffer;
+        try {
+            const p12Buffer = fs.readFileSync(CERT_PATH);
+            signedPdfBuffer = signer.sign(pdfWithPlaceholder, p12Buffer, {
+                passphrase: CERT_PASSWORD,
+            });
+        } catch (err) {
+            throw CommonError.InternalServerError(
+                `Gagal menandatangani dokumen: ${err.message}`
+            );
+        }
+
+        const documentOwnerId = version.userId;
+        const ext = path.extname(version.document.title) || ".pdf";
+        const uniqueName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
+        const signedPath = `signed-documents/${documentOwnerId}/${uniqueName}`;
+
+        const finalUrl = await this.fileStorage.uploadFile(
+            signedPath,
+            signedPdfBuffer,
+            "application/pdf"
+        );
+
+        return {
+            signedFileBuffer: Buffer.from(signedPdfBuffer),
+            publicUrl: finalUrl,
+        };
     }
-
-
-    const signedPdfBytes = await pdfDoc.save();
-    const documentOwnerId = version.userId;
-    const ext = path.extname(version.document.title);
-    const uniqueFileName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
-    const signedFilePath = `signed-documents/${documentOwnerId}/${uniqueFileName}`;
-    const finalUrl = await this.fileStorage.uploadFile(signedFilePath, signedPdfBytes, "application/pdf");
-
-    return {
-      signedFileBuffer: Buffer.from(signedPdfBytes),
-      publicUrl: finalUrl,
-    };
-  }
 }
