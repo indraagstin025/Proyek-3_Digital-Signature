@@ -53,30 +53,28 @@ export const createAuthController = (authService) => {
          */
         login: asyncHandler(async (req, res) => {
             const { email, password } = req.body;
-
             const { session, user } = await authService.loginUser(email, password);
-
             const cookieOptions = {
                 httpOnly: true,
                 path: "/",
-                sameSite: "lax",
-                secure: process.env.NODE_ENV === "production",
+                secure: true,
+                sameSite: "none",
             };
 
             res.setHeader("Set-Cookie", [
-                serialize("sb-access-token", session.access_token, {
+                serialize("sb-acess-token", session_acces_token, {
                     ...cookieOptions,
                     maxAge: session.expires_in,
                 }),
-                serialize("sb-refresh-token", session.refresh_token, {
+                serialize("sb-refresh-token", session_refresh_token, {
                     ...cookieOptions,
-                    maxAge: 60 * 60 * 24 * 7, // 7 hari
+                    maxAge: 60 * 60 *24 * 7,
                 }),
             ]);
 
             res.status(200).json({
                 success: true,
-                message: "Login berhasil",
+                message: "Login Berhasil",
                 data: { user },
             });
         }),
