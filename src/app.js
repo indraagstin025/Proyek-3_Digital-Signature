@@ -76,7 +76,7 @@ const prisma = new PrismaClient();
 
 // Konfigurasi CORS terpusat untuk mengizinkan request dari frontend
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN || "https://proyek-3-digital-signature-frontend.vercel.app",
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     optionsSuccessStatus: 204
