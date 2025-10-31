@@ -77,15 +77,31 @@ export class PDFService {
                 finalWidth = boxWidth;
                 finalHeight = finalWidth / imgRatio;
             } else {
+                // Gambar lebih tinggi dari kotak
                 finalHeight = boxHeight;
                 finalWidth = finalHeight * imgRatio;
             }
+            // --- AKHIR PERBAIKAN RASIO ASPEK ---
 
+
+            // --- ✅ AWAL PERBAIKAN PRESISI (CENTERING) ---
+
+            // Hitung 'padding' atau spasi kosong di dalam kotak
             const xPadding = (boxWidth - finalWidth) / 2;
             const yPadding = (boxHeight - finalHeight) / 2;
+
+            // Terapkan padding ini ke posisi X dan Y
+            // 1. Ambil X kotak, tambahkan padding X
             const x = (sig.positionX * pw) + xPadding;
+
+            // 2. Ambil Y kotak (dari atas), tambahkan padding Y
             const y_from_top = (sig.positionY * ph) + yPadding;
+
+            // 3. Konversi Y (dari atas) ke sistem koordinat pdf-lib (dari bawah)
             const y = ph - y_from_top - finalHeight;
+
+            // --- ✅ AKHIR PERBAIKAN PRESISI ---
+
 
             page.drawImage(embeddedImage, {
                 x,
@@ -95,11 +111,13 @@ export class PDFService {
             });
         }
 
+        // ======== 2️⃣ Tambahkan QR Code opsional ========
         if (options.displayQrCode && options.verificationUrl) {
             try {
                 const qrDataUrl = await QRCode.toDataURL(options.verificationUrl);
                 const qrBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
                 const embeddedQr = await pdfDoc.embedPng(qrBytes);
+
                 const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
                 lastPage.drawImage(embeddedQr, { x: 40, y: 40, width: 80, height: 80 });
             } catch (err) {
@@ -107,11 +125,15 @@ export class PDFService {
             }
         }
 
+        // ======== 3️⃣ [BARU] Proteksi PDF agar tidak dapat diedit (SEBELUM DISIMPAN) ========
+        // Ini harus dilakukan SEBELUM `pdfDoc.save()`
         try {
             pdfDoc.encrypt({
-                ownerPassword: CERT_PASSWORD || "readonly",
+                ownerPassword: CERT_PASSWORD || "readonly", // Gunakan password yang aman
                 permissions: {
+                    // Izinkan mencetak
                     printing: Permissions.HighResolution,
+                    // Larang semua hal lainnya
                     modifying: false,
                     copying: false,
                     annotating: false,
@@ -127,10 +149,12 @@ export class PDFService {
             );
         }
 
+        // ======== 4️⃣ Simpan PDF visual (setelah semua modifikasi pdf-lib) ========
         const pdfVisualBytes = await pdfDoc.save({
-            useObjectStreams: false,
+            useObjectStreams: false, // penting untuk node-signpdf
         });
 
+        // ======== 5️⃣ Tambahkan placeholder tanda tangan ========
         const pdfWithPlaceholder = plainAddPlaceholder({
             pdfBuffer: Buffer.from(pdfVisualBytes),
             reason: "Digital Signature by DigiSign Service",
@@ -139,6 +163,7 @@ export class PDFService {
             location: "Indonesia",
         });
 
+        // ======== 6️⃣ Tanda tangani PDF menggunakan sertifikat P12 ========
         if (!fs.existsSync(CERT_PATH)) {
             throw CommonError.InternalServerError(
                 `File sertifikat P12 tidak ditemukan: ${CERT_PATH}`
@@ -157,6 +182,9 @@ export class PDFService {
             );
         }
 
+        // HAPUS BLOK 6 YANG LAMA (proteksi setelah sign)
+
+        // ======== 7️⃣ Upload hasil ke storage ========
         const documentOwnerId = version.userId;
         const ext = path.extname(version.document.title) || ".pdf";
         const uniqueName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
@@ -168,6 +196,7 @@ export class PDFService {
             "application/pdf"
         );
 
+        // ======== ✅ Return hasil ========
         return {
             signedFileBuffer: Buffer.from(signedPdfBuffer),
             publicUrl: finalUrl,

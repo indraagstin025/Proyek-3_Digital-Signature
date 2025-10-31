@@ -23812,3 +23812,152 @@ Inconsistent column data: Error creating UUID, invalid character: expected an op
 2025-10-30 15:00:08:08 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file - - - - ms
 2025-10-30 15:00:11:011 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 620 - 2807.748 ms
 2025-10-30 15:09:08:98 info: Server berjalan di http://localhost:3000
+2025-10-30 15:17:57:1757 info: Server berjalan di http://localhost:3000
+2025-10-30 15:18:16:1816 info: Server berjalan di http://localhost:3000
+2025-10-30 15:18:25:1825 info: Server berjalan di http://localhost:3000
+2025-10-30 15:18:38:1838 info: Server berjalan di http://localhost:3000
+2025-10-30 16:01:17:117 info: Server berjalan di http://localhost:3000
+2025-10-30 16:01:28:128 info: Server berjalan di http://localhost:3000
+2025-10-30 16:01:32:132 info: Server berjalan di http://localhost:3000
+2025-10-30 16:01:40:140 info: Server berjalan di http://localhost:3000
+2025-10-30 16:01:44:144 http: GET /api/documents 401 107 - 4.553 ms
+2025-10-30 16:01:44:144 http: GET /api/documents 401 107 - 2.324 ms
+2025-10-30 16:01:44:144 http: GET /api/users/me 401 107 - 2.107 ms
+2025-10-30 16:01:44:144 http: GET /api/users/me 401 107 - 2.484 ms
+2025-10-30 16:01:53:153 http: POST /api/auth/login 200 184 - 1855.599 ms
+2025-10-30 16:01:56:156 http: GET /api/users/me 200 771 - 1529.606 ms
+2025-10-30 16:01:57:157 http: GET /api/documents 304 - - 1198.855 ms
+2025-10-30 16:01:57:157 http: GET /api/users/me 200 771 - 784.552 ms
+2025-10-30 16:01:57:157 http: GET /api/documents 304 - - 387.969 ms
+2025-10-30 16:01:59:159 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 304 - - 454.733 ms
+2025-10-30 16:01:59:159 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 304 - - 348.138 ms
+2025-10-30 16:02:00:20 http: PUT /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/075d9f76-a0eb-4897-97bc-0f975a7afdf9/use 200 819 - 462.102 ms
+2025-10-30 16:02:01:21 http: GET /api/documents 200 36944 - 400.967 ms
+2025-10-30 16:02:02:22 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 200 837 - 406.568 ms
+2025-10-30 16:02:03:23 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 367.963 ms
+2025-10-30 16:02:03:23 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 780.438 ms
+2025-10-30 16:02:42:242 http: POST /api/signatures/personal 500 202 - 6801.114 ms
+2025-10-30 16:05:05:55 info: Server berjalan di http://localhost:3000
+2025-10-30 16:05:13:513 http: POST /api/signatures/personal 500 202 - 3384.591 ms
+2025-10-30 16:06:40:640 info: Server berjalan di http://localhost:3000
+2025-10-30 16:06:52:652 http: POST /api/signatures/personal 500 137 - 9232.531 ms
+2025-10-30 16:13:16:1316 info: Server berjalan di http://localhost:3000
+2025-10-30 16:13:21:1321 http: POST /api/signatures/personal 500 151 - 2855.693 ms
+2025-10-30 16:16:07:167 info: Server berjalan di http://localhost:3000
+2025-10-30 16:16:13:1613 http: POST /api/signatures/personal 500 158 - 3144.781 ms
+2025-10-30 16:18:53:1853 info: Server berjalan di http://localhost:3000
+2025-10-30 16:18:59:1859 info: Server berjalan di http://localhost:3000
+2025-10-30 16:19:03:193 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 1591.801 ms
+2025-10-30 16:19:04:194 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 424.305 ms
+2025-10-30 16:19:05:195 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 1027.316 ms
+2025-10-30 16:19:39:1939 http: POST /api/signatures/personal 200 919 - 6735.009 ms
+2025-10-30 16:19:42:1942 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file - - - - ms
+2025-10-30 16:19:43:1943 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 620 - 929.032 ms
+2025-10-30 16:22:24:2224 info: Server berjalan di http://localhost:3000
+2025-10-30 16:22:27:2227 http: GET /api/documents 200 59411 - 1000.999 ms
+2025-10-30 16:22:27:2227 http: GET /api/documents 304 - - 397.230 ms
+2025-10-30 16:22:28:2228 http: GET /api/users/me 200 771 - 2007.446 ms
+2025-10-30 16:22:28:2228 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 200 179275 - 416.837 ms
+2025-10-30 16:22:29:2229 http: GET /api/users/me 200 771 - 806.774 ms
+2025-10-30 16:22:29:2229 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 304 - - 369.000 ms
+2025-10-30 16:22:31:2231 http: PUT /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/075d9f76-a0eb-4897-97bc-0f975a7afdf9/use 200 819 - 395.230 ms
+2025-10-30 16:22:32:2232 http: GET /api/documents 200 36944 - 391.889 ms
+2025-10-30 16:22:35:2235 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 200 837 - 576.387 ms
+2025-10-30 16:22:35:2235 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 471.760 ms
+2025-10-30 16:22:36:2236 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 990.791 ms
+2025-10-30 16:23:05:235 http: POST /api/signatures/personal 500 151 - 2125.243 ms
+2025-10-30 16:26:17:2617 info: Server berjalan di http://localhost:3000
+2025-10-30 16:27:14:2714 http: POST /api/signatures/personal 500 151 - 2383.763 ms
+2025-10-30 16:28:14:2814 info: Server berjalan di http://localhost:3000
+2025-10-30 16:28:21:2821 http: POST /api/signatures/personal 500 151 - 2192.485 ms
+2025-10-30 16:29:52:2952 info: Server berjalan di http://localhost:3000
+2025-10-30 16:30:28:3028 info: Server berjalan di http://localhost:3000
+2025-10-30 16:31:07:317 http: POST /api/signatures/personal 200 919 - 8985.144 ms
+2025-10-30 16:31:10:3110 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file - - - - ms
+2025-10-30 16:31:12:3112 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 621 - 1614.139 ms
+2025-10-30 16:32:40:3240 info: Server berjalan di http://localhost:3000
+2025-10-30 16:36:31:3631 info: Server berjalan di http://localhost:3000
+2025-10-30 16:36:59:3659 info: Server berjalan di http://localhost:3000
+2025-10-30 16:37:03:373 http: GET /api/documents 200 60219 - 1218.900 ms
+2025-10-30 16:37:03:373 http: GET /api/documents 304 - - 362.035 ms
+2025-10-30 16:37:04:374 http: GET /api/users/me 200 771 - 2051.984 ms
+2025-10-30 16:37:04:374 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 200 275067 - 400.468 ms
+2025-10-30 16:37:04:374 http: GET /api/users/me 200 771 - 722.313 ms
+2025-10-30 16:37:05:375 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 304 - - 375.810 ms
+2025-10-30 16:37:07:377 http: PUT /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/075d9f76-a0eb-4897-97bc-0f975a7afdf9/use 200 819 - 415.809 ms
+2025-10-30 16:37:07:377 http: GET /api/documents 200 36944 - 391.565 ms
+2025-10-30 16:37:11:3711 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 200 837 - 470.401 ms
+2025-10-30 16:37:12:3712 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 492.954 ms
+2025-10-30 16:37:13:3713 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 1503.576 ms
+2025-10-30 16:37:44:3744 http: POST /api/signatures/personal 500 151 - 4196.568 ms
+2025-10-30 16:40:00:400 info: Server berjalan di http://localhost:3000
+2025-10-30 16:40:15:4015 http: POST /api/signatures/personal 500 151 - 3083.305 ms
+2025-10-30 16:42:08:428 info: Server berjalan di http://localhost:3000
+2025-10-30 16:42:59:4259 http: POST /api/signatures/personal 500 151 - 3246.243 ms
+2025-10-30 16:44:24:4424 info: Server berjalan di http://localhost:3000
+2025-10-30 16:44:30:4430 http: POST /api/signatures/personal 500 115 - 3329.381 ms
+2025-10-30 16:46:50:4650 info: Server berjalan di http://localhost:3000
+2025-10-30 16:47:00:470 http: POST /api/signatures/personal 200 919 - 8676.087 ms
+2025-10-30 16:47:03:473 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file - - - - ms
+2025-10-30 16:47:05:475 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 621 - 1591.696 ms
+2025-10-30 16:47:13:4713 http: GET /api/documents 200 53808 - 587.196 ms
+2025-10-30 16:47:14:4714 http: GET /api/documents 304 - - 409.721 ms
+2025-10-30 16:47:14:4714 http: GET /api/users/me 200 771 - 1678.091 ms
+2025-10-30 16:47:15:4715 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 200 362714 - 391.244 ms
+2025-10-30 16:47:15:4715 http: GET /api/users/me 200 771 - 771.004 ms
+2025-10-30 16:47:15:4715 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions 304 - - 358.485 ms
+2025-10-30 16:47:17:4717 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/2e92ed03-f157-4ec8-ae76-cd66b7eac0f5/file 200 621 - 789.119 ms
+2025-10-30 16:48:01:481 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/c2ca4116-1510-46d4-a840-4f50760451c2 200 64 - 1782.295 ms
+2025-10-30 16:48:02:482 http: GET /api/documents 304 - - 630.264 ms
+2025-10-30 16:55:32:5532 info: Server berjalan di http://localhost:3000
+2025-10-30 16:57:44:5744 info: Server berjalan di http://localhost:3000
+2025-10-30 16:57:51:5751 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/85c3a51e-9227-4436-9e92-0b676093527d 200 64 - 1637.070 ms
+2025-10-30 16:57:51:5751 http: GET /api/documents 304 - - 457.984 ms
+2025-10-30 16:57:54:5754 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/f9d5b035-8cf8-4ab9-91f0-87b2d2a6e490 200 64 - 451.195 ms
+2025-10-30 16:57:54:5754 http: GET /api/documents 304 - - 377.816 ms
+2025-10-30 16:57:57:5757 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/9c49a483-b0e2-4587-b076-f07fa7e99f1d 200 64 - 429.329 ms
+2025-10-30 16:57:57:5757 http: GET /api/documents 304 - - 372.561 ms
+2025-10-30 16:58:00:580 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/c6d6c781-d86b-4400-95d5-cba7cc48bdc6 200 64 - 422.676 ms
+2025-10-30 16:58:00:580 http: GET /api/documents 304 - - 391.484 ms
+2025-10-30 16:58:04:584 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/8f6ad0d0-6027-4310-b938-ffee3d65f532 200 64 - 1452.533 ms
+2025-10-30 16:58:07:587 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/01ff05a7-d994-4b20-bc10-8d34a651e652 200 64 - 1057.755 ms
+2025-10-30 16:58:07:587 http: GET /api/documents 304 - - 1086.257 ms
+2025-10-30 16:58:08:588 http: GET /api/documents 304 - - 363.602 ms
+2025-10-30 16:58:09:589 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/2ab41751-4a15-471d-af35-cc5e92c8123f 200 64 - 448.668 ms
+2025-10-30 16:58:09:589 http: GET /api/documents 304 - - 376.542 ms
+2025-10-30 16:58:11:5811 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/e1246e53-9119-4821-8409-6fe67d9bd5d3 200 64 - 386.514 ms
+2025-10-30 16:58:12:5812 http: GET /api/documents 304 - - 363.170 ms
+2025-10-30 16:58:27:5827 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/2bd89280-7f18-48de-8620-52ce85c8b274 200 64 - 1282.786 ms
+2025-10-30 16:58:27:5827 http: GET /api/documents 304 - - 795.624 ms
+2025-10-30 16:58:32:5832 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/95acb4e2-e3c2-4ea6-aaf1-f41a77c8b528 200 64 - 1605.780 ms
+2025-10-30 16:58:33:5833 http: GET /api/documents 304 - - 1061.655 ms
+2025-10-30 16:58:43:5843 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/cd78d0a4-174e-4a8e-b553-478ebfff4b43 200 64 - 620.858 ms
+2025-10-30 16:58:43:5843 http: GET /api/documents 304 - - 385.182 ms
+2025-10-30 16:58:45:5845 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/5d1ae3d4-6d66-464b-ad30-8bfc0d0f797c 200 64 - 408.890 ms
+2025-10-30 16:58:45:5845 http: GET /api/documents 304 - - 384.728 ms
+2025-10-30 16:58:48:5848 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/bd07a699-9dfb-423d-892b-6d12a1b4da73 200 64 - 445.314 ms
+2025-10-30 16:58:48:5848 http: GET /api/documents 304 - - 400.528 ms
+2025-10-30 16:59:16:5916 http: PUT /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/512f6c62-9269-43b5-ac0e-8161efc67457/use 200 676 - 649.615 ms
+2025-10-30 16:59:16:5916 http: GET /api/documents 200 53566 - 388.740 ms
+2025-10-30 16:59:20:5920 http: DELETE /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/2e92ed03-f157-4ec8-ae76-cd66b7eac0f5 200 64 - 2016.186 ms
+2025-10-30 16:59:21:5921 http: GET /api/documents 304 - - 581.782 ms
+2025-10-30 16:59:21:5921 http: PUT /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/versions/075d9f76-a0eb-4897-97bc-0f975a7afdf9/use 200 819 - 367.181 ms
+2025-10-30 16:59:22:5922 http: GET /api/documents 200 36944 - 399.353 ms
+2025-10-30 16:59:25:5925 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 200 837 - 549.862 ms
+2025-10-30 16:59:26:5926 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 450.133 ms
+2025-10-30 16:59:27:5927 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 1463.138 ms
+2025-10-30 17:00:21:021 http: POST /api/signatures/personal 500 130 - 1849.074 ms
+2025-10-30 17:19:02:192 info: Server berjalan di http://localhost:3000
+2025-10-30 17:19:07:197 http: POST /api/signatures/personal 401 107 - 19.261 ms
+2025-10-30 17:19:19:1919 http: POST /api/auth/login 200 184 - 2018.658 ms
+2025-10-30 17:19:22:1922 http: GET /api/users/me 200 771 - 1418.292 ms
+2025-10-30 17:19:23:1923 http: GET /api/users/me 304 - - 745.167 ms
+2025-10-30 17:19:25:1925 http: GET /api/documents 304 - - 470.475 ms
+2025-10-30 17:19:25:1925 http: GET /api/documents 304 - - 363.781 ms
+2025-10-30 17:19:26:1926 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 376.922 ms
+2025-10-30 17:19:27:1927 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410 304 - - 360.074 ms
+2025-10-30 17:19:28:1928 http: GET /api/documents/f53bfc16-7f07-4a13-a27f-d63c28935410/file 200 603 - 782.490 ms
+2025-10-30 17:20:02:202 http: POST /api/signatures/personal 500 143 - 2054.583 ms
+2025-10-30 17:23:59:2359 info: Server berjalan di http://localhost:3000
+2025-10-30 17:24:14:2414 info: Server berjalan di http://localhost:3000
+2025-10-30 17:24:16:2416 info: Server berjalan di http://localhost:3000
