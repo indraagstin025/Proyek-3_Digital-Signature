@@ -66,7 +66,9 @@ export class SignatureService {
             };
             const newSignatureRecord = await this.signatureRepository.createPersonal(dataToSave);
 
-            const verificationUrl = `http://localhost:5173/verify/${newSignatureRecord.id}`;
+            const BASE_VERIFY_URL = process.env.VERIFICATION_URL || "http://localhost:5173";
+            const verificationUrl = `${BASE_VERIFY_URL.replace(/\/$/, "")}/verify/${newSignatureRecord.id}`;
+
             const pdfOptions = { displayQrCode: options.displayQrCode, verificationUrl };
 
             // PDFService sekarang mengembalikan buffer yang sudah ditandatangani PAdES.
