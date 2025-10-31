@@ -12,4 +12,4 @@ coverage
 reports
 config/certs
 
-
+signer_cert.p12.base64.txt
