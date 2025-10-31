@@ -15,16 +15,13 @@ import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
 
+const CERT_BASE64 = process.env.CERT_P12_BASE64 || process.env.CERT_BASE64 || null;
+const CERT_PASSWORD = process.env.CERT_PASSWORD || null;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-
-const CERT_BASE64 = process.env.CERT_BASE64 || null;
-const CERT_PASSWORD = process.env.CERT_PASSWORD || null;
-
-
 const CERT_PATH = path.resolve(__dirname, "../../config/certs/signer_cert.p12");
-
 
 export class PDFService {
     constructor(versionRepository, signatureRepository, fileStorage) {
