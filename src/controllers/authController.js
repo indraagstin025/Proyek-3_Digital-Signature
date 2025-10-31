@@ -62,7 +62,7 @@ export const createAuthController = (authService) => {
             };
 
             res.setHeader("Set-Cookie", [
-                serialize("sb-acess-token", session_acces_token, {
+                serialize("sb-access-token", session_acces_token, {
                     ...cookieOptions,
                     maxAge: session.expires_in,
                 }),
