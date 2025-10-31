@@ -1,3 +1,5 @@
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import pkg from "pdf-lib";
 const { PDFDocument, Permissions } = pkg;
 import QRCode from "qrcode";
@@ -12,14 +14,17 @@ import DocumentError from "../errors/DocumentError.js";
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
-// 🔐 Ambil dari environment
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+
 const CERT_BASE64 = process.env.CERT_BASE64 || null;
 const CERT_PASSWORD = process.env.CERT_PASSWORD || null;
 
-// 🔄 Fallback ke file lokal jika CERT_BASE64 tidak ada
-const CERT_PATH =
-    process.env.CERT_FILE_PATH ||
-    path.join(process.cwd(), "config", "certs", "signer_cert.p12");
+
+const CERT_PATH = path.resolve(__dirname, "../../config/certs/signer_cert.p12");
+
 
 export class PDFService {
     constructor(versionRepository, signatureRepository, fileStorage) {
