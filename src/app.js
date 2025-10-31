@@ -76,12 +76,20 @@ const prisma = new PrismaClient();
 
 // Konfigurasi CORS terpusat untuk mengizinkan request dari frontend
 const corsOptions = {
-    origin: process.env.CORS_ORIGIN || "https://proyek-3-digital-signature-frontend.vercel.app",
-    credentials: true,
+    origin: [
+        "https://proyek-3-digital-signature-frontend.vercel.app",
+        "http://localhost:5173", // untuk pengujian lokal Vite
+    ],
+    credentials: true, // wajib untuk cookie cross-origin
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    optionsSuccessStatus: 204
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
+
+// wajib supaya Express tahu kalau ada proxy seperti Railway
+app.set("trust proxy", 1);
+
  // Menangani pre-flight requests untuk semua rute
 
 // Middleware untuk logging request HTTP menggunakan Morgan dan Winston
