@@ -1,1 +1,0 @@
-import fs from 'fs';import path from 'path';const p12Path = path.join(process.cwd(), 'config', 'certs', 'signer_cert.p12');console.log('🔍 Membaca file:', p12Path);try {    const data = fs.readFileSync(p12Path);    console.log('✅ File berhasil dibaca, ukuran:', data.length, 'bytes');} catch (err) {    console.error('❌ Gagal membaca file:', err.message);}

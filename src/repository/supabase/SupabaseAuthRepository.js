@@ -33,9 +33,6 @@ class SupabaseAuthRepository extends AuthRepository {
         this.prisma = prismaClient;
     }
 
-    // ---------------------------------------------------------------------------
-    // REGISTER
-    // ---------------------------------------------------------------------------
 
     /**
      * Mendaftarkan pengguna baru di Supabase Auth dan menyimpannya ke database lokal.
@@ -46,7 +43,6 @@ class SupabaseAuthRepository extends AuthRepository {
      * @throws {AuthError.EmailAlreadyExist|AuthError.PasswordTooWeak|CommonError.DatabaseError}
      */
     async registerUser(email, password, additionalData) {
-        // 1️⃣ Registrasi ke Supabase
         const { data: authData, error: authError } = await this.supabaseClient.auth.signUp({
             email,
             password,
@@ -78,7 +74,6 @@ class SupabaseAuthRepository extends AuthRepository {
                 address: additionalData.address,
             };
 
-            // 2️⃣ Simpan ke Database Lokal
             return await this.prisma.user.create({ data: newUserData });
         } catch (dbError) {
             console.error("Prisma User Create Error:", dbError);
@@ -93,9 +88,6 @@ class SupabaseAuthRepository extends AuthRepository {
         }
     }
 
-    // ---------------------------------------------------------------------------
-    // LOGIN
-    // ---------------------------------------------------------------------------
 
     /**
      * Melakukan login pengguna melalui Supabase Auth.
@@ -106,7 +98,6 @@ class SupabaseAuthRepository extends AuthRepository {
      */
     async loginUser(email, password) {
         try {
-            // 1️⃣ Login ke Supabase
             const { data, error } = await this.supabaseClient.auth.signInWithPassword({
                 email,
                 password,
@@ -125,12 +116,11 @@ class SupabaseAuthRepository extends AuthRepository {
                 throw AuthError.UserNotFound();
             }
 
-            // ✅ Cek email sudah diverifikasi
             if (!data.user.email_confirmed_at) {
                 throw AuthError.EmailNotVerified("Silakan verifikasi email Anda sebelum login.");
             }
 
-            // 2️⃣ Ambil data pengguna dari database lokal
+
             const localUser = await this.prisma.user.findUnique({
                 where: { id: data.user.id },
                 select: { id: true, email: true, name: true, isSuperAdmin: true },
@@ -158,9 +148,6 @@ class SupabaseAuthRepository extends AuthRepository {
         }
     }
 
-    // ---------------------------------------------------------------------------
-    // LOGOUT
-    // ---------------------------------------------------------------------------
 
     /**
      * Melakukan logout pengguna dari Supabase.
@@ -177,9 +164,6 @@ class SupabaseAuthRepository extends AuthRepository {
         return { message: "Logout berhasil." };
     }
 
-    // ---------------------------------------------------------------------------
-    // FORGOT PASSWORD
-    // ---------------------------------------------------------------------------
 
     /**
      * Mengirimkan email untuk reset password pengguna.
@@ -199,9 +183,6 @@ class SupabaseAuthRepository extends AuthRepository {
         return { message: "Jika email terdaftar, link reset telah dikirim." };
     }
 
-    // ---------------------------------------------------------------------------
-    // RESET PASSWORD
-    // ---------------------------------------------------------------------------
     /**
      * @function exchangeCodeForSession
      * @description Menukarkan 'code' dari link email reset password menjadi session yang valid.

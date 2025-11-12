@@ -53,7 +53,6 @@ export class AuthService {
      * @description Logout user dengan menghapus/invalidasi token.
      */
     async logoutUser() {
-        // Dengan sistem cookie, parameter 'token' tidak lagi relevan dari controller
         return this.authRepository.logoutUser();
     }
 
@@ -77,7 +76,6 @@ export class AuthService {
             throw AuthError.ResetPasswordInvalid("Access token atau refresh token tidak ditemukan.");
         }
 
-        // Validasi password
         if (!newPassword || newPassword.length < 8) {
             throw AuthError.PasswordTooWeak("Password minimal 8 karakter.");
         }
@@ -91,7 +89,6 @@ export class AuthService {
             throw AuthError.PasswordTooWeak("Password harus mengandung minimal satu huruf kecil.");
         }
 
-        // Langkah 1: Aktifkan session berdasarkan token dari email
         const { error: sessionError } = await supabaseAuth.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -102,7 +99,6 @@ export class AuthService {
             throw AuthError.ResetPasswordInvalid("Tautan reset password sudah tidak valid atau kedaluwarsa.");
         }
 
-        // Langkah 2: Update password setelah session aktif
         const { error: updateError } = await supabaseAuth.auth.updateUser({ password: newPassword });
 
         if (updateError) {

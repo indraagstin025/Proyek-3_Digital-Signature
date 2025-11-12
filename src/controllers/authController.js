@@ -94,7 +94,6 @@ export const createAuthController = (authService) => {
         logout: asyncHandler(async (req, res, next) => {
             await authService.logoutUser();
 
-            // Hapus cookie dengan mengatur tanggal kedaluwarsa ke masa lalu
             res.setHeader("Set-Cookie", [
                 serialize("sb-access-token", "", { path: "/", expires: new Date(0) }),
                 serialize("sb-refresh-token", "", { path: "/", expires: new Date(0) }),
