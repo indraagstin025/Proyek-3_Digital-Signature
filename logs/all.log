@@ -23961,3 +23961,4 @@ Inconsistent column data: Error creating UUID, invalid character: expected an op
 2025-10-30 17:23:59:2359 info: Server berjalan di http://localhost:3000
 2025-10-30 17:24:14:2414 info: Server berjalan di http://localhost:3000
 2025-10-30 17:24:16:2416 info: Server berjalan di http://localhost:3000
+2025-11-12 16:41:30:4130 [32minfo[39m: [32mServer berjalan di http://localhost:3000[39m
