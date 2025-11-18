@@ -82,7 +82,6 @@ export const createAuthController = (authService) => {
         }),
 
 
-
         /**
          * @route   POST /api/auth/logout
          * @desc    Melakukan logout pengguna dengan membersihkan session cookie.

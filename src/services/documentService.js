@@ -18,8 +18,8 @@ export class DocumentService {
      * @param {object} pdfService - Service tambahan untuk manipulasi PDF.
      * @throws {Error} Jika salah satu dependency tidak diberikan.
      */
-    constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService) {
-        if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService) {
+    constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository) {
+        if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository) {
             throw new Error("Semua repository dan service harus disediakan.");
         }
         this.documentRepository = documentRepository;
@@ -27,6 +27,7 @@ export class DocumentService {
         this.signatureRepository = signatureRepository;
         this.fileStorage = fileStorage;
         this.pdfService = pdfService;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     /**
@@ -72,10 +73,10 @@ export class DocumentService {
 
         const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-        const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
-        if (existingVersion) {
-            throw DocumentError.AlreadyExists();
-        }
+        //const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
+        //if (existingVersion) {
+        //    throw DocumentError.AlreadyExists();
+        //}
 
         const filePath = await this.fileStorage.uploadDocument(file, userId);
         return this.documentRepository.createWithFirstVersion(userId, title, filePath, hash);
@@ -104,10 +105,18 @@ export class DocumentService {
         if (!document) {
             throw DocumentError.NotFound(documentId);
         }
-        if (document.userId !== userId) {
-            throw DocumentError.UnauthorizedAccess();
+        if (document.userId === userId) {
+            return document;
         }
-        return document;
+
+        if (document.groupId) {
+            const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
+            if (member) {
+                return document;
+            }
+        }
+
+        throw DocumentError.UnauthorizedAccess();
     }
 
     /**

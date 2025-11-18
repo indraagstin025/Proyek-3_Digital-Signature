@@ -1,5 +1,5 @@
 import { VersionRepository } from "../interface/VersionRepository.js";
-import  VersionError  from "../../errors/StorageError.js";
+import VersionError from "../../errors/StorageError.js";
 
 /**
  * @description Implementasi Repository untuk model 'DocumentVersion' menggunakan Prisma.
@@ -19,6 +19,8 @@ export class PrismaVersionRepository extends VersionRepository {
                     userId: data.userId,
                     url: data.url,
                     hash: data.hash,
+                    // Jika schema Prisma Anda memiliki kolom versionNumber,
+                    // Anda bisa menambahkannya di sini (biasanya dihitung di service layer)
                 },
             });
         } catch (err) {
@@ -49,6 +51,11 @@ export class PrismaVersionRepository extends VersionRepository {
                     document: true,
                     signaturesPersonal: true,
                     signaturesGroup: true,
+                    packages: {
+                        include: {
+                            signatures: true
+                        }
+                    }
                 },
             });
             if (!version) throw VersionError.NotFound("Versi dokumen tidak ditemukan.");
@@ -63,11 +70,16 @@ export class PrismaVersionRepository extends VersionRepository {
         try {
             return await this.prisma.documentVersion.findMany({
                 where: { documentId },
-                orderBy: { createdAt: "desc" },
+                orderBy: { createdAt: "desc" }, // Menampilkan versi terbaru di paling atas
                 include: {
                     document: true,
                     signaturesPersonal: true,
                     signaturesGroup: true,
+                    packages: {
+                        include: {
+                            signatures: true
+                        }
+                    }
                 },
             });
         } catch (err) {
@@ -86,12 +98,47 @@ export class PrismaVersionRepository extends VersionRepository {
         }
     }
 
+    /**
+     * @description Menghapus versi dokumen, TAPI melarang penghapusan Versi Pertama (Asli).
+     */
     async deleteById(versionId) {
         try {
+            // 1. Ambil data versi yang mau dihapus untuk mendapatkan documentId-nya
+            const versionToDelete = await this.prisma.documentVersion.findUnique({
+                where: { id: versionId },
+                select: { id: true, documentId: true } // Kita hanya butuh ID dan DocumentID
+            });
+
+            if (!versionToDelete) {
+                throw VersionError.NotFound("Versi dokumen tidak ditemukan.");
+            }
+
+            // 2. Cari versi paling PERTAMA (Original) dari dokumen tersebut
+            // Kita cari berdasarkan waktu dibuat (createdAt) paling lama (asc)
+            const firstVersion = await this.prisma.documentVersion.findFirst({
+                where: { documentId: versionToDelete.documentId },
+                orderBy: { createdAt: 'asc' }, // Urutkan dari yang terlama
+                select: { id: true }
+            });
+
+            // 3. Validasi: Jika ID yang mau dihapus == ID versi pertama, TOLAK.
+            if (firstVersion && firstVersion.id === versionId) {
+                // Gunakan Error yang sesuai, misalnya Forbidden atau BadRequest
+                throw new Error("Versi asli (versi pertama) dokumen tidak dapat dihapus. Anda hanya dapat menghapus versi turunannya.");
+            }
+
+            // 4. Jika bukan versi pertama, lakukan penghapusan
             return await this.prisma.documentVersion.delete({
                 where: { id: versionId },
             });
+
         } catch (err) {
+            // Pastikan error yang kita lempar di atas (validasi) diteruskan dengan benar
+            if (err.message.includes("tidak dapat dihapus")) {
+                throw VersionError.BadRequest(err.message);
+            }
+            if (err instanceof VersionError) throw err;
+
             throw VersionError.InternalServerError(`Gagal menghapus versi dokumen: ${err.message}`);
         }
     }

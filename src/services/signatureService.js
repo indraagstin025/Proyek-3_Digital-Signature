@@ -1,5 +1,3 @@
-// SignatureService.js
-
 import crypto from "crypto";
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
