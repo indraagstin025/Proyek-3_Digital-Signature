@@ -73,11 +73,6 @@ export class DocumentService {
 
         const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-        //const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
-        //if (existingVersion) {
-        //    throw DocumentError.AlreadyExists();
-        //}
-
         const filePath = await this.fileStorage.uploadDocument(file, userId);
         return this.documentRepository.createWithFirstVersion(userId, title, filePath, hash);
     }

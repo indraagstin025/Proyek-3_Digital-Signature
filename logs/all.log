@@ -27440,3 +27440,12 @@ Inconsistent column data: Error creating UUID, invalid character: expected an op
 2025-11-18 19:42:30:4230 [32minfo[39m: [32mServer berjalan pada http://localhost:3000[39m
 2025-11-18 19:42:51:4251 [32minfo[39m: [32mServer berjalan pada http://localhost:3000[39m
 2025-11-18 19:43:38:4338 [32minfo[39m: [32mServer berjalan pada http://localhost:3000[39m
+2025-11-19 19:49:05:495 [32minfo[39m: [32mServer berjalan pada http://localhost:3000[39m
+2025-11-19 19:49:24:4924 [35mhttp[39m: [35mPOST /api/auth/login 200 184 - 2592.581 ms[39m
+2025-11-19 19:49:26:4926 [35mhttp[39m: [35mGET /api/users/me 304 - - 406.968 ms[39m
+2025-11-19 19:49:26:4926 [35mhttp[39m: [35mGET /api/users/me 304 - - 392.737 ms[39m
+2025-11-19 19:49:28:4928 [35mhttp[39m: [35mGET /api/documents 304 - - 476.739 ms[39m
+2025-11-19 19:49:29:4929 [35mhttp[39m: [35mGET /api/documents 304 - - 508.656 ms[39m
+2025-11-19 19:49:38:4938 [35mhttp[39m: [35mPOST /api/documents 201 822 - 3558.334 ms[39m
+2025-11-19 19:49:39:4939 [35mhttp[39m: [35mGET /api/documents 200 2605 - 371.315 ms[39m
+2025-11-19 19:50:25:5025 [32minfo[39m: [32mServer berjalan pada http://localhost:3000[39m
