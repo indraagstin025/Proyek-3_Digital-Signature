@@ -12,3 +12,7 @@ coverage
 reports
 config/certs
 
+prisma/dbml/
+prisma/migrations/
+signer_cert.p12.base64.txt
+temp/
