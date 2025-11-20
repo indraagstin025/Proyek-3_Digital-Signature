@@ -63,7 +63,6 @@ const prisma = new PrismaClient();
 
 /**
  * Konfigurasi CORS
- * @type {import("cors").CorsOptions}
  */
 const corsOptions = {
     origin: [
@@ -80,24 +79,37 @@ app.use(cors(corsOptions));
 app.set("trust proxy", 1);
 
 /**
- * Konfigurasi Logging HTTP (Morgan)
+ * Logging HTTP
  */
 const morganStream = {
     write: (message) => logger.http(message.trim()),
 };
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms", { stream: morganStream }));
 
+/**
+ * Body Parser
+ */
 app.use(express.json());
+
+/**
+ * ======================================================
+ * 🛠 JSON Parse Error Handler (PATCH DITAMBAHKAN DI SINI)
+ * ======================================================
+ */
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        return res.status(400).json({
+            status: "fail",
+            message: "JSON tidak valid",
+        });
+    }
+    next(err);
+});
+
 app.use(cookieParser());
 
 /**
- * ======================================================================
- * DEPENDENCY INJECTION CONTAINER
- * ======================================================================
- */
-
-/**
- * Repository Layer
+ * Dependency Injection (Repositories + Services + Controllers)
  */
 const authRepository = new SupabaseAuthRepository(supabase, prisma);
 const adminRepository = new PrismaAdminRepository(prisma);
@@ -111,9 +123,6 @@ const groupMemberRepository = new PrismaGroupMemberRepository(prisma);
 const groupInvitationRepository = new PrismaGroupInvitationRepository(prisma);
 const packageRepository = new PrismaPackageRepository(prisma);
 
-/**
- * Service Layer
- */
 const authService = new AuthService(authRepository);
 const adminService = new AdminService(adminRepository);
 const userService = new UserService(userRepository, fileStorage);
@@ -127,14 +136,12 @@ const documentService = new DocumentService(
     pdfService,
     groupMemberRepository
 );
-
 const groupService = new GroupService(
     groupRepository,
     groupMemberRepository,
     groupInvitationRepository,
     documentRepository
 );
-
 const packageService = new PackageService(
     packageRepository,
     documentRepository,
@@ -143,7 +150,7 @@ const packageService = new PackageService(
 );
 
 /**
- * Controller Layer
+ * Controllers
  */
 const authController = createAuthController(authService, { AuthError, CommonError });
 const userController = createUserController(userService);
@@ -154,9 +161,7 @@ const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);
 
 /**
- * ======================================================================
- * ROUTES REGISTRATION
- * ======================================================================
+ * Routes
  */
 app.use("/api/auth", createAuthRoutes(authController));
 app.use("/api/users", createUserRoutes(userController, adminController));
@@ -168,7 +173,6 @@ app.use("/api/packages", createPackageRoutes(packageController));
 
 /**
  * Root Route
- * @route GET /
  */
 app.get("/", (req, res) => {
     res.json({
@@ -184,7 +188,7 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 /**
- * Jalankan Server
+ * Start Server
  */
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
