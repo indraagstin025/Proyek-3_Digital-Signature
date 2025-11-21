@@ -135,7 +135,7 @@ export class SignatureService {
             documentTitle: signature.documentVersion.document.title,
             signedAt: signature.signedAt,
             signatureImageUrl: signature.signatureImageUrl,
-            ipAddress: signature.ipAddress,
+            ipAddress: signature.ipAddress || "-",
             verificationStatus: verificationStatus, // <-- Hasil akhir
             storedFileHash: storedHash,
             recalculatedFileHash: recalculateHash,
@@ -188,6 +188,7 @@ export class SignatureService {
             documentTitle: signature.documentVersion.document.title,
             signedAt: signature.signedAt,
             verificationStatus: verificationStatus,
+            ipAddress: signature.ipAddress || "-",
             isSignatureValid: true, // Asumsi VALID, verifikasi sejati ada di PDF Reader.
             isHashMatch: isHashMatch,
             storedFileHash: storedHash,
