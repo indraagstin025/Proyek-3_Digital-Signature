@@ -47,7 +47,7 @@ enum SignatureStatus {
   REJECTED
 }
 
-// --- Model ---
+
 
 model User {
   id                 String              @id @db.Uuid
@@ -69,11 +69,9 @@ model User {
   profilePictures    UserProfilePicture[]
   sentInvitations    GroupInvitation[]   @relation("SentByInviter")
   uploadedVersions   DocumentVersion[]   @relation("UploadedBy")
+  signingPackages   SigningPackage[]
+  packageSignatures PackageSignature[]
 
-  // --- TAMBAHAN UNTUK PAKET (ALUR WIZARD) ---
-  signingPackages   SigningPackage[]    // Paket yang dibuat oleh User ini
-  packageSignatures PackageSignature[]  // TTD yang ditempatkan oleh User ini
-  // --- AKHIR TAMBAHAN ---
 
   @@map("users")
 }
@@ -101,7 +99,6 @@ model Document {
   owner            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId           String           @map("user_id") @db.Uuid
 
-  // (Tidak diubah, sesuai permintaan Anda agar fitur tetap aman)
   group            Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
   groupId          Int?             @map("group_id")
 
@@ -122,16 +119,13 @@ model DocumentVersion {
   documentId         String              @map("document_id") @db.Uuid
   documentAsCurrent  Document?           @relation("CurrentVersion")
 
-  // ✅ [PERBAIKAN 1] Relasi uploader ditambahkan
-  //    (dibuat opsional '?' & onDelete: SetNull agar user bisa dihapus tanpa menghapus versi)
   uploader           User?               @relation("UploadedBy", fields: [userId], references: [id], onDelete: SetNull)
-  userId             String?             @map("user_id") @db.Uuid // ✅ [PERBAIKAN 2] Dibuat opsional (?)
+  userId             String?             @map("user_id") @db.Uuid
 
   signaturesPersonal SignaturePersonal[]
   signaturesGroup    SignatureGroup[]
   packages           PackageDocument[]
 
-  // ✅ [PERBAIKAN 3] Aturan unik diubah agar lebih logis
   @@unique([documentId, hash], name: "document_version_hash_unique")
   @@map("document_versions")
 }
@@ -180,84 +174,55 @@ model SignatureGroup {
   @@map("signatures_group")
 }
 
-
-// --- MODEL UNTUK ALUR WIZARD BATCH SIGNING (PAKET) ---
-
-// 1. MODEL "AMPLOP" ATAU "PAKET" UTAMA
-// Ini adalah wadah untuk seluruh sesi batch signing.
 model SigningPackage {
   id        String   @id @default(uuid()) @db.Uuid
-  title     String?  // Misal: "Kontrak Klien Q4"
-  status    String   @default("draft") // draft, pending, completed
+  title     String?
+  status    String   @default("draft")
   createdAt DateTime @default(now())
-
-  // Siapa yang membuat paket ini
   userId    String   @map("user_id") @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Dokumen apa saja yang ada di dalam paket ini
-  // (Relasi balik ke PackageDocument)
   documents PackageDocument[]
 
   @@map("signing_packages")
 }
 
 
-// 2. MODEL PERANTARA (DOKUMEN DI DALAM PAKET)
-// Ini menghubungkan Paket dengan Versi Dokumen yang spesifik.
 model PackageDocument {
   id          String   @id @default(uuid()) @db.Uuid
-
-  // Terhubung ke Paket mana
   packageId   String         @map("package_id") @db.Uuid
   package     SigningPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
-
-  // Menunjuk ke VERSI DOKUMEN ASLI (yang akan ditandatangani)
   docVersionId String          @map("doc_version_id") @db.Uuid
   docVersion   DocumentVersion @relation(fields: [docVersionId], references: [id], onDelete: Cascade)
-
-  order       Int // Urutan dokumen (Dokumen 1, Dokumen 2, dst.)
-
-  // Tanda tangan yang ditempatkan di DOKUMEN SPESIFIK INI
-  // (Relasi balik ke PackageSignature)
+  order       Int
   signatures  PackageSignature[]
 
   @@map("package_documents")
 }
 
-// 3. MODEL TANDA TANGAN (SPESIFIK UNTUK PAKET)
-// Menyimpan data TTD (posisi, gambar) untuk setiap dokumen dalam paket.
 model PackageSignature {
   id        String   @id @default(uuid()) @db.Uuid
-
-  // Terhubung ke Dokumen Paket mana
   packageDocumentId String          @map("package_document_id") @db.Uuid
   packageDocument   PackageDocument @relation(fields: [packageDocumentId], references: [id], onDelete: Cascade)
-
-  // Data Tanda Tangan (posisi, dll.)
-  // Gunakan @db.Text agar muat untuk base64 yang panjang
   signatureImageUrl String  @map("signature_image_url") @db.Text
   pageNumber        Int     @map("page_number")
   positionX         Float
   positionY         Float
   width             Float
   height            Float
-
-  // Data Penanda Tangan
   signerId          String  @map("signer_id") @db.Uuid
   signer            User    @relation(fields: [signerId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now()) @map("created_at")
+  ipAddress         String?  @map("ip_address")
+  userAgent         String?  @map("user_agent")
 
   @@map("package_signatures")
 }
 
-// --- AKHIR MODEL UNTUK ALUR WIZARD ---
 model Group {
   id            Int               @id @default(autoincrement())
   name          String
   createdAt     DateTime          @default(now()) @map("created_at")
   updatedAt     DateTime          @updatedAt @map("updated_at")
-
-  // ✅ [PERBAIKAN KRITIS] Dijaga agar tetap 'Restrict'
   admin         User              @relation("AdminToGroup", fields: [adminId], references: [id], onDelete: Restrict)
   adminId       String            @map("admin_id") @db.Uuid
 
@@ -273,8 +238,6 @@ model GroupMember {
   createdAt DateTime        @default(now()) @map("created_at")
   updatedAt DateTime        @updatedAt @map("updated_at")
   group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  // (Tidak diubah, sesuai permintaan Anda)
   groupId   Int             @map("group_id")
 
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -295,8 +258,6 @@ model GroupInvitation {
   createdAt  DateTime         @default(now()) @map("created_at")
   updatedAt  DateTime         @updatedAt @map("updated_at")
   group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  // (Tidak diuhbah, sesuai permintaan Anda)
   groupId    Int              @map("group_id")
 
   @@map("group_invitations")
