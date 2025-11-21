@@ -229,7 +229,6 @@ export class PDFService {
             throw CommonError.InternalServerError(`Gagal menandatangani dokumen: ${err.message}`);
         }
 
-        // 11️⃣ Upload hasil akhir
         const documentOwnerId = version.userId;
         const ext = path.extname(version.document.title) || ".pdf";
         const uniqueName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
