@@ -156,7 +156,7 @@ const authController = createAuthController(authService, { AuthError, CommonErro
 const userController = createUserController(userService);
 const adminController = createAdminController(adminService);
 const documentController = createDocumentController(documentService, fileStorage, versionRepository);
-const signatureController = createSignatureController(documentService, signatureService);
+const signatureController = createSignatureController(documentService, signatureService, packageService);
 const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);
 
