@@ -41,6 +41,8 @@ export class PrismaVersionRepository extends VersionRepository {
         }
     }
 
+// ... (kode sebelumnya)
+
     async findById(versionId) {
         try {
             const version = await this.prisma.documentVersion.findUnique({
@@ -51,7 +53,15 @@ export class PrismaVersionRepository extends VersionRepository {
                     signaturesGroup: true,
                     packages: {
                         include: {
-                            signatures: true
+                            signatures: true,
+                            // [PERBAIKAN DI SINI]
+                            // Tambahkan relasi ke parent package untuk ambil statusnya
+                            package: {
+                                select: {
+                                    status: true,
+                                    title: true
+                                }
+                            }
                         }
                     }
                 },
@@ -64,7 +74,6 @@ export class PrismaVersionRepository extends VersionRepository {
             return version;
         } catch (err) {
             if (err instanceof CommonError) throw err;
-
             throw CommonError.DatabaseError(`Gagal mengambil versi dokumen: ${err.message}`);
         }
     }
@@ -80,7 +89,15 @@ export class PrismaVersionRepository extends VersionRepository {
                     signaturesGroup: true,
                     packages: {
                         include: {
-                            signatures: true
+                            signatures: true,
+                            // [PERBAIKAN DI SINI JUGA]
+                            // Agar list history juga tahu status paketnya
+                            package: {
+                                select: {
+                                    status: true,
+                                    title: true
+                                }
+                            }
                         }
                     }
                 },
@@ -89,6 +106,8 @@ export class PrismaVersionRepository extends VersionRepository {
             throw CommonError.DatabaseError(`Gagal mengambil semua versi dokumen: ${err.message}`);
         }
     }
+
+    // ... (sisa kode update dan delete aman)
 
     async update(versionId, data) {
         try {
