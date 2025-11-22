@@ -47,43 +47,70 @@ export class PrismaDocumentRepository {
   /**
    * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
    */
-  async findAllByUserId(userId) {
-    return this.prisma.document.findMany({
-      where: { userId },
-      include: {
-        currentVersion: {
-          include: {
-            signaturesPersonal: true,
-              packages: {
-                include: {
-                    signatures: true
-                }
-              }
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+// ... kode sebelumnya ...
 
-  /**
-   * @description Mencari satu dokumen berdasarkan ID, beserta detail versi terkininya DAN tanda tangannya.
-   */
-  async findById(documentId, userId) {
-    return this.prisma.document.findFirst({
-      where: {
-        id: documentId,
-        userId: userId,
-      },
-      include: {
-        currentVersion: {
-          include: {
-            signaturesPersonal: true,
-          },
-        },
-      },
-    });
-  }
+    /**
+     * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
+     */
+    async findAllByUserId(userId) {
+        return this.prisma.document.findMany({
+            where: { userId },
+            include: {
+                currentVersion: {
+                    include: {
+                        signaturesPersonal: true,
+                        packages: {
+                            include: {
+                                signatures: true,
+                                // [PERBAIKAN]: Tambahkan ini agar status paket (draft/completed) terbaca
+                                package: {
+                                    select: {
+                                        status: true,
+                                        title: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    /**
+     * @description Mencari satu dokumen berdasarkan ID.
+     * [PERBAIKAN]: Menambahkan include packages agar konsisten dengan findAllByUserId
+     */
+    async findById(documentId, userId) {
+        return this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                userId: userId,
+            },
+            include: {
+                currentVersion: {
+                    include: {
+                        signaturesPersonal: true,
+                        // [PERBAIKAN]: Tambahkan bagian ini juga
+                        packages: {
+                            include: {
+                                signatures: true,
+                                package: {
+                                    select: {
+                                        status: true,
+                                        title: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+            },
+        });
+    }
+
+// ... sisa kode ...
 
   /**
    * @description Memperbarui data pada tabel Dokumen (misal: title atau currentVersionId).
