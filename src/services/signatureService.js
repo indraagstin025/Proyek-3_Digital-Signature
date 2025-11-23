@@ -92,10 +92,15 @@ export class SignatureService {
         }
     }
 
+    /**
+     * @description Mengambil detail informasi tanda tangan untuk ditampilkan saat Scan QR.
+     * LOGIKA BARU: Fungsi ini TIDAK memverifikasi isi file fisik/lokal user (karena server tidak melihatnya).
+     * Fungsi ini hanya mengonfirmasi bahwa ID Tanda Tangan tersebut ADA di database.
+     */
     async getVerificationDetails(signatureId) {
         let signature;
         try {
-            // Ambil data yang tersimpan (Sekarang tanpa digitalSignature dan publicKey)
+            // Ambil data tanda tangan beserta relasi (Signer, DocumentVersion, Document)
             signature = await this.signatureRepository.findById(signatureId);
         } catch (dbError) {
             throw CommonError.DatabaseError(`Gagal mengambil data tanda tangan: ${dbError.message}`);
@@ -105,40 +110,41 @@ export class SignatureService {
             throw SignatureError.NotFound(signatureId);
         }
 
-        // ⚠️ HAPUS: const storedSignature = signature.documentVersion.digitalSignature;
-        // ⚠️ HAPUS: const publicKey = signature.signerPublicKey;
-        const documentUrl = signature.documentVersion.url;
+        // Validasi kelengkapan data relasi
+        if (!signature.documentVersion || !signature.signer) {
+            throw CommonError.InternalServerError("Data integritas tidak lengkap (Relasi hilang).");
+        }
+
         const storedHash = signature.documentVersion.signedFileHash;
+        const documentUrl = signature.documentVersion.url;
 
-        // Cek kelengkapan data
-        if (!documentUrl || !storedHash) {
-            throw CommonError.InternalServerError("Data integritas/URL dokumen tidak lengkap untuk verifikasi.");
-        }
-
-        let signedFileBuffer;
-        try {
-            signedFileBuffer = await this.pdfService.fileStorage.downloadFileAsBuffer(documentUrl);
-        } catch (fetchError) {
-            throw CommonError.InternalServerError(`Gagal mengambil file dokumen dari storage: ${fetchError.message}`);
-        }
-
-        // ⚠️ KRIPTOGRAFI BARU: Hanya verifikasi Integritas Hash yang dilakukan di backend.
-        const recalculateHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
-        const isHashMatch = recalculateHash === storedHash;
-
-        // Status Otentikasi PAdES diasumsikan VALID jika integritas hash sama
-        let verificationStatus = isHashMatch ? "VALID (Integritas OK)" : "TIDAK VALID (Integritas GAGAL)";
+        // --- PERUBAHAN DI SINI ---
+        // Kita TIDAK melakukan download file dan hitung hash ulang.
+        // Karena saat Scan QR, kita hanya mengecek metadata di database.
 
         return {
+            // 1. Informasi Penanda Tangan (Identitas)
             signerName: signature.signer.name,
             signerEmail: signature.signer.email,
+            signerIpAddress: signature.ipAddress || "-", // IP saat menandatangani
+
+            // 2. Informasi Dokumen
             documentTitle: signature.documentVersion.document.title,
             signedAt: signature.signedAt,
             signatureImageUrl: signature.signatureImageUrl,
-            ipAddress: signature.ipAddress || "-",
-            verificationStatus: verificationStatus, // <-- Hasil akhir
+
+            // 3. Status Verifikasi (Jujur)
+            // Menggunakan kode status agar Frontend bisa memberi warna (misal: Kuning/Biru, bukan Hijau)
+            verificationStatus: "REGISTERED",
+
+            // Pesan untuk User
+            verificationMessage: "Tanda tangan terdaftar di sistem. Harap pastikan isi dokumen tidak mengalami perubahan.",
+
+            // 4. Data untuk Validasi Lanjutan (Manual/Upload)
+            // Hash asli di database (untuk dicocokkan jika user upload file)
             storedFileHash: storedHash,
-            recalculatedFileHash: recalculateHash,
+            // URL file asli (untuk tombol 'Download Dokumen Asli')
+            originalDocumentUrl: documentUrl
         };
     }
 
