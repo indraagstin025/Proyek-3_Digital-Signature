@@ -171,19 +171,17 @@ export const createDocumentController = (documentService) => {
             const { documentId, versionId } = req.params;
             const userId = req.user?.id;
 
-            // 1. Cek Query Param
-            const isDownload = req.query.purpose === 'download';
-
-            // 2. Panggil Service
+            // 1. Cek Query Param - KITA PAKSA TRUE
+            // const isDownload = req.query.purpose === 'download'; // <-- HAPUS INI
+            const isDownload = true;
             const signedUrl = await documentService.getVersionFileUrl(documentId, versionId, userId, isDownload);
 
             return res.status(200).json({
                 success: true,
                 url: signedUrl,
-                expiresIn: 60,
-                mode: isDownload ? 'download' : 'view'
+                expiresIn: 60, // Pastikan ini sesuai dengan settingan di Service (misal 3600)
+                mode: 'download'
             });
         }),
-
     };
 };
