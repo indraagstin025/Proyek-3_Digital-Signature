@@ -7,7 +7,12 @@ node_modules
 server.js
 .idea
 
-logs
+
+# logs folder
+logs/
+logs/*.log
+
+
 coverage
 reports
 config/certs
