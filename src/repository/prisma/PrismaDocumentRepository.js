@@ -50,7 +50,8 @@ export class PrismaDocumentRepository {
 // ... kode sebelumnya ...
 
     /**
-     * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
+     * [FIXED] Mengambil semua dokumen user.
+     * Hanya ambil signature yang valid (bukan placeholder kosong).
      */
     async findAllByUserId(userId) {
         return this.prisma.document.findMany({
@@ -58,11 +59,15 @@ export class PrismaDocumentRepository {
             include: {
                 currentVersion: {
                     include: {
-                        signaturesPersonal: true,
+                        // FILTER DI SINI: Hanya ambil yang punya gambar
+                        signaturesPersonal: {
+                            where: {
+                                signatureImageUrl: { not: "" }
+                            }
+                        },
                         packages: {
                             include: {
                                 signatures: true,
-                                // [PERBAIKAN]: Tambahkan ini agar status paket (draft/completed) terbaca
                                 package: {
                                     select: {
                                         status: true,
@@ -79,8 +84,8 @@ export class PrismaDocumentRepository {
     }
 
     /**
-     * @description Mencari satu dokumen berdasarkan ID.
-     * [PERBAIKAN]: Menambahkan include packages agar konsisten dengan findAllByUserId
+     * [FIXED] Mencari satu dokumen.
+     * Filter juga diterapkan di sini agar konsisten.
      */
     async findById(documentId, userId) {
         return this.prisma.document.findFirst({
@@ -91,8 +96,12 @@ export class PrismaDocumentRepository {
             include: {
                 currentVersion: {
                     include: {
-                        signaturesPersonal: true,
-                        // [PERBAIKAN]: Tambahkan bagian ini juga
+                        // FILTER DI SINI JUGA
+                        signaturesPersonal: {
+                            where: {
+                                signatureImageUrl: { not: "" }
+                            }
+                        },
                         packages: {
                             include: {
                                 signatures: true,

@@ -1,1 +1,25 @@
-export class AdminService {    constructor(adminRepository) {        this.adminRepository = adminRepository;    }    async getAllUsers() {        return this.adminRepository.findAllUsers();    }    async createNewUser(userData) {        const normalizedUserData = {            ...userData,            email: userData.email.toLowerCase(),        };        return this.adminRepository.createUser(normalizedUserData);    }    async updateUser(userId, userData) {        return this.adminRepository.updateUserById(userId, userData);    }    async deleteUser(userId) {        return this.adminRepository.deleteUserById(userId);    }}
+export class AdminService {
+  constructor(adminRepository) {
+    this.adminRepository = adminRepository;
+  }
+
+  async getAllUsers() {
+    return this.adminRepository.findAllUsers();
+  }
+
+  async createNewUser(userData) {
+    const normalizedUserData = {
+      ...userData,
+      email: userData.email.toLowerCase(),
+    };
+    return this.adminRepository.createUser(normalizedUserData);
+  }
+
+  async updateUser(userId, userData) {
+    return this.adminRepository.updateUserById(userId, userData);
+  }
+
+  async deleteUser(userId) {
+    return this.adminRepository.deleteUserById(userId);
+  }
+}

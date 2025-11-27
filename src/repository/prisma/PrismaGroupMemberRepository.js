@@ -1,1 +1,96 @@
-import { GroupMemberRepository } from "../interface/GroupMemberRepository.js";import CommonError from "../../errors/CommonError.js";/** * @description Implementasi Repository untuk model 'GroupMember' menggunakan Prisma. */export class PrismaGroupMemberRepository extends GroupMemberRepository {    constructor(prisma) {        super();        if (!prisma) {            throw CommonError.InternalServerError("Prisma client tidak ditemukan.");        }        this.prisma = prisma;    }    /**     * @description Mencari data keanggotaan spesifik berdasarkan groupId dan userId.     * @param {number} groupId - ID grup (INT).     * @param {string} userId - ID user (UUID String).     * @returns {Promise<object|null>} Objek keanggotaan atau null.     */    async findByGroupAndUser(groupId, userId) {        try {            return await this.prisma.groupMember.findFirst({                where: {                    groupId,                    userId,                },            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal mencari anggota grup: ${err.message}`);        }    }    /**     * @description Menemukan semua keanggotaan grup dari seorang user.     * @param {string} userId - ID user (UUID String).     * @param {object} options - Opsi Prisma (misal: { include: { group: true } }).     * @returns {Promise<object[]>} Array keanggotaan.     */    async findAllByUserId(userId, options = {}) {        try {            return await this.prisma.groupMember.findMany({                where: { userId },                ...options, // Meneruskan 'include' dari service            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal mengambil daftar grup user: ${err.message}`);        }    }    /**     * @description Transaksi untuk menerima undangan:     * 1. Membuat anggota baru. 2. Memperbarui status undangan.     * @param {object} invitation - Objek undangan yang valid.     * @param {string} userId - ID user yang menerima.     * @returns {Promise<object>} Objek GroupMember yang baru.     */    async createFromInvitation(invitation, userId) {        try {            return await this.prisma.$transaction(async (tx) => {                // 1. Buat anggota baru                const newMember = await tx.groupMember.create({                    data: {                        groupId: invitation.groupId,                        userId: userId,                        role: invitation.role,                    },                });                // 2. Update status undangan menjadi 'used'                await tx.groupInvitation.update({                    where: { id: invitation.id },                    data: { status: 'used' },                });                return newMember;            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal memproses penerimaan undangan: ${err.message}`);        }    }    /**     * @description Menghapus keanggotaan berdasarkan ID unik record GroupMember.     * @param {number} memberId - ID unik dari tabel GroupMember (INT).     * @returns {Promise<object>}     */    async deleteById(memberId) {        try {            return await this.prisma.groupMember.delete({                where: { id: memberId },            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal menghapus anggota grup: ${err.message}`);        }    }}
+import { GroupMemberRepository } from "../interface/GroupMemberRepository.js";
+import CommonError from "../../errors/CommonError.js";
+
+/**
+ * @description Implementasi Repository untuk model 'GroupMember' menggunakan Prisma.
+ */
+export class PrismaGroupMemberRepository extends GroupMemberRepository {
+  constructor(prisma) {
+    super();
+    if (!prisma) {
+      throw CommonError.InternalServerError("Prisma client tidak ditemukan.");
+    }
+    this.prisma = prisma;
+  }
+
+  /**
+   * @description Mencari data keanggotaan spesifik berdasarkan groupId dan userId.
+   * @param {number} groupId - ID grup (INT).
+   * @param {string} userId - ID user (UUID String).
+   * @returns {Promise<object|null>} Objek keanggotaan atau null.
+   */
+  async findByGroupAndUser(groupId, userId) {
+    try {
+      return await this.prisma.groupMember.findFirst({
+        where: {
+          groupId,
+          userId,
+        },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mencari anggota grup: ${err.message}`);
+    }
+  }
+
+  /**
+   * @description Menemukan semua keanggotaan grup dari seorang user.
+   * @param {string} userId - ID user (UUID String).
+   * @param {object} options - Opsi Prisma (misal: { include: { group: true } }).
+   * @returns {Promise<object[]>} Array keanggotaan.
+   */
+  async findAllByUserId(userId, options = {}) {
+    try {
+      return await this.prisma.groupMember.findMany({
+        where: { userId },
+        ...options,
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mengambil daftar grup user: ${err.message}`);
+    }
+  }
+
+  /**
+   * @description Transaksi untuk menerima undangan:
+   * 1. Membuat anggota baru. 2. Memperbarui status undangan.
+   * @param {object} invitation - Objek undangan yang valid.
+   * @param {string} userId - ID user yang menerima.
+   * @returns {Promise<object>} Objek GroupMember yang baru.
+   */
+  async createFromInvitation(invitation, userId) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const newMember = await tx.groupMember.create({
+          data: {
+            groupId: invitation.groupId,
+            userId: userId,
+            role: invitation.role,
+          },
+        });
+
+        await tx.groupInvitation.update({
+          where: { id: invitation.id },
+          data: { status: "used" },
+        });
+
+        return newMember;
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal memproses penerimaan undangan: ${err.message}`);
+    }
+  }
+
+  /**
+   * @description Menghapus keanggotaan berdasarkan ID unik record GroupMember.
+   * @param {number} memberId - ID unik dari tabel GroupMember (INT).
+   * @returns {Promise<object>}
+   */
+  async deleteById(memberId) {
+    try {
+      return await this.prisma.groupMember.delete({
+        where: { id: memberId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghapus anggota grup: ${err.message}`);
+    }
+  }
+}
