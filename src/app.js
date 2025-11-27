@@ -1,16 +1,9 @@
 /**
  * @file app.js
- * @description File utama dan titik masuk (entry point) untuk server Express.
- * Bertanggung jawab untuk:
- * - Menginisialisasi aplikasi Express.
- * - Mengkonfigurasi middleware global (CORS, JSON parser, logger, dll.).
- * - Melakukan Dependency Injection (DI) untuk semua lapisan aplikasi (Repositories, Services, Controllers).
- * - Mendaftarkan semua rute API.
- * - Menyiapkan Global Error Handler.
- * - Menjalankan server pada port yang ditentukan.
+ * @description Entry point server Express. Menginisialisasi konfigurasi, dependency injection,
+ * middleware, controller, routing, dan menjalankan server utama.
  */
 
-// --- Impor Modul Pihak Ketiga ---
 import express from 'express';
 import 'dotenv/config';
 import cors from 'cors';
@@ -18,14 +11,12 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 
-// --- Impor Modul Internal (Utilitas, Konfigurasi, Middleware, Errors) ---
 import logger from './utils/logger.js';
 import { supabase, supabaseBucket } from './config/supabaseClient.js';
 import errorHandler from './middleware/errorHandler.js';
 import AuthError from './errors/AuthError.js';
 import CommonError from './errors/CommonError.js';
 
-// --- Impor Lapisan Aplikasi (Repositories) ---
 import { PrismaAdminRepository } from './repository/prisma/PrismaAdminRepository.js';
 import PrismaUserRepository from './repository/prisma/PrismaUserRepository.js';
 import { PrismaDocumentRepository } from './repository/prisma/PrismaDocumentRepository.js';
@@ -34,91 +25,92 @@ import { PrismaSignatureRepository } from './repository/prisma/PrismaSignatureRe
 import SupabaseAuthRepository from './repository/supabase/SupabaseAuthRepository.js';
 import SupabaseFileStorage from './repository/supabase/SupabaseFileStorage.js';
 
-// --- Impor Lapisan Aplikasi (Services) ---
+import { PrismaGroupRepository } from './repository/prisma/PrismaGroupRepository.js';
+import { PrismaGroupMemberRepository } from './repository/prisma/PrismaGroupMemberRepository.js';
+import { PrismaGroupInvitationRepository } from './repository/prisma/PrismaGroupInvitationRepository.js';
+import { PrismaPackageRepository } from './repository/prisma/PrismaPackageRepository.js';
+
 import { AuthService } from './services/authService.js';
 import { UserService } from './services/userService.js';
 import { DocumentService } from './services/documentService.js';
 import { SignatureService } from './services/signatureService.js';
 import { PDFService } from './services/pdfService.js';
 import { AdminService } from './services/adminService.js';
+import { GroupService } from './services/groupService.js';
+import { PackageService } from './services/packageService.js';
 
-
-// --- Impor Lapisan Aplikasi (Controllers) ---
 import { createAuthController } from './controllers/authController.js';
 import { createUserController } from './controllers/userController.js';
 import { createAdminController } from './controllers/adminController.js';
 import { createDocumentController } from './controllers/documentController.js';
 import { createSignatureController } from './controllers/signatureController.js';
+import { createGroupController } from './controllers/groupController.js';
+import { createPackageController } from './controllers/packageController.js';
 
-// --- Impor Lapisan Aplikasi (Routes) ---
 import createAuthRoutes from './routes/authRoutes.js';
 import createUserRoutes from './routes/userRoutes.js';
 import createDocumentRoutes from './routes/documentRoutes.js';
 import createSignatureRoutes from './routes/signatureRoutes.js';
 import createAdminRoutes from './routes/adminRoutes.js';
+import createGroupRoutes from './routes/groupRoutes.js';
+import { createPackageRoutes } from './routes/packageRoutes.js';
 
-
-// =================================================================
-// INISIALISASI APLIKASI
-// =================================================================
+/**
+ * Inisialisasi aplikasi dan Prisma Client
+ */
 const app = express();
 const prisma = new PrismaClient();
 
-
-// =================================================================
-// KONFIGURASI MIDDLEWARE
-// =================================================================
-
 /**
- * @section Konfigurasi Middleware
- * Mengatur semua middleware yang akan digunakan secara global oleh aplikasi Express.
+ * Konfigurasi CORS
  */
-
-// Konfigurasi CORS terpusat untuk mengizinkan request dari frontend
 const corsOptions = {
     origin: [
         "https://proyek-3-digital-signature-frontend.vercel.app",
-        "http://localhost:5173", // untuk pengujian lokal Vite
+        "http://localhost:5173",
     ],
-    credentials: true, // wajib untuk cookie cross-origin
+    credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204,
 };
-app.use(cors(corsOptions));
 
-// wajib supaya Express tahu kalau ada proxy seperti Railway
+app.use(cors(corsOptions));
 app.set("trust proxy", 1);
 
- // Menangani pre-flight requests untuk semua rute
-
-// Middleware untuk logging request HTTP menggunakan Morgan dan Winston
-const stream = {
+/**
+ * Logging HTTP
+ */
+const morganStream = {
     write: (message) => logger.http(message.trim()),
 };
-const morganMiddleware = morgan(":method :url :status :res[content-length] - :response-time ms", { stream });
-app.use(morganMiddleware);
-
-// Middleware untuk parsing body request sebagai JSON
-app.use(express.json());
-
-// Middleware untuk parsing cookies
-app.use(cookieParser());
-
-
-// =================================================================
-// DEPENDENCY INJECTION CONTAINER
-// =================================================================
+app.use(morgan(":method :url :status :res[content-length] - :response-time ms", { stream: morganStream }));
 
 /**
- * @section Dependency Injection (DI)
- * Menginisialisasi dan menyambungkan semua kelas dari berbagai lapisan aplikasi,
- * mulai dari Repository, Service, hingga Controller.
+ * Body Parser
  */
+app.use(express.json());
 
-// -- 1. Repositories (Lapisan Akses Data) --
+/**
+ * ======================================================
+ * 🛠 JSON Parse Error Handler (PATCH DITAMBAHKAN DI SINI)
+ * ======================================================
+ */
+app.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        return res.status(400).json({
+            status: "fail",
+            message: "JSON tidak valid",
+        });
+    }
+    next(err);
+});
 
+app.use(cookieParser());
 
+/**
+ * Dependency Injection (Repositories + Services + Controllers)
+ */
 const authRepository = new SupabaseAuthRepository(supabase, prisma);
 const adminRepository = new PrismaAdminRepository(prisma);
 const userRepository = new PrismaUserRepository(prisma);
@@ -126,70 +118,79 @@ const documentRepository = new PrismaDocumentRepository(prisma);
 const versionRepository = new PrismaVersionRepository(prisma);
 const signatureRepository = new PrismaSignatureRepository(prisma);
 const fileStorage = new SupabaseFileStorage(prisma, supabaseBucket);
+const groupRepository = new PrismaGroupRepository(prisma);
+const groupMemberRepository = new PrismaGroupMemberRepository(prisma);
+const groupInvitationRepository = new PrismaGroupInvitationRepository(prisma);
+const packageRepository = new PrismaPackageRepository(prisma);
 
-// -- 2. Services (Lapisan Logika Bisnis) --
 const authService = new AuthService(authRepository);
 const adminService = new AdminService(adminRepository);
 const userService = new UserService(userRepository, fileStorage);
 const pdfService = new PDFService(versionRepository, signatureRepository, fileStorage);
 const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
-const documentService = new DocumentService(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService);
+const documentService = new DocumentService(
+    documentRepository,
+    versionRepository,
+    signatureRepository,
+    fileStorage,
+    pdfService,
+    groupMemberRepository
+);
+const groupService = new GroupService(
+    groupRepository,
+    groupMemberRepository,
+    groupInvitationRepository,
+    documentRepository
+);
+const packageService = new PackageService(
+    packageRepository,
+    documentRepository,
+    versionRepository,
+    pdfService
+);
 
-
-// -- 3. Controllers (Lapisan Presentasi) --
+/**
+ * Controllers
+ */
 const authController = createAuthController(authService, { AuthError, CommonError });
 const userController = createUserController(userService);
 const adminController = createAdminController(adminService);
 const documentController = createDocumentController(documentService, fileStorage, versionRepository);
-const signatureController = createSignatureController(documentService, signatureService);
-
-
-// =================================================================
-// REGISTRASI RUTE API
-// =================================================================
+const signatureController = createSignatureController(documentService, signatureService, packageService);
+const groupController = createGroupController(groupService);
+const packageController = createPackageController(packageService);
 
 /**
- * @section Registrasi Rute
- * Menghubungkan rute-rute API ke controller yang sesuai.
+ * Routes
  */
 app.use("/api/auth", createAuthRoutes(authController));
 app.use("/api/users", createUserRoutes(userController, adminController));
 app.use("/api/admin", createAdminRoutes(adminController));
 app.use("/api/documents", createDocumentRoutes(documentController));
 app.use("/api/signatures", createSignatureRoutes(signatureController));
-
-
-// =================================================================
-// RUTE DASAR DAN PENANGANAN ERROR
-// =================================================================
+app.use("/api/groups", createGroupRoutes(groupController));
+app.use("/api/packages", createPackageRoutes(packageController));
 
 /**
- * @route GET /
- * @description Rute untuk health check, memastikan API berjalan.
+ * Root Route
  */
 app.get("/", (req, res) => {
     res.json({
-        message: "✅ API sudah berjalan",
+        message: "API is running",
         status: "success",
         timestamp: new Date().toISOString(),
     });
 });
 
 /**
- * @section Global Error Handler
- * Middleware terakhir yang menangkap semua error yang terjadi di dalam aplikasi
- * dan mengirimkan respons error yang terstruktur.
+ * Global Error Handler
  */
 app.use(errorHandler);
-app.set('trust proxy', true);
 
-
-
-// =================================================================
-// MENJALANKAN SERVER
-// =================================================================
+/**
+ * Start Server
+ */
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`✅ Server berjalan di http://localhost:${port}`);
-    logger.info(`Server berjalan di http://localhost:${port}`);
+    logger.info(`Server berjalan pada http://localhost:${port}`);
 });

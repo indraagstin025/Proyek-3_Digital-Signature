@@ -1,5 +1,5 @@
 import { VersionRepository } from "../interface/VersionRepository.js";
-import  VersionError  from "../../errors/StorageError.js";
+import CommonError from "../../errors/CommonError.js";
 
 /**
  * @description Implementasi Repository untuk model 'DocumentVersion' menggunakan Prisma.
@@ -7,7 +7,7 @@ import  VersionError  from "../../errors/StorageError.js";
 export class PrismaVersionRepository extends VersionRepository {
     constructor(prisma) {
         super();
-        if (!prisma) throw VersionError.InternalServerError("Prisma client tidak ditemukan.");
+        if (!prisma) throw CommonError.InternalServerError("Prisma client tidak ditemukan.");
         this.prisma = prisma;
     }
 
@@ -22,7 +22,7 @@ export class PrismaVersionRepository extends VersionRepository {
                 },
             });
         } catch (err) {
-            throw VersionError.InternalServerError(`Gagal membuat versi baru: ${err.message}`);
+            throw CommonError.DatabaseError(`Gagal membuat versi baru: ${err.message}`);
         }
     }
 
@@ -37,9 +37,11 @@ export class PrismaVersionRepository extends VersionRepository {
                 },
             });
         } catch (err) {
-            throw VersionError.InternalServerError(`Gagal mengecek versi: ${err.message}`);
+            throw CommonError.DatabaseError(`Gagal mengecek versi: ${err.message}`);
         }
     }
+
+// ... (kode sebelumnya)
 
     async findById(versionId) {
         try {
@@ -49,13 +51,30 @@ export class PrismaVersionRepository extends VersionRepository {
                     document: true,
                     signaturesPersonal: true,
                     signaturesGroup: true,
+                    packages: {
+                        include: {
+                            signatures: true,
+                            // [PERBAIKAN DI SINI]
+                            // Tambahkan relasi ke parent package untuk ambil statusnya
+                            package: {
+                                select: {
+                                    status: true,
+                                    title: true
+                                }
+                            }
+                        }
+                    }
                 },
             });
-            if (!version) throw VersionError.NotFound("Versi dokumen tidak ditemukan.");
+
+            if (!version) {
+                throw CommonError.NotFound(`Versi dokumen dengan ID '${versionId}' tidak ditemukan.`);
+            }
+
             return version;
         } catch (err) {
-            if (err instanceof VersionError) throw err;
-            throw VersionError.InternalServerError(`Gagal mengambil versi dokumen: ${err.message}`);
+            if (err instanceof CommonError) throw err;
+            throw CommonError.DatabaseError(`Gagal mengambil versi dokumen: ${err.message}`);
         }
     }
 
@@ -68,12 +87,27 @@ export class PrismaVersionRepository extends VersionRepository {
                     document: true,
                     signaturesPersonal: true,
                     signaturesGroup: true,
+                    packages: {
+                        include: {
+                            signatures: true,
+                            // [PERBAIKAN DI SINI JUGA]
+                            // Agar list history juga tahu status paketnya
+                            package: {
+                                select: {
+                                    status: true,
+                                    title: true
+                                }
+                            }
+                        }
+                    }
                 },
             });
         } catch (err) {
-            throw VersionError.InternalServerError(`Gagal mengambil semua versi dokumen: ${err.message}`);
+            throw CommonError.DatabaseError(`Gagal mengambil semua versi dokumen: ${err.message}`);
         }
     }
+
+    // ... (sisa kode update dan delete aman)
 
     async update(versionId, data) {
         try {
@@ -82,17 +116,51 @@ export class PrismaVersionRepository extends VersionRepository {
                 data,
             });
         } catch (err) {
-            throw VersionError.InternalServerError(`Gagal memperbarui versi dokumen: ${err.message}`);
+            if (err.code === 'P2025') {
+                throw CommonError.NotFound("Versi dokumen yang ingin diperbarui tidak ditemukan.");
+            }
+            throw CommonError.DatabaseError(`Gagal memperbarui versi dokumen: ${err.message}`);
         }
     }
 
+    /**
+     * @description Menghapus versi dokumen, TAPI melarang penghapusan Versi Pertama (Asli).
+     */
     async deleteById(versionId) {
         try {
+            const versionToDelete = await this.prisma.documentVersion.findUnique({
+                where: { id: versionId },
+                select: { id: true, documentId: true }
+            });
+
+            if (!versionToDelete) {
+                throw CommonError.NotFound("Versi dokumen tidak ditemukan.");
+            }
+
+            const firstVersion = await this.prisma.documentVersion.findFirst({
+                where: { documentId: versionToDelete.documentId },
+                orderBy: { createdAt: 'asc' },
+                select: { id: true }
+            });
+
+            if (firstVersion && firstVersion.id === versionId) {
+                throw CommonError.BadRequest("Versi asli (versi pertama) dokumen tidak dapat dihapus. Anda hanya dapat menghapus versi turunannya.");
+            }
+
             return await this.prisma.documentVersion.delete({
                 where: { id: versionId },
             });
+
         } catch (err) {
-            throw VersionError.InternalServerError(`Gagal menghapus versi dokumen: ${err.message}`);
+            if (err instanceof CommonError) {
+                throw err;
+            }
+
+            if (err.code === 'P2025') {
+                throw CommonError.NotFound("Versi dokumen tidak ditemukan saat akan dihapus.");
+            }
+
+            throw CommonError.DatabaseError(`Gagal menghapus versi dokumen: ${err.message}`);
         }
     }
 }
