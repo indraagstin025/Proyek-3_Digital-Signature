@@ -89,7 +89,8 @@ app.use(morgan(":method :url :status :res[content-length] - :response-time ms", 
 /**
  * Body Parser
  */
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 /**
  * ======================================================
@@ -155,7 +156,11 @@ const packageService = new PackageService(
 const authController = createAuthController(authService, { AuthError, CommonError });
 const userController = createUserController(userService);
 const adminController = createAdminController(adminService);
-const documentController = createDocumentController(documentService, fileStorage, versionRepository);
+const documentController = createDocumentController(
+    documentService,
+    signatureRepository,
+    fileStorage
+);
 const signatureController = createSignatureController(documentService, signatureService, packageService);
 const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);

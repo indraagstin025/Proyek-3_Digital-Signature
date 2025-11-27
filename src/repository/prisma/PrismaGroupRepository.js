@@ -1,1 +1,100 @@
-import { GroupRepository } from "../interface/GroupRepository.js"import CommonError from "../../errors/CommonError.js";/** * @description Implementasi Repository untuk model 'Group' menggunakan prisma. */export class PrismaGroupRepository extends GroupRepository {    constructor(prisma) {        super();        if (!prisma) {            throw CommonError.InternalServerError("Prisma Client tidak ditemukan.");        }        this.prisma = prisma;    }    /**     * @description Membuat Grup baru dan Anggota (admin) pertamanya dalam satu transaksi.     * @param {string} adminId - ID pemilik (User ID).     * @param {string} name - Nama grup.     * @returns {Promise<object>} Objek grup yang baru dibuat.     */    async createWithAdmin(adminId, name) {        try {            return await this.prisma.$transaction(async (tx) => {                const group = await tx.group.create({                    data: {                        name,                        adminId,                    },                });                await tx.groupMember.create({                    data: {                        groupId: group.id,                        userId: adminId,                        role: 'admin_group',                    },                });                return group;            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal membuat grup di database: ${err.message}`);        }    }    /**     * @description Mencari satu grup berdasarkan ID-nya (INT).     * @param {number} groupId - ID grup (Ingat, ini adalah INT).     * @returns {Promise<object>} Objek grup, termasuk admin dan anggotanya.     */    async findById(groupId) {        try {            return await this.prisma.group.findUnique({                where: { id: groupId }, // Pastikan groupId adalah number                include: {                    admin: { // Info admin utama                        select: { id: true, name: true, email: true }                    },                    members: { // Daftar semua anggota                        include: {                            user: {                                select: { id: true, name: true, email: true }                            }                        }                    },                    documents: {                        orderBy: { createdAt: 'desc' },                        include: {                            currentVersion: true // Sertakan versi terbaru                        }                    }                },            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal mencari grup: ${err.message}`);        }    }    async update(groupId, data) {        try {            return await this.prisma.group.update({                where: { id: groupId },                data,            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal memperbarui grup: ${err.message}`);        }    }    async deleteById(groupId) {        try {            return await this.prisma.group.delete({                where: { id: groupId },            });        } catch (err) {            throw CommonError.DatabaseError(`Gagal menghapus grup: ${err.message}`);        }    }}
+import { GroupRepository } from "../interface/GroupRepository.js";
+import CommonError from "../../errors/CommonError.js";
+
+/**
+ * @description Implementasi Repository untuk model 'Group' menggunakan prisma.
+ */
+export class PrismaGroupRepository extends GroupRepository {
+  constructor(prisma) {
+    super();
+    if (!prisma) {
+      throw CommonError.InternalServerError("Prisma Client tidak ditemukan.");
+    }
+    this.prisma = prisma;
+  }
+
+  /**
+   * @description Membuat Grup baru dan Anggota (admin) pertamanya dalam satu transaksi.
+   * @param {string} adminId - ID pemilik (User ID).
+   * @param {string} name - Nama grup.
+   * @returns {Promise<object>} Objek grup yang baru dibuat.
+   */
+  async createWithAdmin(adminId, name) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const group = await tx.group.create({
+          data: {
+            name,
+            adminId,
+          },
+        });
+
+        await tx.groupMember.create({
+          data: {
+            groupId: group.id,
+            userId: adminId,
+            role: "admin_group",
+          },
+        });
+        return group;
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal membuat grup di database: ${err.message}`);
+    }
+  }
+
+  /**
+   * @description Mencari satu grup berdasarkan ID-nya (INT).
+   * @param {number} groupId - ID grup (Ingat, ini adalah INT).
+   * @returns {Promise<object>} Objek grup, termasuk admin dan anggotanya.
+   */
+  async findById(groupId) {
+    try {
+      return await this.prisma.group.findUnique({
+        where: { id: groupId },
+        include: {
+          admin: {
+            select: { id: true, name: true, email: true },
+          },
+          members: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true },
+              },
+            },
+          },
+
+          documents: {
+            orderBy: { createdAt: "desc" },
+            include: {
+              currentVersion: true,
+            },
+          },
+        },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mencari grup: ${err.message}`);
+    }
+  }
+
+  async update(groupId, data) {
+    try {
+      return await this.prisma.group.update({
+        where: { id: groupId },
+        data,
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal memperbarui grup: ${err.message}`);
+    }
+  }
+
+  async deleteById(groupId) {
+    try {
+      return await this.prisma.group.delete({
+        where: { id: groupId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghapus grup: ${err.message}`);
+    }
+  }
+}

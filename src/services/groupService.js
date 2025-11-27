@@ -1,1 +1,255 @@
-import crypto from "crypto";import GroupError from "../errors/GroupError.js";import DocumentError from "../errors/DocumentError.js";/** * @class GroupService * @description Service yang menangani logika bisnis untuk Grup, Anggota, Undangan, dan pengelolaan dokumen dalam grup. */export class GroupService {    /**     * @constructor     * @param {object} groupRepository - Repository untuk tabel Group.     * @param {object} groupMemberRepository - Repository untuk tabel GroupMember.     * @param {object} groupInvitationRepository - Repository untuk tabel GroupInvitation.     * @param {import('../repositories/documentRepository.js').DocumentRepository} documentRepository - Repository untuk tabel Document.     */    constructor(groupRepository, groupMemberRepository, groupInvitationRepository, documentRepository) {        if (!groupRepository || !groupMemberRepository || !groupInvitationRepository || !documentRepository) {            throw new Error("Semua repository (Group, Member, Invitation, Document) harus disediakan.");        }        this.groupRepository = groupRepository;        this.groupMemberRepository = groupMemberRepository;        this.groupInvitationRepository = groupInvitationRepository;        this.documentRepository = documentRepository;    }    /**     * Membuat grup baru dan menetapkan pembuat sebagai admin utama.     * @param {string} adminId - ID user pembuat grup.     * @param {string} name - Nama grup.     * @returns {Promise<object>} Data grup yang dibuat.     * @throws {GroupError.BadRequest} Jika nama kosong.     * @throws {Error} Jika proses database gagal.     */    async createGroup(adminId, name) {        if (!name || name.trim() === "") {            throw GroupError.BadRequest("Nama grup tidak boleh kosong.");        }        try {            return await this.groupRepository.createWithAdmin(adminId, name);        } catch (error) {            throw new Error(`Gagal membuat grup: ${error.message}`);        }    }    /**     * Mengambil detail grup jika user adalah anggota.     * @param {number} groupId - ID grup.     * @param {string} userId - ID user yang meminta data.     * @returns {Promise<object>} Data grup.     * @throws {GroupError.UnauthorizedAccess} Jika user bukan anggota.     * @throws {GroupError.NotFound} Jika grup tidak ada.     */    async getGroupById(groupId, userId) {        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);        if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");        const group = await this.groupRepository.findById(groupId);        if (!group) throw GroupError.NotFound(groupId);        return group;    }    /**     * Membuat token undangan baru untuk grup (hanya admin).     * @param {number} groupId - ID grup.     * @param {string} inviterId - ID admin yang membuat undangan.     * @param {string} role - Role penerima (e.g. "viewer", "signer").     * @returns {Promise<object>} Undangan yang dibuat.     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.     */    async createInvitation(groupId, inviterId, role) {        const inviter = await this.groupMemberRepository.findByGroupAndUser(groupId, inviterId);        if (!inviter || inviter.role !== 'admin_group') {            throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat membuat undangan.");        }        const token = crypto.randomBytes(20).toString('hex');        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);        return this.groupInvitationRepository.create({            groupId,            inviterId,            role,            token,            expiresAt,            status: 'active'        });    }    /**     * Menerima undangan menggunakan token.     * @param {string} token - Token undangan.     * @param {string} userId - ID user yang menerima undangan.     * @returns {Promise<object>} Data keanggotaan baru.     * @throws {GroupError.InvalidInvitation} Jika token tidak ada / expired.     * @throws {GroupError.AlreadyMember} Jika user sudah menjadi anggota.     */    async acceptInvitation(token, userId) {        const invitation = await this.groupInvitationRepository.findByToken(token);        if (!invitation) throw GroupError.InvalidInvitation("Token undangan tidak ditemukan.");        const existing = await this.groupMemberRepository.findByGroupAndUser(invitation.groupId, userId);        if (existing) throw GroupError.AlreadyMember();        if (invitation.status !== 'active' || invitation.expiresAt < new Date()) {            throw GroupError.InvalidInvitation("Undangan tidak valid atau telah kedaluwarsa.");        }        try {            return await this.groupMemberRepository.createFromInvitation(invitation, userId);        } catch (error) {            throw new Error(`Gagal bergabung dengan grup: ${error.message}`);        }    }    /**     * Menghubungkan dokumen ke grup (user harus pemilik dokumen dan anggota grup).     * @param {string} documentId - ID dokumen.     * @param {number} groupId - ID grup.     * @param {string} userId - ID user.     * @returns {Promise<object>} Dokumen yang diperbarui.     * @throws {DocumentError.NotFound} Jika dokumen tidak ditemukan.     * @throws {GroupError.UnauthorizedAccess} Jika user bukan anggota grup.     */    async assignDocumentToGroup(documentId, groupId, userId) {        const document = await this.documentRepository.findById(documentId, userId);        if (!document) throw DocumentError.NotFound(documentId);        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);        if (!member) {            throw GroupError.UnauthorizedAccess("Anda harus menjadi anggota grup untuk memasukkan dokumen.");        }        return this.documentRepository.update(documentId, { groupId });    }    /**     * Mengeluarkan user dari grup (hanya admin grup).     * @param {number} groupId - ID grup.     * @param {string} adminId - ID admin yang menghapus.     * @param {string} userIdToRemove - ID user yang dikeluarkan.     * @returns {Promise<void>}     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.     * @throws {GroupError.NotFound} Jika user tidak ditemukan.     * @throws {GroupError.BadRequest} Jika mencoba menghapus pemilik grup.     */    async removeMember(groupId, adminId, userIdToRemove) {        const admin = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);        if (!admin || admin.role !== 'admin_group') {            throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");        }        const target = await this.groupMemberRepository.findByGroupAndUser(groupId, userIdToRemove);        if (!target) throw GroupError.NotFound("Anggota tidak ditemukan di grup ini.");        const group = await this.groupRepository.findById(groupId);        if (group.adminId === userIdToRemove) {            throw GroupError.BadRequest("Tidak dapat mengeluarkan pemilik utama grup.");        }        await this.groupMemberRepository.deleteById(target.id);    }    /**     * Mengubah nama grup (hanya admin grup).     * @param {number} groupId - ID grup.     * @param {string} userId - ID user admin.     * @param {string} name - Nama baru grup.     * @returns {Promise<object>} Grup yang diperbarui.     */    async updateGroup(groupId, userId, name) {        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);        if (!member || member.role !== 'admin_group') {            throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");        }        return this.groupRepository.update(groupId, { name });    }    /**     * Menghapus grup sepenuhnya (hanya pemilik utama).     * @param {number} groupId - ID grup.     * @param {string} userId - ID pemilik grup.     * @returns {Promise<void>}     */    async deleteGroup(groupId, userId) {        const group = await this.groupRepository.findById(groupId);        if (!group) throw GroupError.NotFound();        if (group.adminId !== userId) {            throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");        }        await this.groupRepository.deleteById(groupId);    }    /**     * Mengambil semua grup user lengkap dengan jumlah anggota & dokumen.     * @param {string} userId - ID user.     * @returns {Promise<Array<object>>} Daftar grup dengan statistik.     */    async getAllUserGroups(userId) {        const memberships = await this.groupMemberRepository.findAllByUserId(userId, {            include: {                group: {                    include: {                        _count: {                            select: { members: true, documents: true }                        }                    }                }            }        });        return memberships            .map(m => m.group && ({                id: m.group.id,                name: m.group.name,                // Pastikan _count ada sebelum mengakses propertinya                docs_count: m.group._count ? m.group._count.documents : 0,                members_count: m.group._count ? m.group._count.members : 0            }))            .filter(Boolean);    }    /**     * Melepaskan dokumen dari grup (hanya admin).     * @param {number} groupId - ID grup.     * @param {string} documentId - ID dokumen.     * @param {string} userId - ID admin.     * @returns {Promise<object>} Dokumen setelah dilepas.     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.     * @throws {GroupError.NotFound} Jika dokumen tidak ada dalam grup.     */    async unassignDocumentFromGroup(groupId, documentId, userId) {        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);        if (!member || member.role !== 'admin_group') {            throw GroupError.UnauthorizedAccess("Hanya admin yang bisa menghapus dokumen dari grup.");        }        const document = await this.documentRepository.findFirst({            where: { id: documentId, groupId }        });        if (!document) {            throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");        }        // ✅ BENAR: Gunakan repository yang di-inject        return this.documentRepository.update(documentId, {            groupId: null        });    }}
+import crypto from "crypto";
+import GroupError from "../errors/GroupError.js";
+import DocumentError from "../errors/DocumentError.js";
+
+/**
+ * @class GroupService
+ * @description Service yang menangani logika bisnis untuk Grup, Anggota, Undangan, dan pengelolaan dokumen dalam grup.
+ */
+export class GroupService {
+    /**
+     * @constructor
+     * @param {object} groupRepository - Repository untuk tabel Group.
+     * @param {object} groupMemberRepository - Repository untuk tabel GroupMember.
+     * @param {object} groupInvitationRepository - Repository untuk tabel GroupInvitation.
+     * @param {import('../repositories/documentRepository.js').DocumentRepository} documentRepository - Repository untuk tabel Document.
+     */
+    constructor(groupRepository, groupMemberRepository, groupInvitationRepository, documentRepository) {
+        if (!groupRepository || !groupMemberRepository || !groupInvitationRepository || !documentRepository) {
+            throw new Error("Semua repository (Group, Member, Invitation, Document) harus disediakan.");
+        }
+        this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
+        this.groupInvitationRepository = groupInvitationRepository;
+        this.documentRepository = documentRepository;
+    }
+
+    /**
+     * Membuat grup baru dan menetapkan pembuat sebagai admin utama.
+     * @param {string} adminId - ID user pembuat grup.
+     * @param {string} name - Nama grup.
+     * @returns {Promise<object>} Data grup yang dibuat.
+     * @throws {GroupError.BadRequest} Jika nama kosong.
+     * @throws {Error} Jika proses database gagal.
+     */
+    async createGroup(adminId, name) {
+        if (!name || name.trim() === "") {
+            throw GroupError.BadRequest("Nama grup tidak boleh kosong.");
+        }
+
+        try {
+            return await this.groupRepository.createWithAdmin(adminId, name);
+        } catch (error) {
+            throw new Error(`Gagal membuat grup: ${error.message}`);
+        }
+    }
+
+    /**
+     * Mengambil detail grup jika user adalah anggota.
+     * @param {number} groupId - ID grup.
+     * @param {string} userId - ID user yang meminta data.
+     * @returns {Promise<object>} Data grup.
+     * @throws {GroupError.UnauthorizedAccess} Jika user bukan anggota.
+     * @throws {GroupError.NotFound} Jika grup tidak ada.
+     */
+    async getGroupById(groupId, userId) {
+        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
+        if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
+
+        const group = await this.groupRepository.findById(groupId);
+        if (!group) throw GroupError.NotFound(groupId);
+
+        return group;
+    }
+
+
+    /**
+     * Membuat token undangan baru untuk grup (hanya admin).
+     * @param {number} groupId - ID grup.
+     * @param {string} inviterId - ID admin yang membuat undangan.
+     * @param {string} role - Role penerima (e.g. "viewer", "signer").
+     * @returns {Promise<object>} Undangan yang dibuat.
+     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.
+     */
+    async createInvitation(groupId, inviterId, role) {
+        const inviter = await this.groupMemberRepository.findByGroupAndUser(groupId, inviterId);
+        if (!inviter || inviter.role !== 'admin_group') {
+            throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat membuat undangan.");
+        }
+
+        const token = crypto.randomBytes(20).toString('hex');
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        return this.groupInvitationRepository.create({
+            groupId,
+            inviterId,
+            role,
+            token,
+            expiresAt,
+            status: 'active'
+        });
+    }
+
+    /**
+     * Menerima undangan menggunakan token.
+     * @param {string} token - Token undangan.
+     * @param {string} userId - ID user yang menerima undangan.
+     * @returns {Promise<object>} Data keanggotaan baru.
+     * @throws {GroupError.InvalidInvitation} Jika token tidak ada / expired.
+     * @throws {GroupError.AlreadyMember} Jika user sudah menjadi anggota.
+     */
+    async acceptInvitation(token, userId) {
+        const invitation = await this.groupInvitationRepository.findByToken(token);
+        if (!invitation) throw GroupError.InvalidInvitation("Token undangan tidak ditemukan.");
+
+        const existing = await this.groupMemberRepository.findByGroupAndUser(invitation.groupId, userId);
+        if (existing) throw GroupError.AlreadyMember();
+
+        if (invitation.status !== 'active' || invitation.expiresAt < new Date()) {
+            throw GroupError.InvalidInvitation("Undangan tidak valid atau telah kedaluwarsa.");
+        }
+
+        try {
+            return await this.groupMemberRepository.createFromInvitation(invitation, userId);
+        } catch (error) {
+            throw new Error(`Gagal bergabung dengan grup: ${error.message}`);
+        }
+    }
+
+    /**
+     * Menghubungkan dokumen ke grup (user harus pemilik dokumen dan anggota grup).
+     * @param {string} documentId - ID dokumen.
+     * @param {number} groupId - ID grup.
+     * @param {string} userId - ID user.
+     * @returns {Promise<object>} Dokumen yang diperbarui.
+     * @throws {DocumentError.NotFound} Jika dokumen tidak ditemukan.
+     * @throws {GroupError.UnauthorizedAccess} Jika user bukan anggota grup.
+     */
+    async assignDocumentToGroup(documentId, groupId, userId) {
+        const document = await this.documentRepository.findById(documentId, userId);
+        if (!document) throw DocumentError.NotFound(documentId);
+
+        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
+        if (!member) {
+            throw GroupError.UnauthorizedAccess("Anda harus menjadi anggota grup untuk memasukkan dokumen.");
+        }
+
+        return this.documentRepository.update(documentId, { groupId });
+    }
+
+    /**
+     * Mengeluarkan user dari grup (hanya admin grup).
+     * @param {number} groupId - ID grup.
+     * @param {string} adminId - ID admin yang menghapus.
+     * @param {string} userIdToRemove - ID user yang dikeluarkan.
+     * @returns {Promise<void>}
+     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.
+     * @throws {GroupError.NotFound} Jika user tidak ditemukan.
+     * @throws {GroupError.BadRequest} Jika mencoba menghapus pemilik grup.
+     */
+    async removeMember(groupId, adminId, userIdToRemove) {
+        const admin = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
+        if (!admin || admin.role !== 'admin_group') {
+            throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
+        }
+
+        const target = await this.groupMemberRepository.findByGroupAndUser(groupId, userIdToRemove);
+        if (!target) throw GroupError.NotFound("Anggota tidak ditemukan di grup ini.");
+
+        const group = await this.groupRepository.findById(groupId);
+        if (group.adminId === userIdToRemove) {
+            throw GroupError.BadRequest("Tidak dapat mengeluarkan pemilik utama grup.");
+        }
+
+        await this.groupMemberRepository.deleteById(target.id);
+    }
+
+    /**
+     * Mengubah nama grup (hanya admin grup).
+     * @param {number} groupId - ID grup.
+     * @param {string} userId - ID user admin.
+     * @param {string} name - Nama baru grup.
+     * @returns {Promise<object>} Grup yang diperbarui.
+     */
+    async updateGroup(groupId, userId, name) {
+        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
+        if (!member || member.role !== 'admin_group') {
+            throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");
+        }
+
+        return this.groupRepository.update(groupId, { name });
+    }
+
+    /**
+     * Menghapus grup sepenuhnya (hanya pemilik utama).
+     * @param {number} groupId - ID grup.
+     * @param {string} userId - ID pemilik grup.
+     * @returns {Promise<void>}
+     */
+    async deleteGroup(groupId, userId) {
+        const group = await this.groupRepository.findById(groupId);
+        if (!group) throw GroupError.NotFound();
+
+        if (group.adminId !== userId) {
+            throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");
+        }
+
+        await this.groupRepository.deleteById(groupId);
+    }
+
+    /**
+     * Mengambil semua grup user lengkap dengan jumlah anggota & dokumen.
+     * @param {string} userId - ID user.
+     * @returns {Promise<Array<object>>} Daftar grup dengan statistik.
+     */
+    async getAllUserGroups(userId) {
+        const memberships = await this.groupMemberRepository.findAllByUserId(userId, {
+            include: {
+                group: {
+                    include: {
+                        _count: {
+                            select: { members: true, documents: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        return memberships
+            .map(m => m.group && ({
+                id: m.group.id,
+                name: m.group.name,
+                docs_count: m.group._count ? m.group._count.documents : 0,
+                members_count: m.group._count ? m.group._count.members : 0
+            }))
+            .filter(Boolean);
+    }
+
+    /**
+     * Melepaskan dokumen dari grup (hanya admin).
+     * @param {number} groupId - ID grup.
+     * @param {string} documentId - ID dokumen.
+     * @param {string} userId - ID admin.
+     * @returns {Promise<object>} Dokumen setelah dilepas.
+     * @throws {GroupError.UnauthorizedAccess} Jika bukan admin.
+     * @throws {GroupError.NotFound} Jika dokumen tidak ada dalam grup.
+     */
+    async unassignDocumentFromGroup(groupId, documentId, userId) {
+        const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
+        if (!member || member.role !== 'admin_group') {
+            throw GroupError.UnauthorizedAccess("Hanya admin yang bisa menghapus dokumen dari grup.");
+        }
+        const document = await this.documentRepository.findFirst({
+            where: { id: documentId, groupId }
+        });
+
+        if (!document) {
+            throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");
+        }
+
+        return this.documentRepository.update(documentId, {
+            groupId: null
+        });
+
+    }
+}

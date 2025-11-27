@@ -17,14 +17,53 @@ export class PrismaSignatureRepository extends SignatureRepository {
     }
 
     /**
+     * [METHOD LAMA]
      * @description Membuat data tanda tangan personal baru di database.
      * @param {object} data - Data lengkap untuk membuat SignaturePersonal.
      * @returns {Promise<object>}
      */
     async createPersonal(data) {
-        // Method ini tidak perlu diubah, data baru (signerPublicKey) akan otomatis tersimpan
         return this.prisma.signaturePersonal.create({
             data: data,
+        });
+    }
+
+    /**
+     * [FIXED V3] Membuat signature baru (Generic).
+     * Digunakan oleh AI Auto-Tagging.
+     * Menyesuaikan dengan keterbatasan Schema Prisma (tanpa kolom 'type').
+     */
+    async createSignature(data) {
+
+        // Hapus properti 'type' dari data input agar Prisma tidak error
+        // (Karena kolom 'type' tidak ada di database)
+        const { type, ...validData } = data;
+
+        return this.prisma.signaturePersonal.create({
+            data: {
+                documentVersion: {
+                    connect: { id: validData.documentVersionId }
+                },
+                signer: {
+                    connect: { id: validData.userId }
+                },
+
+                pageNumber: validData.pageNumber,
+                positionX: validData.positionX,
+                positionY: validData.positionY,
+                width: validData.width,
+                height: validData.height,
+
+                // Trik: Gunakan string kosong untuk menandai placeholder
+                signatureImageUrl: validData.signatureImageUrl || "",
+
+                // Gunakan nilai default valid dari Enum SigningMethod
+                // Jika 'auto', kita paksa jadi 'canvas' agar database terima.
+                method: (validData.method === 'auto' || !validData.method) ? 'canvas' : validData.method,
+
+                ipAddress: validData.ipAddress || null,
+                userAgent: validData.userAgent || null
+            },
         });
     }
 
@@ -35,8 +74,6 @@ export class PrismaSignatureRepository extends SignatureRepository {
      * @returns {Promise<object|null>}
      */
     async findById(signatureId) {
-        // Kolom 'signerPublicKey' akan diambil secara default.
-        // Kita perlu memastikan 'documentVersion' mengambil 'digitalSignature'.
         return this.prisma.signaturePersonal.findUnique({
             where: { id: signatureId },
             include: {
@@ -44,8 +81,6 @@ export class PrismaSignatureRepository extends SignatureRepository {
                 documentVersion: {
                     include: {
                         document: true,
-                        // Semua kolom DocumentVersion (termasuk digitalSignature) akan diambil
-                        // karena kita menggunakan `include: { document: true }` di dalamnya.
                     },
                 },
             },
@@ -73,7 +108,6 @@ export class PrismaSignatureRepository extends SignatureRepository {
      * @returns {Promise<object>} Objek tanda tangan setelah diperbarui.
      */
     async update(signatureId, data) {
-        // Method ini tidak perlu diubah.
         return this.prisma.signaturePersonal.update({
             where: { id: signatureId },
             data: data,

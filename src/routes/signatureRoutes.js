@@ -1,1 +1,31 @@
-import express from 'express';import authMiddleware from "../middleware/authMiddleware.js";import { uploadPdfForVerification } from "../middleware/uploadMiddleware.js";export default (signatureController) => {    const router = express.Router();    /**     * @route   POST /api/signatures/personal     * @desc    Menambahkan tanda tangan mandiri ke sebuah versi dokumen.     * @access  Private     */    router.post(        '/personal',        authMiddleware,        signatureController.addPersonalSignature    );    /**     * @route   GET /api/signatures/verify/:signatureId     * @desc    Verifikasi detail tanda tangan dari ID uniknya.     * @access  Public     */    router.get(        '/verify/:signatureId',        signatureController.getSignatureVerification    );    router.post(        '/verify-file',        // 1. Gunakan middleware Multer yang benar        uploadPdfForVerification.single('file'),        // 2. Arahkan ke handler yang benar        signatureController.verifyUploadedSignature    );    return router;};
+import express from "express";
+import authMiddleware from "../middleware/authMiddleware.js";
+import { uploadPdfForVerification } from "../middleware/uploadMiddleware.js";
+
+export default (signatureController) => {
+  const router = express.Router();
+
+  /**
+   * @route   POST /api/signatures/personal
+   * @desc    Menambahkan tanda tangan mandiri ke sebuah versi dokumen.
+   * @access  Private
+   */
+  router.post("/personal", authMiddleware, signatureController.addPersonalSignature);
+
+  /**
+   * @route   GET /api/signatures/verify/:signatureId
+   * @desc    Verifikasi detail tanda tangan dari ID uniknya.
+   * @access  Public
+   */
+  router.get("/verify/:signatureId", signatureController.getSignatureVerification);
+
+  router.post(
+    "/verify-file",
+
+    uploadPdfForVerification.single("file"),
+
+    signatureController.verifyUploadedSignature
+  );
+
+  return router;
+};

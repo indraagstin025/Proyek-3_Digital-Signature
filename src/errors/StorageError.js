@@ -1,1 +1,36 @@
-import BaseError from "./BaseError.js";/** * @description Kumpulan error spesifik untuk masalah teknis pada layanan penyimpanan file. * @extends BaseError */class StorageError extends BaseError {    /**     * @description Dilempar saat proses unggah file ke cloud storage gagal.     * @param {string} originalErrorMessage - Pesan error asli dari library/client storage.     * @returns {StorageError}     */    static UploadFailed(originalErrorMessage) {        return new StorageError("STORAGE_UPLOAD_FAILED", 500, `Gagal mengunggah file: ${originalErrorMessage}`);    }    /**     * @description Dilempar saat proses unduh file dari cloud storage gagal.     * @param {string} originalErrorMessage - Pesan error asli dari library/client storage.     * @returns {StorageError}     */    static DownloadFailed(originalErrorMessage) {        return new StorageError("STORAGE_DOWNLOAD_FAILED", 500, `Gagal mengunduh file: ${originalErrorMessage}`);    }    /**     * @description Dilempar saat URL yang diberikan untuk operasi file tidak valid.     * @param {string} url - URL yang tidak valid.     * @returns {StorageError}     */    static InvalidUrl(url) {        return new StorageError("STORAGE_INVALID_URL", 500, `URL file tidak valid: ${url}`);    }}export default StorageError;
+import BaseError from "./BaseError.js";
+
+/**
+ * @description Kumpulan error spesifik untuk masalah teknis pada layanan penyimpanan file.
+ * @extends BaseError
+ */
+class StorageError extends BaseError {
+  /**
+   * @description Dilempar saat proses unggah file ke cloud storage gagal.
+   * @param {string} originalErrorMessage - Pesan error asli dari library/client storage.
+   * @returns {StorageError}
+   */
+  static UploadFailed(originalErrorMessage) {
+    return new StorageError("STORAGE_UPLOAD_FAILED", 500, `Gagal mengunggah file: ${originalErrorMessage}`);
+  }
+
+  /**
+   * @description Dilempar saat proses unduh file dari cloud storage gagal.
+   * @param {string} originalErrorMessage - Pesan error asli dari library/client storage.
+   * @returns {StorageError}
+   */
+  static DownloadFailed(originalErrorMessage) {
+    return new StorageError("STORAGE_DOWNLOAD_FAILED", 500, `Gagal mengunduh file: ${originalErrorMessage}`);
+  }
+
+  /**
+   * @description Dilempar saat URL yang diberikan untuk operasi file tidak valid.
+   * @param {string} url - URL yang tidak valid.
+   * @returns {StorageError}
+   */
+  static InvalidUrl(url) {
+    return new StorageError("STORAGE_INVALID_URL", 500, `URL file tidak valid: ${url}`);
+  }
+}
+
+export default StorageError;

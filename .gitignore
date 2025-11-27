@@ -11,6 +11,7 @@ logs
 coverage
 reports
 config/certs
+config/certificates
 
 prisma/dbml/
 prisma/migrations/

@@ -1,181 +1,193 @@
-import UserRepository from '../interface/UserRepository.js';
-import bcrypt from 'bcrypt';
-import UserError from '../../errors/UserError.js';
-import CommonError from '../../errors/CommonError.js';
+import UserRepository from "../interface/UserRepository.js";
+import bcrypt from "bcrypt";
+import UserError from "../../errors/UserError.js";
+import CommonError from "../../errors/CommonError.js";
 
 /**
  * @description Implementasi UserRepository menggunakan Prisma.
  * @extends UserRepository
  */
 class PrismaUserRepository extends UserRepository {
-    /**
-     * @param {PrismaClient} prismaClient - Instance Prisma yang di-inject.
-     */
-    constructor(prismaClient) {
-        super();
-        if (!prismaClient) {
-            throw new CommonError.InternalServerError("PrismaClient harus disediakan.");
-        }
-        this.prisma = prismaClient;
+  /**
+   * @param {PrismaClient} prismaClient - Instance Prisma yang di-inject.
+   */
+  constructor(prismaClient) {
+    super();
+    if (!prismaClient) {
+      throw new CommonError.InternalServerError("PrismaClient harus disediakan.");
+    }
+    this.prisma = prismaClient;
+  }
+
+  /**
+   * @description Membuat pengguna baru. Menerjemahkan error P2002 dari Prisma.
+   */
+  async createUser(userData) {
+    try {
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      return await this.prisma.user.create({
+        data: {
+          name: userData.name,
+          email: userData.email,
+          password: hashedPassword,
+        },
+        select: { id: true, name: true, email: true, createdAt: true },
+      });
+    } catch (error) {
+      if (error.code === "P2002") {
+        throw UserError.DuplicateEmail();
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * @description Mencari satu pengguna berdasarkan ID.
+   */
+  async findById(id) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phoneNumber: true,
+        title: true,
+        address: true,
+        profilePictureUrl: true,
+        isSuperAdmin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user;
+  }
+
+  /**
+   * @description Mengambil semua pengguna.
+   */
+  async findAll() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        isSuperAdmin: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  /**
+   * @description Memperbarui data pengguna. Menerjemahkan error P2025 dari Prisma.
+   */
+  async update(id, userData) {
+    const updateData = { ...userData };
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
     }
 
-    /**
-     * @description Membuat pengguna baru. Menerjemahkan error P2002 dari Prisma.
-     */
-    async createUser(userData) {
-        try {
-            const hashedPassword = await bcrypt.hash(userData.password, 10);
-            return await this.prisma.user.create({
-                data: {
-                    name: userData.name,
-                    email: userData.email,
-                    password: hashedPassword,
-                },
-                select: { id: true, name: true, email: true, createdAt: true },
-            });
-        } catch (error) {
-            if (error.code === 'P2002') {
-                // TERJEMAHAN: Ubah error teknis database menjadi error bisnis yang jelas.
-                throw UserError.DuplicateEmail();
-            }
-            throw error; // Lempar error lain agar ditangani sebagai 500.
-        }
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phoneNumber: true,
+          title: true,
+          address: true,
+          profilePictureUrl: true,
+          updatedAt: true,
+        },
+      });
+    } catch (error) {
+      if (error.code === "P2025") {
+        throw UserError.NotFound(`User dengan ID ${id} untuk diupdate tidak ditemukan.`);
+      }
+      throw error;
     }
+  }
 
-    /**
-     * @description Mencari satu pengguna berdasarkan ID.
-     */
-    async findById(id) {
-        // Validasi format ID sudah dipindahkan ke lapisan validator.
-        const user = await this.prisma.user.findUnique({
-            where: { id },
-            select: {
-                id: true, email: true, name: true, phoneNumber: true,
-                title: true, address: true, profilePictureUrl: true,
-                isSuperAdmin: true, createdAt: true, updatedAt: true,
-            },
-        });
-        // Jika tidak ditemukan, service yang akan melempar UserError.NotFound()
-        return user;
-    }
+  /**
+   * @description Menyimpan data foto profil baru ke database.
+   */
+  async createProfilePicture(userId, pictureData) {
+    return this.prisma.userProfilePicture.create({
+      data: {
+        userId,
+        url: pictureData.url,
+        hash: pictureData.hash,
+        isActive: pictureData.isActive ?? false,
+      },
+    });
+  }
 
-    /**
-     * @description Mengambil semua pengguna.
-     */
-    async findAll() {
-        return this.prisma.user.findMany({
-            select: {
-                id: true, email: true, name: true,
-                isSuperAdmin: true, createdAt: true,
-            },
-            orderBy: { createdAt: 'desc' },
-        });
-    }
+  /**
+   * @description Mencari foto profil berdasarkan hash file.
+   */
+  async findProfilePictureByHash(userId, hash) {
+    return this.prisma.userProfilePicture.findFirst({ where: { userId, hash } });
+  }
 
-    /**
-     * @description Memperbarui data pengguna. Menerjemahkan error P2025 dari Prisma.
-     */
-    async update(id, userData) {
-        const updateData = { ...userData };
-        if (updateData.password) {
-            updateData.password = await bcrypt.hash(updateData.password, 10);
-        }
+  /**
+   * @description Mencari foto profil berdasarkan ID-nya.
+   */
+  async findProfilePictureById(userId, pictureId) {
+    return this.prisma.userProfilePicture.findFirst({ where: { id: pictureId, userId } });
+  }
 
-        try {
-            return await this.prisma.user.update({
-                where: { id },
-                data: updateData,
-                select: {
-                    id: true, email: true, name: true, phoneNumber: true,
-                    title: true, address: true, profilePictureUrl: true,
-                    updatedAt: true,
-                },
-            });
-        } catch (error) {
-            if (error.code === 'P2025') {
-                // TERJEMAHAN: Ubah error "record not found" menjadi error bisnis.
-                throw UserError.NotFound(`User dengan ID ${id} untuk diupdate tidak ditemukan.`);
-            }
-            throw error;
-        }
-    }
+  /**
+   * @description Menonaktifkan semua foto profil lain.
+   */
+  async deactivateOtherProfilePictures(userId, activePictureId) {
+    return this.prisma.userProfilePicture.updateMany({
+      where: { userId, id: { not: activePictureId } },
+      data: { isActive: false },
+    });
+  }
 
-    /**
-     * @description Menyimpan data foto profil baru ke database.
-     */
-    async createProfilePicture(userId, pictureData) {
-        return this.prisma.userProfilePicture.create({
-            data: {
-                userId,
-                url: pictureData.url,
-                hash: pictureData.hash,
-                isActive: pictureData.isActive ?? false,
-            },
-        });
-    }
+  /**
+   * @description Mengaktifkan sebuah foto profil.
+   */
+  async setProfilePictureActive(pictureId) {
+    return this.prisma.userProfilePicture.update({
+      where: { id: pictureId },
+      data: { isActive: true },
+    });
+  }
 
-    /**
-     * @description Mencari foto profil berdasarkan hash file.
-     */
-    async findProfilePictureByHash(userId, hash) {
-        return this.prisma.userProfilePicture.findFirst({ where: { userId, hash } });
-    }
+  /**
+   * @description Mengambil semua riwayat foto profil pengguna.
+   */
+  async findAllProfilePictures(userId) {
+    return this.prisma.userProfilePicture.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
 
-    /**
-     * @description Mencari foto profil berdasarkan ID-nya.
-     */
-    async findProfilePictureById(userId, pictureId) {
-        return this.prisma.userProfilePicture.findFirst({ where: { id: pictureId, userId } });
-    }
+  /**
+   * @description Menghapus foto profil menggunakan transaksi.
+   */
+  async deletePictureInTransaction(userId, pictureId, isActive) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.userProfilePicture.delete({ where: { id: pictureId } });
+      if (isActive) {
+        await tx.user.update({ where: { id: userId }, data: { profilePictureUrl: null } });
+      }
+    });
+  }
 
-    /**
-     * @description Menonaktifkan semua foto profil lain.
-     */
-    async deactivateOtherProfilePictures(userId, activePictureId) {
-        return this.prisma.userProfilePicture.updateMany({
-            where: { userId, id: { not: activePictureId } },
-            data: { isActive: false },
-        });
-    }
-
-    /**
-     * @description Mengaktifkan sebuah foto profil.
-     */
-    async setProfilePictureActive(pictureId) {
-        return this.prisma.userProfilePicture.update({
-            where: { id: pictureId },
-            data: { isActive: true },
-        });
-    }
-
-    /**
-     * @description Mengambil semua riwayat foto profil pengguna.
-     */
-    async findAllProfilePictures(userId) {
-        return this.prisma.userProfilePicture.findMany({
-            where: { userId },
-            orderBy: { createdAt: 'desc' },
-        });
-    }
-
-    /**
-     * @description Menghapus foto profil menggunakan transaksi.
-     */
-    async deletePictureInTransaction(userId, pictureId, isActive) {
-        return this.prisma.$transaction(async (tx) => {
-            await tx.userProfilePicture.delete({ where: { id: pictureId } });
-            if (isActive) {
-                await tx.user.update({ where: { id: userId }, data: { profilePictureUrl: null } });
-            }
-        });
-    }
-
-    /**
-     * @description Menghapus foto profil (metode sederhana).
-     */
-    async deleteProfilePicture(userId, pictureId) {
-        return this.prisma.userProfilePicture.deleteMany({ where: { id: pictureId, userId } });
-    }
+  /**
+   * @description Menghapus foto profil (metode sederhana).
+   */
+  async deleteProfilePicture(userId, pictureId) {
+    return this.prisma.userProfilePicture.deleteMany({ where: { id: pictureId, userId } });
+  }
 }
 
 export default PrismaUserRepository;
