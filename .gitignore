@@ -7,8 +7,18 @@ node_modules
 server.js
 .idea
 
-logs
+
+# logs folder
+logs/
+logs/*.log
+
+
 coverage
 reports
 config/certs
+config/certificates
 
+prisma/dbml/
+prisma/migrations/
+signer_cert.p12.base64.txt
+temp/
