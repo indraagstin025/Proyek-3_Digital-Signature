@@ -47,51 +47,117 @@ export class PrismaDocumentRepository {
   /**
    * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
    */
-  async findAllByUserId(userId) {
-    return this.prisma.document.findMany({
-      where: { userId },
-      include: {
-        currentVersion: {
-          include: {
-            signaturesPersonal: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-  }
+// ... kode sebelumnya ...
 
-  /**
-   * @description Mencari satu dokumen berdasarkan ID, beserta detail versi terkininya DAN tanda tangannya.
-   */
-  async findById(documentId, userId) {
-    return this.prisma.document.findFirst({
-      where: {
-        id: documentId,
-        userId: userId,
-      },
-      include: {
-        currentVersion: {
-          include: {
-            signaturesPersonal: true,
-          },
-        },
-      },
-    });
-  }
+    /**
+     * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
+     */
+    async findAllByUserId(userId) {
+        return this.prisma.document.findMany({
+            where: { userId },
+            include: {
+                currentVersion: {
+                    include: {
+                        signaturesPersonal: true,
+                        packages: {
+                            include: {
+                                signatures: true,
+                                // [PERBAIKAN]: Tambahkan ini agar status paket (draft/completed) terbaca
+                                package: {
+                                    select: {
+                                        status: true,
+                                        title: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    /**
+     * @description Mencari satu dokumen berdasarkan ID.
+     * [PERBAIKAN]: Menambahkan include packages agar konsisten dengan findAllByUserId
+     */
+    async findById(documentId, userId) {
+        return this.prisma.document.findFirst({
+            where: {
+                id: documentId,
+                userId: userId,
+            },
+            include: {
+                currentVersion: {
+                    include: {
+                        signaturesPersonal: true,
+                        // [PERBAIKAN]: Tambahkan bagian ini juga
+                        packages: {
+                            include: {
+                                signatures: true,
+                                package: {
+                                    select: {
+                                        status: true,
+                                        title: true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                },
+            },
+        });
+    }
+
+// ... sisa kode ...
 
   /**
    * @description Memperbarui data pada tabel Dokumen (misal: title atau currentVersionId).
    */
-  async update(documentId, dataToUpdate) {
-    return this.prisma.document.update({
-      where: { id: documentId },
-      data: dataToUpdate,
-      include: {
-        currentVersion: true,
-      },
-    });
-  }
+    /**
+     * @description Memperbarui data pada tabel Dokumen (misal: title atau currentVersionId).
+     * [PERBAIKAN]: Fungsi ini sekarang menangani pembaruan relasi 'currentVersion'.
+     */
+    async update(documentId, dataToUpdate) {
+
+        // 1. Ekstrak 'currentVersionId' (jika ada) dari sisa data.
+        const { currentVersionId, ...otherData } = dataToUpdate;
+
+        // 2. Siapkan objek data final untuk Prisma.
+        const finalData = {
+            ...otherData, // (misal: { status, signedFileUrl })
+        };
+
+        // 3. Jika 'currentVersionId' ada, ubah menjadi objek 'connect'
+        //    yang dimengerti oleh Prisma untuk memperbarui relasi.
+        if (currentVersionId) {
+            finalData.currentVersion = {
+                connect: {
+                    id: currentVersionId,
+                },
+            };
+        }
+
+        // 4. Jalankan query update dengan data yang sudah diformat dengan benar.
+        return this.prisma.document.update({
+            where: { id: documentId },
+            data: finalData, // Menggunakan 'finalData' yang sudah dimodifikasi
+            include: {
+                currentVersion: true,
+            },
+        });
+    }
+
+    /**
+     * @description Mencari satu dokumen berdasarkan kriteria 'where' kustom.
+     * Ini dibutuhkan oleh GroupService untuk mencari berdasarkan { id, groupId }.
+     * @param {object} query - Objek query Prisma findFirst (misal: { where: { ... } }).
+     * @returns {Promise<object|null>}
+     */
+    async findFirst(query) {
+        return this.prisma.document.findFirst(query);
+    }
 
   /**
    * @description Menghapus record dokumen dari database berdasarkan ID.

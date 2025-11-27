@@ -16,7 +16,6 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
 
     if (error) {
         if (error.message?.toLowerCase().includes("jwt expired")) {
-            // ✅ PERUBAHAN DI SINI: Lempar error dengan kode yang jelas
             const sessionError = AuthError.SessionExpired("Sesi Anda telah berakhir. Silakan login kembali.");
             sessionError.code = "SESSION_EXPIRED"; // Tambahkan properti 'code'
             throw sessionError;

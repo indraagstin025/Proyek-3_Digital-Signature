@@ -3,21 +3,25 @@ import AuthError from "../../errors/AuthError.js";
 import CommonError from "../../errors/CommonError.js";
 
 /**
+ * @typedef {object} AdditionalUserData
+ * @property {string} name - Nama lengkap pengguna.
+ * @property {string} [phoneNumber] - Nomor telepon pengguna (opsional).
+ * @property {string} [address] - Alamat pengguna (opsional).
+ */
+
+/**
+ * Repository untuk autentikasi menggunakan Supabase Auth dan sinkronisasi data pengguna dengan database lokal (Prisma).
+ *
  * @class SupabaseAuthRepository
  * @extends {AuthRepository}
- * @description
- * Repository untuk autentikasi menggunakan Supabase Auth + Prisma.
- *
- * Tanggung jawab:
- * - Menghubungkan ke Supabase Auth untuk proses login, register, dan reset password.
- * - Menyimpan serta menyinkronkan data pengguna di database lokal (Prisma).
- * - Menerjemahkan error dari Supabase/Prisma ke dalam AuthError atau CommonError.
  */
 class SupabaseAuthRepository extends AuthRepository {
     /**
-     * @param {import("@supabase/supabase-js").SupabaseClient} supabaseClient - Instance Supabase client
-     * @param {import("@prisma/client").PrismaClient} prismaClient - Instance Prisma client
-     * @throws {CommonError.InternalServerError} Jika parameter tidak disediakan
+     * Menginisialisasi SupabaseAuthRepository.
+     *
+     * @param {import("@supabase/supabase-js").SupabaseClient} supabaseClient - Instance Supabase client yang sudah terkonfigurasi.
+     * @param {import("@prisma/client").PrismaClient} prismaClient - Instance Prisma client untuk operasi database lokal.
+     * @throws {CommonError.InternalServerError} Jika salah satu instance klien tidak disediakan.
      */
     constructor(supabaseClient, prismaClient) {
         super();
@@ -35,12 +39,16 @@ class SupabaseAuthRepository extends AuthRepository {
 
 
     /**
-     * Mendaftarkan pengguna baru di Supabase Auth dan menyimpannya ke database lokal.
-     * @param {string} email - Email pengguna
-     * @param {string} password - Password pengguna
-     * @param {{name: string, phoneNumber?: string, address?: string}} additionalData - Data tambahan pengguna
-     * @returns {Promise<object>} Data pengguna yang berhasil dibuat
-     * @throws {AuthError.EmailAlreadyExist|AuthError.PasswordTooWeak|CommonError.DatabaseError}
+     * Mendaftarkan pengguna baru di Supabase Auth dan menyimpan data pengguna ke database lokal (Prisma).
+     *
+     * @param {string} email - Email pengguna.
+     * @param {string} password - Password pengguna.
+     * @param {AdditionalUserData} additionalData - Data tambahan pengguna (nama, nomor telepon, alamat).
+     * @returns {Promise<object>} Data pengguna dari database lokal yang berhasil dibuat.
+     * @throws {AuthError.EmailAlreadyExist} Jika email sudah terdaftar di Supabase atau Prisma.
+     * @throws {AuthError.PasswordTooWeak} Jika password tidak memenuhi kriteria Supabase.
+     * @throws {AuthError.SupabaseError} Jika terjadi error spesifik Supabase lainnya.
+     * @throws {CommonError.DatabaseError} Jika terjadi error saat menyimpan data ke Prisma.
      */
     async registerUser(email, password, additionalData) {
         const { data: authData, error: authError } = await this.supabaseClient.auth.signUp({
@@ -79,6 +87,7 @@ class SupabaseAuthRepository extends AuthRepository {
             console.error("Prisma User Create Error:", dbError);
 
             if (dbError.code === "P2002" && dbError.meta?.target?.includes("email")) {
+                // Walaupun Supabase sudah check, ini adalah double check di level DB lokal
                 throw AuthError.EmailAlreadyExist("Email sudah terdaftar.");
             }
 
@@ -90,11 +99,17 @@ class SupabaseAuthRepository extends AuthRepository {
 
 
     /**
-     * Melakukan login pengguna melalui Supabase Auth.
-     * @param {string} email - Email pengguna
-     * @param {string} password - Password pengguna
-     * @returns {Promise<{session: object, user: object}>} Session aktif dan data pengguna
-     * @throws {AuthError.InvalidCredentials|AuthError.UserNotFound|CommonError.NetworkError|AuthError.SupabaseError}
+     * Melakukan login pengguna menggunakan email dan password melalui Supabase Auth.
+     *
+     * @param {string} email - Email pengguna.
+     * @param {string} password - Password pengguna.
+     * @returns {Promise<{session: object, user: object}>} Objek yang berisi session aktif Supabase dan data pengguna lokal yang terseleksi.
+     * @throws {AuthError.InvalidCredentials} Jika kombinasi email/password salah.
+     * @throws {AuthError.UserNotFound} Jika data pengguna tidak ditemukan di database lokal.
+     * @throws {AuthError.EmailNotVerified} Jika email belum diverifikasi.
+     * @throws {CommonError.NetworkError} Jika terjadi masalah koneksi saat menghubungi Supabase.
+     * @throws {AuthError.SupabaseError} Jika terjadi error spesifik Supabase lainnya.
+     * @throws {CommonError.InternalServerError} Untuk error tak terduga lainnya.
      */
     async loginUser(email, password) {
         try {
@@ -106,9 +121,18 @@ class SupabaseAuthRepository extends AuthRepository {
             if (error) {
                 console.error("Supabase Login Error:", error);
 
+                if (
+                    error.message.includes("fetch failed") ||
+                    error.status === 0 ||
+                    error.name === 'AuthRetryableFetchError'
+                ) {
+                    throw CommonError.NetworkError("Koneksi ke server lambat atau tidak stabil, Silahkan coba lagi beberapa saat.");
+                }
+
                 if (error.message.includes("Invalid login credentials")) {
                     throw AuthError.InvalidCredentials();
                 }
+
                 throw AuthError.SupabaseError(error.message);
             }
 
@@ -119,7 +143,6 @@ class SupabaseAuthRepository extends AuthRepository {
             if (!data.user.email_confirmed_at) {
                 throw AuthError.EmailNotVerified("Silakan verifikasi email Anda sebelum login.");
             }
-
 
             const localUser = await this.prisma.user.findUnique({
                 where: { id: data.user.id },
@@ -135,12 +158,15 @@ class SupabaseAuthRepository extends AuthRepository {
             }
 
             return { session: data.session, user: localUser };
+
         } catch (err) {
-            if (err instanceof AuthError) throw err;
+            // Jika error sudah dikenali (instance dari AuthError atau CommonError), teruskan
+            if (err instanceof AuthError || err instanceof CommonError) throw err;
 
             console.error("Unexpected Login Error:", err);
 
-            if (err.message?.includes("fetch failed")) {
+            // Fallback untuk error yang di-throw oleh sistem
+            if (err.message?.includes("fetch failed") || err.code === 'ENOTFOUND') {
                 throw CommonError.NetworkError("Gagal menghubungi server autentikasi (Supabase).");
             }
 
@@ -150,9 +176,10 @@ class SupabaseAuthRepository extends AuthRepository {
 
 
     /**
-     * Melakukan logout pengguna dari Supabase.
-     * @returns {Promise<{message: string}>} Pesan konfirmasi logout
-     * @throws {AuthError.SupabaseError}
+     * Melakukan logout pengguna dari Supabase (menghapus sesi di sisi server dan lokal).
+     *
+     * @returns {Promise<{message: string}>} Pesan konfirmasi logout.
+     * @throws {AuthError.SupabaseError} Jika terjadi kesalahan saat proses logout di Supabase.
      */
     async logoutUser() {
         const { error } = await this.supabaseClient.auth.signOut();
@@ -166,10 +193,11 @@ class SupabaseAuthRepository extends AuthRepository {
 
 
     /**
-     * Mengirimkan email untuk reset password pengguna.
-     * @param {string} email - Email pengguna
-     * @returns {Promise<{message: string}>} Pesan konfirmasi
-     * @throws {AuthError.SupabaseError}
+     * Mengirimkan email untuk memulai proses reset password pengguna.
+     *
+     * @param {string} email - Email pengguna yang meminta reset password.
+     * @returns {Promise<{message: string}>} Pesan konfirmasi bahwa email reset telah dikirim (jika email terdaftar).
+     * @throws {AuthError.SupabaseError} Jika gagal memproses permintaan reset password.
      */
     async forgotPassword(email) {
         const { error } = await this.supabaseClient.auth.resetPasswordForEmail(email, {
@@ -184,11 +212,12 @@ class SupabaseAuthRepository extends AuthRepository {
     }
 
     /**
-     * @function exchangeCodeForSession
-     * @description Menukarkan 'code' dari link email reset password menjadi session yang valid.
+     * Menukarkan kode verifikasi dari URL (biasanya setelah reset password) menjadi sesi aktif.
+     *
      * @param {string} code - Kode verifikasi dari URL.
-     * @returns {Promise<user: object, session: object>} - Session dan data pengguna yang sesuai.
-     * @throws {AuthError.ResetPasswordExpired | AuthError.ResetPasswordInvalid}
+     * @returns {Promise<{user: object, session: object}>} Sesi dan data pengguna yang sesuai.
+     * @throws {AuthError.ResetPasswordExpired} Jika tautan reset password sudah kadaluarsa.
+     * @throws {AuthError.ResetPasswordInvalid} Jika kode verifikasi tidak valid atau gagal mendapatkan sesi.
      */
     async exchangeCodeForSession(code) {
         const { data, error } = await this.supabaseClient.auth.exchangeCodeForSession(code);
@@ -196,7 +225,7 @@ class SupabaseAuthRepository extends AuthRepository {
         if (error) {
             console.error("Supabase Exchange Code Error:", error);
             if (error.message.includes("expired")) {
-                throw AuthError.ResetPasswordExpired("Tautan resetPassword sudah kadaluarsa.");
+                throw AuthError.ResetPasswordExpired("Tautan reset password sudah kadaluarsa.");
             }
 
             throw AuthError.ResetPasswordInvalid("Kode reset password tidak valid atau telah digunakan.");
@@ -208,8 +237,6 @@ class SupabaseAuthRepository extends AuthRepository {
 
         return data;
     }
-
-
 }
 
 export default SupabaseAuthRepository;

@@ -1,41 +1,16 @@
 /**
  * @file Controller untuk menangani semua request yang berhubungan dengan dokumen.
- * Controller ini bertugas sebagai penghubung antara request (client)
- * dan service (logika utama yang mengatur data).
  */
 
 import asyncHandler from "../utils/asyncHandler.js";
-import DocumentError from "../errors/DocumentError.js"; // ✅ tambahkan import error
 
-/**
- * Membuat objek controller untuk dokumen.
- * Controller ini menyediakan berbagai handler (fungsi) untuk:
- * - Mengunggah dokumen baru
- * - Mengambil daftar dokumen
- * - Mengambil detail dokumen
- * - Memperbarui dokumen
- * - Menghapus dokumen
- * - Mengelola versi dokumen
- *
- * @param {import('../services/documentService.js').DocumentService} documentService - Instance dari DocumentService yang berisi logika utama.
- * @param {import('../repository/supabase/SupabaseFileStorage.js').default} fileStorage - Instance file storage untuk generate signed URL.
- * @param {import('../repository/interface/VersionRepository.js').VersionRepository} versionRepository - Instance dari VersionRepository.
- * @returns {object} - Kumpulan fungsi handler yang siap digunakan pada routing.
- */
-export const createDocumentController = (documentService, fileStorage, versionRepository) => { // ✅ tambahkan fileStorage sebagai dependency
+
+export const createDocumentController = (documentService) => {
+
+
     return {
         /**
          * Mengunggah dokumen baru.
-         *
-         * - File wajib diunggah
-         * - Judul wajib diisi
-         * - User ID diambil dari `req.user`
-         *
-         * @route POST /documents
-         * @param {import("express").Request} req - Request dari client (berisi body, file, dan user).
-         * @param {import("express").Response} res - Response ke client.
-         * @param {Function} next - Middleware berikutnya (untuk error handling).
-         * @returns {Promise<object>} Response JSON berisi detail dokumen baru.
          */
         createDocument: asyncHandler(async (req, res, next) => {
             const { title } = req.body;
@@ -52,13 +27,7 @@ export const createDocumentController = (documentService, fileStorage, versionRe
         }),
 
         /**
-         * Mengambil semua dokumen milik user yang sedang login.
-         *
-         * @route GET /documents
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi daftar dokumen.
+         * Mengambil semua dokumen milik user.
          */
         getAllDocuments: asyncHandler(async (req, res, next) => {
             const userId = req.user?.id;
@@ -72,12 +41,6 @@ export const createDocumentController = (documentService, fileStorage, versionRe
 
         /**
          * Mengambil detail dokumen berdasarkan ID.
-         *
-         * @route GET /documents/:id
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi detail dokumen.
          */
         getDocumentById: asyncHandler(async (req, res, next) => {
             const { id: documentId } = req.params;
@@ -94,12 +57,6 @@ export const createDocumentController = (documentService, fileStorage, versionRe
 
         /**
          * Memperbarui detail dokumen.
-         *
-         * @route PUT /documents/:id
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi dokumen yang sudah diperbarui.
          */
         updateDocument: asyncHandler(async (req, res, next) => {
             const { id: documentId } = req.params;
@@ -116,13 +73,7 @@ export const createDocumentController = (documentService, fileStorage, versionRe
         }),
 
         /**
-         * Menghapus dokumen beserta semua versi/riwayatnya.
-         *
-         * @route DELETE /documents/:id
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON konfirmasi penghapusan.
+         * Menghapus dokumen.
          */
         deleteDocument: asyncHandler(async (req, res, next) => {
             const { id: documentId } = req.params;
@@ -138,12 +89,6 @@ export const createDocumentController = (documentService, fileStorage, versionRe
 
         /**
          * Mengambil riwayat versi dokumen.
-         *
-         * @route GET /documents/:documentId/history
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi daftar riwayat versi dokumen.
          */
         getDocumentHistory: asyncHandler(async (req, res, next) => {
             const { documentId } = req.params;
@@ -158,13 +103,7 @@ export const createDocumentController = (documentService, fileStorage, versionRe
         }),
 
         /**
-         * Mengganti dokumen ke versi lama tertentu.
-         *
-         * @route PUT /documents/:documentId/use-version/:versionId
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi dokumen setelah diganti ke versi lama.
+         * Mengganti versi aktif.
          */
         useOldVersion: asyncHandler(async (req, res, next) => {
             const { documentId, versionId } = req.params;
@@ -180,13 +119,7 @@ export const createDocumentController = (documentService, fileStorage, versionRe
         }),
 
         /**
-         * Menghapus salah satu versi dokumen.
-         *
-         * @route DELETE /documents/:documentId/versions/:versionId
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON konfirmasi penghapusan versi.
+         * Menghapus versi spesifik.
          */
         deleteVersion: asyncHandler(async (req, res, next) => {
             const { documentId, versionId } = req.params;
@@ -200,91 +133,55 @@ export const createDocumentController = (documentService, fileStorage, versionRe
             });
         }),
 
+        // =================================================================
+        // BAGIAN PENTING: PERBAIKAN LOGIKA FILE URL (View vs Download)
+        // =================================================================
+
         /**
-         * Menghasilkan signed URL untuk mengakses file dari versi DOKUMEN AKTIF.
-         *
-         * @route GET /documents/:documentId/file
-         * @param {import("express").Request} req
-         * @param {import("express").Response} res
-         * @param {Function} next
-         * @returns {Promise<object>} Response JSON berisi signed URL.
+         * Menghasilkan signed URL untuk versi DOKUMEN AKTIF.
+         * Mendukung mode View (clean URL) dan Download (attachment).
+         * * @route GET /documents/:documentId/file?purpose=download
          */
         getDocumentFile: asyncHandler(async (req, res, next) => {
             const { documentId } = req.params;
             const userId = req.user?.id;
 
-            // Ambil dokumen beserta versi aktif
-            const document = await documentService.getDocumentById(documentId, userId);
+            // 1. Cek Query Param dari Frontend
+            // Jika frontend kirim ?purpose=download, maka isDownload = true
+            const isDownload = req.query.purpose === 'download';
 
-            if (!document.currentVersion || !document.currentVersion.url) {
-                throw new Error("Data dokumen tidak lengkap, URL file tidak dapat ditemukan");
-            }
+            // 2. Panggil Service dengan parameter isDownload
+            // Tidak perlu logika versi/nama file disini, Service yang urus.
+            const signedUrl = await documentService.getDocumentFileUrl(documentId, userId, isDownload);
 
-            // 🔹 Tentukan nomor versi aktif
-            let versionNumber = document.currentVersion.versionNumber;
-            if (!versionNumber || typeof versionNumber !== "number") {
-                try {
-                    // MENGGUNAKAN versionRepository yang sudah di-inject
-                    const allVersions = await versionRepository.findAllByDocumentId(documentId);
-                    allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                    const idx = allVersions.findIndex(v => v.id === document.currentVersion.id);
-                    versionNumber = idx >= 0 ? idx + 1 : 1;
-                } catch (err) {
-                    versionNumber = 1; // fallback aman
-                }
-            }
-
-            // 🔹 Buat nama file custom
-            const sanitizedTitle = document.title
-                .replace(/\.pdf$/i, "")
-                .replace(/[\s/\\?%*:|"<>]/g, "_");
-            const customFilename = `signed-${sanitizedTitle}-v${versionNumber}.pdf`;
-
-            // 🔹 Buat signed URL dengan custom filename
-            const signedUrl = await fileStorage.getSignedUrl(document.currentVersion.url, 60, customFilename);
-
-            // 🔹 Log untuk debugging
-            console.log(`[getDocumentFile] docId=${documentId}, versionId=${document.currentVersion.id}, versionNumber=${versionNumber}, filename=${customFilename}`);
-
-            // 🔹 Kirim response JSON
+            // 3. Response
             return res.status(200).json({
                 success: true,
                 url: signedUrl,
                 expiresIn: 60,
+                mode: isDownload ? 'download' : 'view'
             });
         }),
 
         /**
-         * Menghasilkan signed URL untuk file dari versi DOKUMEN SPESIFIK.
-         * @route GET /documents/:documentId/versions/:versionId/file
+         * Menghasilkan signed URL untuk DOKUMEN VERSI SPESIFIK.
+         * * @route GET /documents/:documentId/versions/:versionId/file?purpose=download
          */
         getVersionFile: asyncHandler(async (req, res, next) => {
             const { documentId, versionId } = req.params;
             const userId = req.user?.id;
 
-            try {
-                // Logika di service (documentService.getVersionFileUrl) sudah benar, tidak perlu diubah
-                const signedUrl = await documentService.getVersionFileUrl(documentId, versionId, userId);
+            // 1. Cek Query Param - KITA PAKSA TRUE
+            // const isDownload = req.query.purpose === 'download'; // <-- HAPUS INI
+            const isDownload = true;
+            const signedUrl = await documentService.getVersionFileUrl(documentId, versionId, userId, isDownload);
 
-                return res.status(200).json({
-                    success: true,
-                    url: signedUrl,
-                    expiresIn: 60
-                });
-            } catch (error) {
-                if (
-                    error.code === "DOCUMENT_NOT_FOUND" ||
-                    error.code === "UNAUTHORIZED_DOCUMENT_ACCESS" ||
-                    error.code === "INVALID_VERSION"
-                ) {
-                    return res.status(404).json({
-                        success: false,
-                        error: "Versi dokumen tidak ditemukan atau akses ditolak."
-                    });
-                }
-                next(error);
-            }
+            return res.status(200).json({
+                success: true,
+                url: signedUrl,
+                expiresIn: 60, // Pastikan ini sesuai dengan settingan di Service (misal 3600)
+                mode: 'download'
+            });
         }),
-
     };
 };
