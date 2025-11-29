@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "dev": "dotenv -e .env.development -- nodemon src/app.js",
-    "start": "npx prisma migrate deploy && dotenv -e .env.production -- node src/app.js",
+    "start": "npx prisma generate && node src/app.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
