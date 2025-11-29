@@ -94,7 +94,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 /**
  * ======================================================
- * 🛠 JSON Parse Error Handler (PATCH DITAMBAHKAN DI SINI)
+ * 🛠 JSON Parse Error Handler
  * ======================================================
  */
 app.use((err, req, res, next) => {
