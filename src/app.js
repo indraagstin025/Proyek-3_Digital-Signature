@@ -79,7 +79,7 @@ app.use(cors(corsOptions));
 app.set("trust proxy", 1);
 
 /**
- * Logging HTTP
+ * Logging HTTP Logger
  */
 const morganStream = {
     write: (message) => logger.http(message.trim()),
