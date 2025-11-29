@@ -177,7 +177,7 @@ app.use("/api/groups", createGroupRoutes(groupController));
 app.use("/api/packages", createPackageRoutes(packageController));
 
 /**
- * Root Route
+ * Root Route App
  */
 app.get("/", (req, res) => {
     res.json({
