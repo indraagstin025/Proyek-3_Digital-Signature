@@ -126,8 +126,13 @@ const packageRepository = new PrismaPackageRepository(prisma);
 
 const authService = new AuthService(authRepository);
 const adminService = new AdminService(adminRepository);
-const userService = new UserService(userRepository, fileStorage);
-const pdfService = new PDFService(versionRepository, signatureRepository, fileStorage);
+const userService = new UserService(userRepository,
+    fileStorage
+);
+const pdfService = new PDFService(versionRepository,
+    signatureRepository,
+    fileStorage
+);
 const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
 const documentService = new DocumentService(
     documentRepository,

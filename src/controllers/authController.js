@@ -54,13 +54,8 @@ export const createAuthController = (authService) => {
      */
     login: asyncHandler(async (req, res) => {
       const { email, password } = req.body;
-
       const { session, user } = await authService.loginUser(email, password);
-
-      // [FIX] Tambahkan baris ini agar variabel 'OneWeek' dikenali
-      const OneWeek = 7 * 24 * 60 * 60 * 1000; // 7 Hari dalam Milidetik
-
-      // Konfigurasi dasar untuk keamanan Cookie
+      const OneWeek = 7 * 24 * 60 * 60 * 1000;
       const isProduction = process.env.NODE_ENV === "production";
 
       const cookieOptions = {
@@ -68,15 +63,14 @@ export const createAuthController = (authService) => {
         path: "/",
         secure: isProduction,
         sameSite: isProduction ? "none" : "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 Hari (dalam detik)
-        expires: new Date(Date.now() + OneWeek), // Sekarang 'OneWeek' sudah ada nilainya
+        maxAge: 60 * 60 * 24 * 7,
+        expires: new Date(Date.now() + OneWeek),
       };
 
-      // Serialisasi token ke dalam format cookie
       res.setHeader("Set-Cookie", [
         serialize("sb-access-token", session.access_token, {
           ...cookieOptions,
-          maxAge: session.expires_in, // Sesuai durasi token dari provider
+          maxAge: session.expires_in,
           expires: new Date(Date.now() + session.expires_in * 1000),
         }),
         serialize("sb-refresh-token", session.refresh_token, {
@@ -106,25 +100,30 @@ export const createAuthController = (authService) => {
      * @param {import("express").Response} res - Response object (Clear Cookie).
      */
     logout: asyncHandler(async (req, res) => {
-      // Logout dari sisi service/provider
-      await authService.logoutUser();
+        await authService.logoutUser();
+        const isProduction = process.env.NODE_ENV === "production";
+        const cookieOptions = {
+            path: "/",
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+        };
 
-      // Hapus cookie di browser client
-      res.setHeader("Set-Cookie", [
-        serialize("sb-access-token", "", {
-          path: "/",
-          expires: new Date(0), // Expire immediately
-        }),
-        serialize("sb-refresh-token", "", {
-          path: "/",
-          expires: new Date(0), // Expire immediately
-        }),
-      ]);
+        res.setHeader("Set-Cookie", [
+            serialize("sb-access-token", "", {
+                ...cookieOptions,
+                expires: new Date(0),
+            }),
+            serialize("sb-refresh-token", "", {
+                ...cookieOptions,
+                expires: new Date(0),
+            }),
+        ]);
 
-      res.status(200).json({
-        success: true,
-        message: "Anda telah berhasil Logout.",
-      });
+        res.status(200).json({
+            success: true,
+            message: "Anda telah berhasil Logout.",
+        });
     }),
 
     /**
