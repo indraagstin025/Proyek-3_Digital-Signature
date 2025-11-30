@@ -177,7 +177,7 @@ export class DocumentService {
   }
 
   /**
-   * [BARU] Mendapatkan Internal Path (bukan Signed URL) dari versi aktif.
+   * Mendapatkan Internal Path (bukan Signed URL) dari versi aktif.
    * Digunakan oleh internal system (seperti AI Service).
    */
   async getDocumentFilePath(documentId, userId) {
