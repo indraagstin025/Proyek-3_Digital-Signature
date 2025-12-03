@@ -64,6 +64,16 @@
       "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
     },
     "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/controllers/**/*.js",
+      "src/services/**/*.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/src/config/",
+      "/src/utils/"
+    ],
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/test.js"
