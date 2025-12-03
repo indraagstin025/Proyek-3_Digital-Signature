@@ -66,7 +66,7 @@ const prisma = new PrismaClient();
  */
 const corsOptions = {
     origin: [
-        "https://proyek-3-digital-signature-frontend.vercel.app",
+        "https://www.moodvis.my.id",
         "http://localhost:5173",
     ],
     credentials: true,
