@@ -22,6 +22,7 @@ import PrismaUserRepository from './repository/prisma/PrismaUserRepository.js';
 import { PrismaDocumentRepository } from './repository/prisma/PrismaDocumentRepository.js';
 import { PrismaVersionRepository } from './repository/prisma/PrismaVersionRepository.js';
 import { PrismaSignatureRepository } from './repository/prisma/PrismaSignatureRepository.js';
+import { PrismaDashboardRepository } from './repository/prisma/PrismaDashboardRepository.js';
 import SupabaseAuthRepository from './repository/supabase/SupabaseAuthRepository.js';
 import SupabaseFileStorage from './repository/supabase/SupabaseFileStorage.js';
 
@@ -29,6 +30,7 @@ import { PrismaGroupRepository } from './repository/prisma/PrismaGroupRepository
 import { PrismaGroupMemberRepository } from './repository/prisma/PrismaGroupMemberRepository.js';
 import { PrismaGroupInvitationRepository } from './repository/prisma/PrismaGroupInvitationRepository.js';
 import { PrismaPackageRepository } from './repository/prisma/PrismaPackageRepository.js';
+import { PrismaHistoryRepository } from "./repository/prisma/PrismaHistoryRepository.js";
 
 import { AuthService } from './services/authService.js';
 import { UserService } from './services/userService.js';
@@ -38,6 +40,8 @@ import { PDFService } from './services/pdfService.js';
 import { AdminService } from './services/adminService.js';
 import { GroupService } from './services/groupService.js';
 import { PackageService } from './services/packageService.js';
+import { DashboardService } from './services/dashboardService.js';
+import { HistoryService } from "./services/historyService.js";
 
 import { createAuthController } from './controllers/authController.js';
 import { createUserController } from './controllers/userController.js';
@@ -46,6 +50,9 @@ import { createDocumentController } from './controllers/documentController.js';
 import { createSignatureController } from './controllers/signatureController.js';
 import { createGroupController } from './controllers/groupController.js';
 import { createPackageController } from './controllers/packageController.js';
+import { createDashboardController } from './controllers/dashboardController.js';
+import { createHistoryController } from "./controllers/historyController.js";
+
 
 import createAuthRoutes from './routes/authRoutes.js';
 import createUserRoutes from './routes/userRoutes.js';
@@ -54,6 +61,8 @@ import createSignatureRoutes from './routes/signatureRoutes.js';
 import createAdminRoutes from './routes/adminRoutes.js';
 import createGroupRoutes from './routes/groupRoutes.js';
 import { createPackageRoutes } from './routes/packageRoutes.js';
+import createDashboardRoutes from './routes/dashboardRoutes.js';
+import { createHistoryRoutes } from "./routes/historyRoutes.js";
 
 /**
  * Inisialisasi aplikasi dan Prisma Client
@@ -123,9 +132,14 @@ const groupRepository = new PrismaGroupRepository(prisma);
 const groupMemberRepository = new PrismaGroupMemberRepository(prisma);
 const groupInvitationRepository = new PrismaGroupInvitationRepository(prisma);
 const packageRepository = new PrismaPackageRepository(prisma);
+const dashboardRepository = new PrismaDashboardRepository(prisma);
+const historyRepository = new PrismaHistoryRepository(prisma);
 
+
+const dashboardService = new DashboardService(dashboardRepository);
 const authService = new AuthService(authRepository);
 const adminService = new AdminService(adminRepository);
+const historyService = new HistoryService(historyRepository);
 const userService = new UserService(userRepository,
     fileStorage
 );
@@ -169,6 +183,8 @@ const documentController = createDocumentController(
 const signatureController = createSignatureController(documentService, signatureService, packageService);
 const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);
+const dashboardController = createDashboardController(dashboardService);
+const historyController = createHistoryController(historyService);
 
 /**
  * Routes
@@ -180,6 +196,8 @@ app.use("/api/documents", createDocumentRoutes(documentController));
 app.use("/api/signatures", createSignatureRoutes(signatureController));
 app.use("/api/groups", createGroupRoutes(groupController));
 app.use("/api/packages", createPackageRoutes(packageController));
+app.use("/api/dashboard", createDashboardRoutes(dashboardController));
+app.use("/api/history", createHistoryRoutes(historyController));
 
 /**
  * Root Route App
