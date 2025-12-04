@@ -3,247 +3,234 @@ import CommonError from "../errors/CommonError.js";
 import DocumentError from "../errors/DocumentError.js";
 
 /**
+ * Payload tanda tangan dalam paket.
  * @typedef {object} SignaturePayload
- * @property {string} packageDocId - ID dari PackageDocument (dokumen spesifik dalam paket).
- * @property {string} signatureImageUrl - URL gambar tanda tangan (Base64/File URL).
- * @property {number} pageNumber - Halaman tempat tanda tangan diletakkan.
- * @property {number} positionX - Posisi horizontal (X).
- * @property {number} positionY - Posisi vertikal (Y).
- * @property {number} width - Lebar area tanda tangan.
- * @property {number} height - Tinggi area tanda tangan.
- * @property {boolean} [displayQrCode] - Opsi menampilkan QR Code (default: true).
+ * @property {string} packageDocId
+ * @property {string} signatureImageUrl
+ * @property {number} pageNumber
+ * @property {number} positionX
+ * @property {number} positionY
+ * @property {number} width
+ * @property {number} height
+ * @property {boolean} [displayQrCode=true]
  */
 
 /**
- * @class PackageService
- * @description Service untuk mengelola siklus hidup "Signing Package" (Amplop/Batch).
+ * Service untuk seluruh lifecycle Signing Package (batch)
+ * termasuk create, signing, verifikasi & integritas hash.
  */
 export class PackageService {
-  constructor(packageRepository, documentRepository, versionRepository, pdfService) {
-    if (!packageRepository || !documentRepository || !versionRepository || !pdfService) {
-      throw CommonError.InternalServerError("PackageService: Semua repository dan PDF Service harus disediakan.");
-    }
-    this.packageRepository = packageRepository;
-    this.documentRepository = documentRepository;
-    this.versionRepository = versionRepository;
-    this.pdfService = pdfService;
-  }
-
-  async createPackage(userId, title, documentIds) {
-    const docVersionIds = [];
-
-    for (const docId of documentIds) {
-      const doc = await this.documentRepository.findById(docId, userId);
-      if (!doc) throw DocumentError.NotFound(docId);
-      if (!doc.currentVersionId) throw DocumentError.InvalidVersion("Versi aktif tidak ditemukan", docId);
-      if (doc.status === "completed") {
-        throw CommonError.BadRequest(`Dokumen '${doc.title}' sudah selesai dan tidak dapat ditambahkan ke paket.`);
-      }
-      docVersionIds.push(doc.currentVersionId);
+    /**
+     * @param {*} packageRepository
+     * @param {*} documentRepository
+     * @param {*} versionRepository
+     * @param {*} pdfService
+     */
+    constructor(packageRepository, documentRepository, versionRepository, pdfService) {
+        if (!packageRepository || !documentRepository || !versionRepository || !pdfService) {
+            throw CommonError.InternalServerError("PackageService: Repository & PDF Service wajib diberikan.");
+        }
+        this.packageRepository = packageRepository;
+        this.documentRepository = documentRepository;
+        this.versionRepository = versionRepository;
+        this.pdfService = pdfService;
     }
 
-    if (docVersionIds.length === 0) {
-      throw CommonError.BadRequest("Tidak ada dokumen valid untuk ditambahkan ke paket.");
-    }
+    /**
+     * Membuat package beserta kumpulan dokumen versi aktif.
+     *
+     * **Alur Kerja:**
+     * 1. Validasi tiap dokumen.
+     * 2. Ambil `currentVersionId` → jika tidak ada → reject.
+     * 3. Jika dokumen telah selesai (completed), tidak bisa dimasukkan ke paket.
+     * 4. Simpan package berikut seluruh docVersion ke DB.
+     */
+    async createPackage(userId, title, documentIds) {
+        const docVersionIds = [];
 
-    return await this.packageRepository.createPackageWithDocuments(userId, title, docVersionIds);
-  }
+        for (const docId of documentIds) {
+            const doc = await this.documentRepository.findById(docId, userId);
 
-  async getPackageDetails(packageId, userId) {
-    return await this.packageRepository.findPackageById(packageId, userId);
-  }
+            if (!doc) throw DocumentError.NotFound(docId);
+            if (!doc.currentVersionId) throw DocumentError.InvalidVersion("Tidak memiliki versi aktif", docId);
+            if (doc.status === "completed")
+                throw CommonError.BadRequest(`Dokumen '${doc.title}' selesai & tidak dapat ditambah ke paket.`);
 
-  /**
-   * Eksekusi Penandatanganan Paket (Batch Signing).
-   * UPDATE: Menambahkan parameter userIpAddress untuk disimpan ke DB.
-   */
-  async signPackage(packageId, userId, signaturesPayload, userIpAddress) {
-    const pkg = await this.getPackageDetails(packageId, userId);
-    if (pkg.status === "completed") {
-      throw CommonError.BadRequest("Paket ini sudah selesai diproses.");
-    }
-
-    const results = {
-      success: [],
-      failed: [],
-    };
-
-    for (const packageDoc of pkg.documents) {
-      const originalDocId = packageDoc.docVersion.document.id;
-      const originalVersionId = packageDoc.docVersion.id;
-
-      let createdSignatureIds = [];
-
-      try {
-        const signaturesForThisDoc = signaturesPayload.filter((sig) => sig.packageDocId === packageDoc.id);
-
-        if (signaturesForThisDoc.length === 0) {
-          throw new Error("Dokumen tidak memiliki tanda tangan yang dikonfigurasi.");
+            docVersionIds.push(doc.currentVersionId);
         }
 
-        const signaturesToCreate = signaturesForThisDoc.map((sig) => ({
-          packageDocumentId: packageDoc.id,
-          signerId: userId,
-          signatureImageUrl: sig.signatureImageUrl,
-          pageNumber: sig.pageNumber,
-          positionX: sig.positionX,
-          positionY: sig.positionY,
-          width: sig.width,
-          height: sig.height,
-          ipAddress: userIpAddress,
-        }));
+        if (docVersionIds.length === 0)
+            throw CommonError.BadRequest("Tidak ada dokumen valid untuk diproses.");
 
-        const createdSignatures = await this.packageRepository.createPackageSignatures(signaturesToCreate);
+        return await this.packageRepository.createPackageWithDocuments(userId, title, docVersionIds);
+    }
 
-        if (!createdSignatures || createdSignatures.length === 0) {
-          throw new Error("Gagal menyimpan data tanda tangan ke database.");
+    /** Mengambil metadata package + relasi dokumen */
+    async getPackageDetails(packageId, userId) {
+        return await this.packageRepository.findPackageById(packageId, userId);
+    }
+
+    /**
+     * Eksekusi signing untuk seluruh dokumen dalam paket.
+     *
+     * **Flow Signing:**
+     * 1. Ambil package dan cek status (completed → tolak).
+     * 2. Loop setiap dokumen pada paket.
+     * 3. Filter payload signature yang sesuai packageDocumentId.
+     * 4. Simpan signature ke tabel → dapatkan ID.
+     * 5. Generate PDF baru dengan QR Code + verification URL opsional.
+     * 6. Hitung hash SHA-256 file hasil.
+     * 7. Simpan sebagai versi baru dokumen & mark `completed`.
+     * 8. Jika gagal → rollback signature yang sempat tersimpan.
+     *
+     * @param {string} packageId
+     * @param {string} userId
+     * @param {SignaturePayload[]} signaturesPayload
+     * @param {string} userIpAddress
+     * @returns {Promise<{packageId:string, status:'completed'|'partial_failure', success:string[], failed:any[]}>}
+     */
+    async signPackage(packageId, userId, signaturesPayload, userIpAddress) {
+        const pkg = await this.getPackageDetails(packageId, userId);
+        if (pkg.status === "completed")
+            throw CommonError.BadRequest("Paket ini sudah selesai & tidak dapat diproses ulang.");
+
+        const results = { success: [], failed: [] };
+
+        for (const packageDoc of pkg.documents) {
+            const originalDocId = packageDoc.docVersion.document.id;
+            const originalVersionId = packageDoc.docVersion.id;
+            let createdSignatureIds = [];
+
+            try {
+                const signaturesForThisDoc = signaturesPayload.filter(sig => sig.packageDocId === packageDoc.id);
+                if (signaturesForThisDoc.length === 0)
+                    throw new Error("Tidak ada konfigurasi tanda tangan untuk dokumen ini.");
+
+                const signaturesToCreate = signaturesForThisDoc.map(sig => ({
+                    packageDocumentId: packageDoc.id,
+                    signerId: userId,
+                    signatureImageUrl: sig.signatureImageUrl,
+                    pageNumber: sig.pageNumber,
+                    positionX: sig.positionX,
+                    positionY: sig.positionY,
+                    width: sig.width,
+                    height: sig.height,
+                    ipAddress: userIpAddress
+                }));
+
+                const createdSignatures = await this.packageRepository.createPackageSignatures(signaturesToCreate);
+                if (!createdSignatures?.length)
+                    throw new Error("Database gagal menyimpan tanda tangan.");
+
+                createdSignatureIds = createdSignatures.map(s => s.id);
+                const firstSignatureId = createdSignatures[0].id;
+
+                const base = (process.env.VERIFICATION_URL || "http://localhost:5173").replace(/\/$/, "");
+                const verificationUrl = `${base}/verify/${firstSignatureId}`;
+                const displayQrCode = signaturesForThisDoc[0].displayQrCode ?? true;
+
+                const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(
+                    originalVersionId,
+                    signaturesForThisDoc,
+                    { displayQrCode, verificationUrl }
+                );
+
+                const hash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
+                const newVersion = await this.versionRepository.create({
+                    documentId: originalDocId,
+                    userId,
+                    url: publicUrl,
+                    hash,
+                    signedFileHash: hash,
+                });
+
+                await this.packageRepository.updatePackageDocumentVersion(packageId, originalVersionId, newVersion.id);
+                await this.documentRepository.update(originalDocId, {
+                    currentVersionId: newVersion.id,
+                    status: "completed",
+                    signedFileUrl: publicUrl
+                });
+
+                results.success.push(originalDocId);
+
+            } catch (error) {
+                console.error(`[PackageService] Failed doc ${originalDocId}:`, error);
+
+                if (createdSignatureIds.length > 0)
+                    await this.packageRepository.deleteSignaturesByIds(createdSignatureIds);
+
+                results.failed.push({ documentId: originalDocId, error: error.message });
+            }
         }
 
-        createdSignatureIds = createdSignatures.map((s) => s.id);
+        const status = results.failed.length === 0 ? "completed" : "partial_failure";
+        await this.packageRepository.updatePackageStatus(packageId, status);
 
-        const firstSignatureId = createdSignatures[0].id;
-        const BASE_VERIFY_URL = process.env.VERIFICATION_URL || "http://localhost:5173";
-        const verificationUrl = `${BASE_VERIFY_URL.replace(/\/$/, "")}/verify/${firstSignatureId}`;
-        const displayQrCode = signaturesForThisDoc[0].displayQrCode ?? true;
-
-        const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForThisDoc, {
-          displayQrCode,
-          verificationUrl,
-        });
-
-        const signedHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
-
-        const newVersion = await this.versionRepository.create({
-          documentId: originalDocId,
-          userId,
-          url: publicUrl,
-          hash: signedHash,
-          signedFileHash: signedHash,
-        });
-
-        await this.packageRepository.updatePackageDocumentVersion(packageId, originalVersionId, newVersion.id);
-
-        await this.documentRepository.update(originalDocId, {
-          currentVersionId: newVersion.id,
-          status: "completed",
-          signedFileUrl: publicUrl,
-        });
-
-        results.success.push(originalDocId);
-      } catch (error) {
-        console.error(`[PackageService] Gagal memproses dokumen (ID: ${originalDocId}) dalam paket ${packageId}:`, error);
-
-        if (createdSignatureIds.length > 0) {
-          console.warn(`[Rollback] Menghapus ${createdSignatureIds.length} signature hantu pada dokumen ${originalDocId}...`);
-
-          await this.packageRepository.deleteSignaturesByIds(createdSignatureIds);
-        }
-
-        results.failed.push({
-          documentId: originalDocId,
-          error: error.message,
-        });
-      }
+        return { packageId, status, ...results };
     }
 
-    const finalStatus = results.failed.length === 0 ? "completed" : "partial_failure";
-    await this.packageRepository.updatePackageStatus(packageId, finalStatus);
+    /**
+     * Mengambil data verifikasi 1 signature dalam package.
+     * Digunakan halaman `/verify/:signatureId` (scanner/QR Code).
+     */
+    async getPackageSignatureVerificationDetails(signatureId) {
+        const sig = await this.packageRepository.findPackageSignatureById(signatureId);
+        if (!sig) return null;
 
-    return {
-      packageId,
-      status: finalStatus,
-      ...results,
-    };
-  }
+        const docVersion = sig.packageDocument?.docVersion;
+        const signer = sig.signer;
+        const storedHash = docVersion?.signedFileHash || docVersion?.hash;
 
-  /**
-   * Mengambil detail verifikasi untuk SATU tanda tangan spesifik dalam paket (QR Code).
-   * [PERBAIKAN]: Menghapus logika download/hash server-side agar tidak menyesatkan user.
-   */
-  async getPackageSignatureVerificationDetails(signatureId) {
-    const pkgSignature = await this.packageRepository.findPackageSignatureById(signatureId);
+        if (!docVersion || !signer || !storedHash) return null;
 
-    if (!pkgSignature) {
-      return null;
+        return {
+            signerName: signer.name,
+            signerEmail: signer.email,
+            documentTitle: docVersion.document.title,
+            signedAt: sig.createdAt,
+            signatureImageUrl: sig.signatureImageUrl,
+            ipAddress: sig.ipAddress ?? "-",
+            verificationStatus: "REGISTERED",
+            storedFileHash: storedHash,
+            originalDocumentUrl: docVersion.url,
+            type: "PACKAGE"
+        };
     }
 
-    const packageDoc = pkgSignature.packageDocument;
-    const docVersion = packageDoc?.docVersion;
-    const signer = pkgSignature.signer;
+    /**
+     * Verifikasi integritas file yang diupload user (manual upload).
+     * Menghitung hash ulang & dibandingkan dengan hash versi database.
+     *
+     * @returns {{
+     *  signerName:string, signerEmail:string, documentTitle:string,
+     *  signedAt:string, verificationStatus:string, isHashMatch:boolean,
+     *  storedFileHash:string, recalculatedFileHash:string
+     * } | null}
+     */
+    async verifyUploadedPackageFile(signatureId, uploadedFileBuffer) {
+        const sig = await this.packageRepository.findPackageSignatureById(signatureId);
+        if (!sig) return null;
 
-    if (!docVersion || !signer) {
-      console.error("[PackageService] Data relasi paket tidak lengkap.");
-      return null;
+        const docVersion = sig.packageDocument?.docVersion;
+        const signer = sig.signer;
+        const storedHash = docVersion?.signedFileHash || docVersion?.hash;
+        if (!storedHash) return null;
+
+        const recalculatedHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
+        const isMatch = recalculatedHash === storedHash;
+
+        return {
+            signerName: signer.name,
+            signerEmail: signer.email,
+            documentTitle: docVersion.document.title,
+            signedAt: sig.createdAt,
+            ipAddress: sig.ipAddress ?? "-",
+            verificationStatus: isMatch ? "VALID" : "INVALID",
+            isSignatureValid: true,
+            isHashMatch: isMatch,
+            storedFileHash: storedHash,
+            recalculatedFileHash: recalculatedHash,
+            type: "PACKAGE"
+        };
     }
-
-    const documentUrl = docVersion.url;
-
-    const storedHash = docVersion.signedFileHash || docVersion.hash;
-
-    if (!documentUrl || !storedHash) {
-      console.error(`[PackageService] Integritas Gagal (Data Kosong). URL: ${documentUrl}, Hash: ${storedHash}`);
-      return null;
-    }
-
-    return {
-      signerName: signer.name,
-      signerEmail: signer.email,
-      documentTitle: docVersion.document.title,
-      signedAt: pkgSignature.createdAt,
-      signatureImageUrl: pkgSignature.signatureImageUrl,
-
-      ipAddress: pkgSignature.ipAddress || "-",
-
-      verificationStatus: "REGISTERED",
-
-      storedFileHash: storedHash,
-      originalDocumentUrl: documentUrl,
-
-      type: "PACKAGE",
-    };
-  }
-
-  /**
-   * Memverifikasi integritas file paket yang diunggah manual oleh user.
-   */
-  async verifyUploadedPackageFile(signatureId, uploadedFileBuffer) {
-    const pkgSignature = await this.packageRepository.findPackageSignatureById(signatureId);
-
-    if (!pkgSignature) {
-      return null;
-    }
-
-    const docVersion = pkgSignature.packageDocument?.docVersion;
-    const signer = pkgSignature.signer;
-
-    if (!docVersion || !signer) {
-      console.error("[PackageService] Data relasi paket rusak.");
-      return null;
-    }
-
-    const storedHash = docVersion.signedFileHash || docVersion.hash;
-
-    if (!storedHash) {
-      console.error("[PackageService] Hash database kosong.");
-      return null;
-    }
-
-    const recalculateHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
-    const isHashMatch = recalculateHash === storedHash;
-    const verificationStatus = isHashMatch ? "VALID (Integritas OK)" : "TIDAK VALID (Integritas GAGAL)";
-
-    return {
-      signerName: signer.name,
-      signerEmail: signer.email,
-      documentTitle: docVersion.document.title,
-      signedAt: pkgSignature.createdAt,
-      ipAddress: pkgSignature.ipAddress || "-",
-      verificationStatus: verificationStatus,
-      isSignatureValid: true,
-      isHashMatch: isHashMatch,
-      storedFileHash: storedHash,
-      recalculatedFileHash: recalculateHash,
-      type: "PACKAGE",
-    };
-  }
 }

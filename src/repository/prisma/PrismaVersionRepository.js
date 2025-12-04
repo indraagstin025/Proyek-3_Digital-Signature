@@ -26,20 +26,23 @@ export class PrismaVersionRepository extends VersionRepository {
     }
   }
 
-  async findByUserAndHash(userId, hash) {
-    try {
-      return await this.prisma.documentVersion.findUnique({
-        where: {
-          user_document_version_hash_unique: {
-            userId,
-            hash,
-          },
-        },
-      });
-    } catch (err) {
-      throw CommonError.DatabaseError(`Gagal mengecek versi: ${err.message}`);
+    async findByUserAndHash(userId, hash) {
+        try {
+            return await this.prisma.documentVersion.findFirst({
+                where: {
+                    hash: hash,
+                    document: {
+                        userId: userId,
+                    },
+                },
+                include: {
+                    document: true,
+                },
+            });
+        } catch (err) {
+            throw CommonError.DatabaseError(`Gagal mengecek duplikasi versi: ${err.message}`);
+        }
     }
-  }
 
   async findById(versionId) {
     try {
