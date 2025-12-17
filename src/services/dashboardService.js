@@ -1,1 +1,168 @@
-import CommonError from "../errors/CommonError.js";// import { prismaDashboardRepository } from "../repository/prisma/PrismaDashboardRepository.js"; // Pastikan import ini adaexport class DashboardService {    constructor(dashboardRepository) {        this.dashboardRepository = dashboardRepository;    }    /**     * Mengambil semua data ringkasan untuk dashboard.     */    async getDashboardSummary(userId) {        this._validateUserId(userId);        // Jalankan tugas secara paralel        const [counts, actions, activities] = await Promise.all([            this._getDocumentCounts(userId),            this._getActionItems(userId),            this._getRecentActivities(userId),        ]);        return {            counts,            actions,            activities,        };    }    // ==========================================    // PRIVATE HELPER METHODS    // ==========================================    _validateUserId(userId) {        if (!userId) {            throw CommonError.BadRequest("User ID tidak valid atau tidak ditemukan.");        }    }    /**     * [UPDATED] Mengambil statistik angka.     * Sekarang jauh lebih cepat karena hanya 1x query ke database.     */    async _getDocumentCounts(userId) {        // Menggunakan fungsi countAllStatuses yang baru Anda buat        const counts = await this.dashboardRepository.countAllStatuses(userId);        // Pastikan mapping nama key-nya sesuai dengan yang diinginkan Frontend        return {            waiting: counts.draft || 0,    // Draft            process: counts.pending || 0,  // Sedang diproses            completed: counts.completed || 0, // Selesai            // archived: counts.archived || 0 // Jika ada        };    }    /**     * [UPDATED] Mengambil item yang membutuhkan tindakan.     * Prioritas: 1. Permintaan Tanda Tangan Masuk, 2. Draft Saya.     */    async _getActionItems(userId) {        // Ambil data secara paralel        const [incomingRequests, myDrafts] = await Promise.all([            // 1. Cari dokumen orang lain yang perlu SAYA tanda tangan (Fungsi baru)            this.dashboardRepository.findPendingSignatures(userId, 3),            // 2. Cari dokumen draft milik SAYA sendiri (Fungsi lama)            this.dashboardRepository.findActionRequiredDocuments(userId, 3)        ]);        // Normalisasi format agar Frontend menerimanya seragam        const formattedIncoming = incomingRequests.map(sig => ({            id: sig.documentVersion.document.id,            title: sig.documentVersion.document.title,            ownerName: sig.documentVersion.document.owner.name, // Menampilkan siapa yang minta            status: "NEED_SIGNATURE", // Flag khusus untuk UI (misal: tombol 'Sign Now')            updatedAt: sig.documentVersion.document.updatedAt        }));        const formattedDrafts = myDrafts.map(doc => ({            id: doc.id,            title: doc.title,            ownerName: "Me",            status: doc.status, // "draft" atau "pending"            updatedAt: doc.updatedAt        }));        return [...formattedIncoming, ...formattedDrafts].slice(0, 5);    }// Di dalam dashboardService.js    async _getRecentActivities(userId) {        // 1. Request data secara paralel (Dokumen Edit, TTD Personal/Group, TTD Paket)        const [recentDocs, recentSignatures, recentPackageSignatures] = await Promise.all([            this.dashboardRepository.findRecentUpdatedDocuments(userId, 5),            this.dashboardRepository.findRecentSignatures(userId, 5),            // [BARU] Panggil fungsi repo baru            this.dashboardRepository.findRecentPackageSignatures(userId, 5),        ]);        // 2. Format Dokumen Edit (Draft/Pending)        const formattedDocs = recentDocs.map((doc) => ({            id: doc.id,            title: doc.title,            status: doc.status,            updatedAt: doc.updatedAt,            type: "personal", // Default personal doc        }));        // 3. Format Signature Personal/Group        const formattedSignatures = this._normalizeSignatures(recentSignatures);        // 4. [BARU] Format Signature Package        const formattedPackageSignatures = this._normalizePackageSignatures(recentPackageSignatures);        // 5. Gabungkan semua, urutkan descending, ambil 5 teratas        return [...formattedDocs, ...formattedSignatures, ...formattedPackageSignatures]            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))            .slice(0, 5);    }    /**     * Helper Normalisasi Personal/Group (Sudah ada sebelumnya)     */    _normalizeSignatures(signatures) {        return signatures.map((sig) => {            const doc = sig.documentVersion.document;            const version = sig.documentVersion;            let type = "personal";            if (doc.groupId) {                type = "group";            }            return {                id: doc.id,                title: doc.title,                status: "SIGNED",                updatedAt: sig.signedAt,                activityType: "signature",                type: type,            };        });    }    /**     * [BARU] Helper Normalisasi Khusus Paket     */    _normalizePackageSignatures(packageSignatures) {        return packageSignatures.map((sig) => {            const pkg = sig.packageDocument.package;            // Ambil Document Version lalu ambil Document ID nya            const doc = sig.packageDocument.docVersion.document;            return {                id: doc.id,                title: `${pkg.title || "Paket"} - ${doc.title}`,                status: "SIGNED",                updatedAt: sig.createdAt,                activityType: "signature",                type: "package",            };        });    }}// Dependency Injection Setupimport { prismaDashboardRepository } from "../repository/prisma/PrismaDashboardRepository.js";export const dashboardService = new DashboardService(prismaDashboardRepository);
+import CommonError from "../errors/CommonError.js";
+
+export class DashboardService {
+  /**
+   * @param {Object} dashboardRepository - Repository utama dashboard
+   * @param {Object} groupDocumentSignerRepository - Repository untuk cek tugas tanda tangan grup (NEW)
+   */
+  constructor(dashboardRepository, groupDocumentSignerRepository) {
+    this.dashboardRepository = dashboardRepository;
+    this.groupDocumentSignerRepository = groupDocumentSignerRepository;
+  }
+
+  async getDashboardSummary(userId) {
+    this._validateUserId(userId);
+
+    const [counts, actions, activities] = await Promise.all([this._getDocumentCounts(userId), this._getActionItems(userId), this._getRecentActivities(userId)]);
+
+    return {
+      counts,
+      actions,
+      activities,
+    };
+  }
+
+  _validateUserId(userId) {
+    if (!userId) {
+      throw CommonError.BadRequest("User ID tidak valid atau tidak ditemukan.");
+    }
+  }
+
+  async _getDocumentCounts(userId) {
+    const counts = await this.dashboardRepository.countAllStatuses(userId);
+    return {
+      waiting: counts.draft || 0,
+      process: counts.pending || 0,
+      completed: counts.completed || 0,
+    };
+  }
+
+  /**
+   * [UPDATED] Mengambil item tindakan dengan PENCEGAHAN DUPLIKASI.
+   */
+  async _getActionItems(userId) {
+    const [incomingRequests, myDrafts, groupPending] = await Promise.all([
+      this.dashboardRepository.findPendingSignatures(userId, 5),
+
+      this.dashboardRepository.findActionRequiredDocuments(userId, 5),
+
+      this.groupDocumentSignerRepository ? this.groupDocumentSignerRepository.findPendingByUser(userId) : Promise.resolve([]),
+    ]);
+
+    const actionMap = new Map();
+
+    incomingRequests.forEach((sig) => {
+      const doc = sig.documentVersion.document;
+      actionMap.set(doc.id, {
+        id: doc.id,
+        title: doc.title,
+        ownerName: doc.owner.name,
+        status: "NEED_SIGNATURE",
+        type: "personal",
+        updatedAt: doc.updatedAt,
+      });
+    });
+
+    groupPending.forEach((task) => {
+      if (!actionMap.has(task.document.id)) {
+        actionMap.set(task.document.id, {
+          id: task.document.id,
+          title: task.document.title,
+          ownerName: task.document.group?.name ? `Grup: ${task.document.group.name}` : "Group Request",
+          status: "NEED_YOUR_SIGNATURE",
+          type: "group",
+          updatedAt: task.document.updatedAt,
+        });
+      }
+    });
+
+    myDrafts.forEach((doc) => {
+      if (!actionMap.has(doc.id)) {
+        actionMap.set(doc.id, {
+          id: doc.id,
+          title: doc.title,
+          ownerName: "Me",
+          status: doc.status,
+          type: "draft",
+          updatedAt: doc.updatedAt,
+        });
+      }
+    });
+
+    return Array.from(actionMap.values())
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .slice(0, 5);
+  }
+
+  /**
+   * [UPDATED] Mengambil aktivitas terbaru (History) Personal & Group.
+   */
+  async _getRecentActivities(userId) {
+    const [recentDocs, recentSignatures, recentGroupSignatures, recentPackageSignatures] = await Promise.all([
+      this.dashboardRepository.findRecentUpdatedDocuments(userId, 5),
+      this.dashboardRepository.findRecentSignatures(userId, 5),
+      this.dashboardRepository.findRecentGroupSignatures(userId, 5),
+      this.dashboardRepository.findRecentPackageSignatures(userId, 5),
+    ]);
+
+    const formattedDocs = recentDocs.map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      status: doc.status,
+      updatedAt: doc.updatedAt,
+      type: "personal",
+      activityType: "edit",
+    }));
+
+    const formattedPersonalSigs = this._normalizeSignatures(recentSignatures, "personal");
+
+    const formattedGroupSigs = this._normalizeSignatures(recentGroupSignatures, "group");
+
+    const formattedPackageSignatures = this._normalizePackageSignatures(recentPackageSignatures);
+
+    return [...formattedDocs, ...formattedPersonalSigs, ...formattedGroupSigs, ...formattedPackageSignatures].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
+  }
+
+  /**
+   * Helper Normalisasi Personal/Group
+   * @param {Array} signatures - Data dari DB
+   * @param {String} forcedType - 'personal' atau 'group' (opsional)
+   */
+  _normalizeSignatures(signatures, forcedType = null) {
+    return signatures.map((sig) => {
+      const doc = sig.documentVersion.document;
+
+      let type = forcedType || "personal";
+      if (!forcedType && doc.groupId) {
+        type = "group";
+      }
+
+      return {
+        id: doc.id,
+        title: doc.title,
+        status: "SIGNED",
+        updatedAt: sig.signedAt,
+        activityType: "signature",
+        type: type,
+      };
+    });
+  }
+
+  _normalizePackageSignatures(packageSignatures) {
+    return packageSignatures.map((sig) => {
+      const pkg = sig.packageDocument.package;
+      const doc = sig.packageDocument.docVersion.document;
+      return {
+        id: doc.id,
+        title: `${pkg.title || "Paket"} - ${doc.title}`,
+        status: "SIGNED",
+        updatedAt: sig.createdAt,
+        activityType: "signature",
+        type: "package",
+      };
+    });
+  }
+}
+
+import { prismaDashboardRepository } from "../repository/prisma/PrismaDashboardRepository.js";
+export const dashboardService = new DashboardService(prismaDashboardRepository);

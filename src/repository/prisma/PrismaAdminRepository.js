@@ -1,10 +1,14 @@
 import supabaseAdmin from "../../config/supabaseAdmin.js";
-import prisma from "../../config/prismaClient.js";
+
 import CommonError from "../../errors/CommonError.js";
 
 export class PrismaAdminRepository {
+  constructor(prisma) {
+    this.prisma = prisma;
+  }
+
   async findAllUsers() {
-    return prisma.user.findMany({
+    return this.prisma.user.findMany({
       select: {
         id: true,
         email: true,
@@ -31,7 +35,7 @@ export class PrismaAdminRepository {
     }
 
     try {
-      return await prisma.user.create({
+      return await this.prisma.user.create({
         data: {
           id: authData.user.id,
           email,
@@ -53,7 +57,7 @@ export class PrismaAdminRepository {
     }
 
     try {
-      return await prisma.user.delete({ where: { id: userId } });
+      return await this.prisma.user.delete({ where: { id: userId } });
     } catch (dbError) {
       if (dbError.code === "P2025") {
         throw CommonError.NotFound(`User dengan ID ${userId} tidak ditemukan di database lokal.`);
@@ -82,7 +86,7 @@ export class PrismaAdminRepository {
     delete prismaUpdateData.password;
 
     try {
-      return await prisma.user.update({
+      return await this.prisma.user.update({
         where: { id: userId },
         data: prismaUpdateData,
       });
@@ -92,5 +96,54 @@ export class PrismaAdminRepository {
       }
       throw CommonError.DatabaseError(`Gagal update profil user: ${dbError.message}`);
     }
+  }
+
+  /**
+   * Mengambil statistik ringkas sistem (Total User, Dokumen, dll).
+   */
+  async getSystemStats() {
+    try {
+      const [totalUsers, totalDocuments, totalGroups, totalSignatures] = await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.document.count(),
+        this.prisma.group.count(),
+
+        this.prisma.signaturePersonal.count().then((c1) => this.prisma.signatureGroup.count().then((c2) => c1 + c2)),
+      ]);
+
+      return { totalUsers, totalDocuments, totalGroups, totalSignatures };
+    } catch (error) {
+      throw CommonError.DatabaseError(`Gagal mengambil statistik: ${error.message}`);
+    }
+  }
+
+  /**
+   * Menghapus dokumen secara paksa (Bypass permission check)
+   */
+  async forceDeleteDocument(documentId) {
+    try {
+      return await this.prisma.document.delete({
+        where: { id: documentId },
+      });
+    } catch (error) {
+      if (error.code === "P2025") {
+        throw CommonError.NotFound("Dokumen tidak ditemukan.");
+      }
+      throw CommonError.DatabaseError(`Gagal menghapus dokumen secara paksa: ${error.message}`);
+    }
+  }
+
+  /**
+   * Mengambil semua dokumen untuk keperluan moderasi admin.
+   */
+  async findAllDocuments(limit = 50) {
+    return await this.prisma.document.findMany({
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        owner: { select: { name: true, email: true } },
+        group: { select: { name: true } },
+      },
+    });
   }
 }

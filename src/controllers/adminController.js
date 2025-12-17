@@ -2,23 +2,16 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 /**
  * Membuat instance AdminController dengan dependency injection.
- * * @param {Object} adminService - Service yang menangani logika bisnis untuk admin/user.
- * @returns {Object} Objek yang berisi kumpulan method controller untuk rute admin.
+ * @param {Object} adminService - Service logika bisnis admin.
  */
 export const createAdminController = (adminService) => {
   return {
     /**
-     * @description Mengambil semua daftar pengguna dari database.
-     * * **Proses Kode:**
-     * 1. Menerima request GET dari client.
-     * 2. Memanggil `adminService.getAllUsers()` untuk mengambil data raw dari database.
-     * 3. Mengembalikan response HTTP 200 (OK) beserta array data pengguna dan jumlah totalnya.
-     * * @param {import("express").Request} req - Objek Request Express.
-     * @param {import("express").Response} res - Objek Response Express.
+     * @description Mengambil daftar semua user.
+     * @route GET /api/admin/users
      */
     getAllUsers: asyncHandler(async (req, res) => {
       const users = await adminService.getAllUsers();
-
       res.status(200).json({
         success: true,
         count: users.length,
@@ -27,23 +20,15 @@ export const createAdminController = (adminService) => {
     }),
 
     /**
-     * @description Membuat pengguna baru (Create User) melalui akses Admin.
-     * * **Proses Kode:**
-     * 1. Mengekstrak data `email`, `password`, `name`, dan `isSuperAdmin` dari `req.body`.
-     * 2. Memanggil `adminService.createNewUser()` dan mengirimkan payload data tersebut untuk divalidasi dan disimpan ke database.
-     * 3. Jika berhasil, mengembalikan response HTTP 201 (Created) dengan pesan sukses dan data user yang baru dibuat.
-     * * @param {import("express").Request} req - Objek Request Express (Body berisi data user baru).
-     * @param {import("express").Response} res - Objek Response Express.
+     * @description Membuat user baru (dengan Audit Log).
+     * @route POST /api/admin/users
      */
     createUser: asyncHandler(async (req, res) => {
       const { email, password, name, isSuperAdmin } = req.body;
 
-      const newUser = await adminService.createNewUser({
-        email,
-        password,
-        name,
-        isSuperAdmin,
-      });
+      const adminId = req.user.id;
+
+      const newUser = await adminService.createNewUser({ email, password, name, isSuperAdmin }, adminId, req);
 
       res.status(201).json({
         success: true,
@@ -53,14 +38,8 @@ export const createAdminController = (adminService) => {
     }),
 
     /**
-     * @description Memperbarui data pengguna yang sudah ada berdasarkan ID.
-     * * **Proses Kode:**
-     * 1. Mengambil `userId` dari parameter URL (`req.params`).
-     * 2. Mengambil data perubahan dari `req.body`.
-     * 3. Memanggil `adminService.updateUser()` dengan `userId` dan data baru untuk melakukan update di database.
-     * 4. Mengembalikan response HTTP 200 (OK) beserta data user yang telah diperbarui.
-     * * @param {import("express").Request} req - Objek Request Express (Params: userId, Body: data update).
-     * @param {import("express").Response} res - Objek Response Express.
+     * @description Update user.
+     * @route PUT /api/admin/users/:userId
      */
     updateUser: asyncHandler(async (req, res) => {
       const { userId } = req.params;
@@ -75,22 +54,82 @@ export const createAdminController = (adminService) => {
     }),
 
     /**
-     * @description Menghapus pengguna secara permanen berdasarkan ID.
-     * * **Proses Kode:**
-     * 1. Mengambil `userId` target dari parameter URL (`req.params`).
-     * 2. Memanggil `adminService.deleteUser(userId)` untuk menghapus record dari database.
-     * 3. Mengembalikan response HTTP 200 (OK) dengan pesan konfirmasi penghapusan.
-     * * @param {import("express").Request} req - Objek Request Express (Params: userId).
-     * @param {import("express").Response} res - Objek Response Express.
+     * @description Hapus user (dengan Audit Log).
+     * @route DELETE /api/admin/users/:userId
      */
     deleteUser: asyncHandler(async (req, res) => {
       const { userId } = req.params;
+      const adminId = req.user.id;
 
-      await adminService.deleteUser(userId);
+      await adminService.deleteUser(userId, adminId, req);
 
       res.status(200).json({
         success: true,
         message: `User dengan ID ${userId} berhasil dihapus`,
+      });
+    }),
+
+    /**
+     * ==========================================
+     * [FITUR BARU] DASHBOARD & MODERATION
+     * ==========================================
+     */
+
+    /**
+     * @description Mengambil statistik sistem (Total User, Dokumen, dll).
+     * @route GET /api/admin/stats
+     */
+    getDashboardSummary: asyncHandler(async (req, res) => {
+      const summary = await adminService.getDashboardStats();
+
+      res.status(200).json({
+        success: true,
+        data: summary,
+      });
+    }),
+
+    /**
+     * @description Melihat Audit Log sistem.
+     * @route GET /api/admin/audit-logs
+     */
+    getAuditLogs: asyncHandler(async (req, res) => {
+      const logs = await adminService.getAllAuditLogs();
+
+      res.status(200).json({
+        success: true,
+        count: logs.length,
+        data: logs,
+      });
+    }),
+
+    /**
+     * @description Mengambil semua dokumen untuk moderasi.
+     * @route GET /api/admin/documents
+     */
+    getAllDocuments: asyncHandler(async (req, res) => {
+      const documents = await adminService.getAllDocuments();
+
+      res.status(200).json({
+        success: true,
+        count: documents.length,
+        data: documents,
+      });
+    }),
+
+    /**
+     * @description Menghapus dokumen secara paksa (Content Moderation).
+     * @route DELETE /api/admin/documents/:documentId
+     */
+    forceDeleteDocument: asyncHandler(async (req, res) => {
+      const { documentId } = req.params;
+      const { reason } = req.body;
+      const adminId = req.user.id;
+
+      await adminService.forceDeleteDocument(adminId, documentId, reason, req);
+
+      res.status(200).json({
+        success: true,
+        message: "Dokumen berhasil dihapus secara paksa demi keamanan/moderasi.",
       });
     }),
   };
