@@ -5,11 +5,14 @@
  */
 
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import 'dotenv/config';
 import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
+import { initSocket } from "./socket/socketHandler.js";
 
 import logger from './utils/logger.js';
 import { supabase, supabaseBucket } from './config/supabaseClient.js';
@@ -29,8 +32,10 @@ import SupabaseFileStorage from './repository/supabase/SupabaseFileStorage.js';
 import { PrismaGroupRepository } from './repository/prisma/PrismaGroupRepository.js';
 import { PrismaGroupMemberRepository } from './repository/prisma/PrismaGroupMemberRepository.js';
 import { PrismaGroupInvitationRepository } from './repository/prisma/PrismaGroupInvitationRepository.js';
+import { PrismaGroupDocumentSignerRepository } from "./repository/prisma/PrismaGroupDocumentSignerRepository.js";
 import { PrismaPackageRepository } from './repository/prisma/PrismaPackageRepository.js';
 import { PrismaHistoryRepository } from "./repository/prisma/PrismaHistoryRepository.js";
+import { PrismaAuditLogRepository } from "./repository/prisma/PrismaAuditLogRepository.js";
 
 import { AuthService } from './services/authService.js';
 import { UserService } from './services/userService.js';
@@ -42,6 +47,8 @@ import { GroupService } from './services/groupService.js';
 import { PackageService } from './services/packageService.js';
 import { DashboardService } from './services/dashboardService.js';
 import { HistoryService } from "./services/historyService.js";
+import { AuditService } from "./services/auditService.js";
+import { aiService } from "./services/aiService.js";
 
 import { createAuthController } from './controllers/authController.js';
 import { createUserController } from './controllers/userController.js';
@@ -68,21 +75,37 @@ import { createHistoryRoutes } from "./routes/historyRoutes.js";
  * Inisialisasi aplikasi dan Prisma Client
  */
 const app = express();
+const httpServer = createServer(app);
 const prisma = new PrismaClient();
 
 /**
  * Konfigurasi CORS
  */
+
+const allowedOrigins = [
+    "https://www.moodvis.my.id",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175"
+];
+
 const corsOptions = {
-    origin: [
-        "https://www.moodvis.my.id",
-        "http://localhost:5173",
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204,
 };
+
+const io = new Server(httpServer, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
+
+initSocket(io);
 
 app.use(cors(corsOptions));
 app.set("trust proxy", 1);
@@ -131,42 +154,64 @@ const fileStorage = new SupabaseFileStorage(prisma, supabaseBucket);
 const groupRepository = new PrismaGroupRepository(prisma);
 const groupMemberRepository = new PrismaGroupMemberRepository(prisma);
 const groupInvitationRepository = new PrismaGroupInvitationRepository(prisma);
+const groupDocumentSignerRepository = new PrismaGroupDocumentSignerRepository(prisma);
 const packageRepository = new PrismaPackageRepository(prisma);
 const dashboardRepository = new PrismaDashboardRepository(prisma);
 const historyRepository = new PrismaHistoryRepository(prisma);
+const auditRepository = new PrismaAuditLogRepository(prisma);
 
 
-const dashboardService = new DashboardService(dashboardRepository);
+const dashboardService = new DashboardService(dashboardRepository, groupDocumentSignerRepository);
 const authService = new AuthService(authRepository);
-const adminService = new AdminService(adminRepository);
+const auditService = new AuditService(auditRepository);
+const adminService = new AdminService(adminRepository, auditService);
 const historyService = new HistoryService(historyRepository);
 const userService = new UserService(userRepository,
     fileStorage
 );
+
 const pdfService = new PDFService(versionRepository,
     signatureRepository,
     fileStorage
 );
-const signatureService = new SignatureService(signatureRepository, documentRepository, versionRepository, pdfService);
+
+const signatureService = new SignatureService(
+    signatureRepository,
+    documentRepository,
+    versionRepository,
+    pdfService,
+    groupDocumentSignerRepository,
+    auditService
+);
+
 const documentService = new DocumentService(
     documentRepository,
     versionRepository,
     signatureRepository,
     fileStorage,
     pdfService,
-    groupMemberRepository
+    groupMemberRepository,
+    groupDocumentSignerRepository,
+    aiService
 );
 const groupService = new GroupService(
     groupRepository,
     groupMemberRepository,
     groupInvitationRepository,
-    documentRepository
+    documentRepository,
+    fileStorage,
+    groupDocumentSignerRepository,
+    signatureRepository,
+    versionRepository,
+    pdfService
 );
+
 const packageService = new PackageService(
     packageRepository,
     documentRepository,
     versionRepository,
-    pdfService
+    pdfService,
+    auditService
 );
 
 /**
@@ -219,6 +264,6 @@ app.use(errorHandler);
  * Start Server
  */
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    logger.info(`Server berjalan pada http://localhost:${port}`);
+httpServer.listen(port, () => {
+    logger.info(`Server berjalan pada http://localhost:${port} (WebSocket Ready)`);
 });
