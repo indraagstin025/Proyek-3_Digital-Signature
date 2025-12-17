@@ -236,21 +236,26 @@ export const createGroupController = (groupService) => {
      * @param {import("express").Response} res - Response object.
      */
     assignDocumentToGroup: asyncHandler(async (req, res, next) => {
-      const groupId = validateAndParseGroupId(req.params.groupId);
-      const userId = req.user?.id;
-      const { documentId } = req.body;
+        const groupId = validateAndParseGroupId(req.params.groupId);
+        const userId = req.user?.id;
+        const { documentId, signerUserIds } = req.body;
 
-      if (!documentId) {
-        throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
-      }
+        if (!documentId) {
+            throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
+        }
 
-      const updatedDocument = await groupService.assignDocumentToGroup(documentId, groupId, userId);
+        const updatedDocument = await groupService.assignDocumentToGroup(
+            documentId,
+            groupId,
+            userId,
+            signerUserIds
+        );
 
-      return res.status(200).json({
-        status: "success",
-        message: "Dokumen berhasil dimasukkan ke grup.",
-        data: updatedDocument,
-      });
+        return res.status(200).json({
+            status: "success",
+            message: "Dokumen berhasil dimasukkan ke grup.",
+            data: updatedDocument,
+        });
     }),
 
     /**
@@ -275,5 +280,96 @@ export const createGroupController = (groupService) => {
         message: "Dokumen berhasil dilepaskan dari grup.",
       });
     }),
+
+      /**
+       * @description Upload dokumen baru ke grup dan menentukan siapa yang harus tanda tangan.
+       * * **Proses Kode:**
+       * 1. Menerima file PDF dan list `signerUserIds` dari form-data.
+       * 2. Memanggil service `uploadGroupDocument`.
+       * * @route   POST /groups/:groupId/documents/upload
+       */
+      uploadGroupDocument: asyncHandler(async (req, res, next) => {
+          const groupId = validateAndParseGroupId(req.params.groupId);
+          const userId = req.user?.id;
+          const file = req.file; // Dari Middleware Multer
+          const { title, signerUserIds } = req.body;
+
+          if (!file) throw GroupError.BadRequest("File dokumen wajib diunggah.");
+
+          // Handling parsing jika dikirim sebagai JSON string via Form-Data
+          let parsedSigners = [];
+          if (signerUserIds) {
+              if (typeof signerUserIds === 'string') {
+                  try {
+                      parsedSigners = JSON.parse(signerUserIds);
+                  } catch (e) {
+                      throw GroupError.BadRequest("Format signerUserIds tidak valid (harus JSON Array).");
+                  }
+              } else if (Array.isArray(signerUserIds)) {
+                  parsedSigners = signerUserIds;
+              }
+          }
+
+          if (parsedSigners.length === 0) {
+              throw GroupError.BadRequest("Minimal harus ada 1 anggota yang dipilih untuk tanda tangan.");
+          }
+
+          const newDoc = await groupService.uploadGroupDocument(userId, groupId, file, title, parsedSigners);
+
+          return res.status(201).json({
+              status: "success",
+              message: "Dokumen grup berhasil dibuat dan permintaan tanda tangan telah dikirim.",
+              data: newDoc,
+          });
+      }),
+
+      updateDocumentSigners: asyncHandler(async (req, res) => {
+          const { groupId, documentId } = req.params;
+          const { signerUserIds } = req.body; // Array ID User baru: ["uuid-1", "uuid-2"]
+          const adminId = req.user.id; // Dari Token JWT
+
+          // Validasi input dasar
+          if (!Array.isArray(signerUserIds)) {
+              return res.status(400).json({
+                  status: "fail",
+                  message: "Format signerUserIds harus berupa array."
+              });
+          }
+
+          // Panggil Service
+          const result = await groupService.updateGroupDocumentSigners(
+              parseInt(groupId), // Pastikan ID grup jadi Integer
+              documentId,
+              adminId,
+              signerUserIds
+          );
+
+          return res.status(200).json({
+              status: "success",
+              message: result.message,
+              data: {
+                  addedCount: result.added,
+                  removedCount: result.removed
+              }
+          });
+      }),
+
+      
+      finalizeDocument: asyncHandler(async (req, res) => {
+          const { groupId, documentId } = req.params;
+          const adminId = req.user.id;
+
+          const result = await groupService.finalizeGroupDocument(
+              parseInt(groupId),
+              documentId,
+              adminId
+          );
+
+          return res.status(200).json({
+              status: "success",
+              message: result.message,
+              data: result
+          });
+      }),
   };
 };

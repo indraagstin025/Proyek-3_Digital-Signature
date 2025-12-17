@@ -44,19 +44,19 @@ export class PrismaGroupInvitationRepository extends GroupInvitationRepository {
   }
 
   /**
-   * @description Memperbarui status undangan (misal: 'active' -> 'used').
-   * @param {number} invitationId - ID undangan (INT).
-   * @param {string} status - Status baru (misal: 'used' atau 'expired').
-   * @returns {Promise<object>}
+   * [UPDATED] Mengganti 'updateStatus' menjadi 'update' yang lebih fleksibel.
+   * Ini memungkinkan kita mengupdate 'usageLimit' dan 'status' secara bersamaan.
+   * @param {number} invitationId - ID undangan.
+   * @param {object} data - Object data yang ingin diupdate (misal: { status: 'used', usageLimit: 0 }).
    */
-  async updateStatus(invitationId, status) {
+  async update(invitationId, data) {
     try {
       return await this.prisma.groupInvitation.update({
         where: { id: invitationId },
-        data: { status },
+        data: data,
       });
     } catch (err) {
-      throw CommonError.DatabaseError(`Gagal memperbarui status undangan: ${err.message}`);
+      throw CommonError.DatabaseError(`Gagal memperbarui data undangan: ${err.message}`);
     }
   }
 }

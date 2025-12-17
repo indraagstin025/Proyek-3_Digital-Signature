@@ -48,7 +48,9 @@ export const createDocumentController = (documentService, signatureRepository, f
      */
     getAllDocuments: asyncHandler(async (req, res, next) => {
       const userId = req.user?.id;
-      const documents = await documentService.getAllDocuments(userId);
+      const search = req.query.search || "";
+
+      const documents = await documentService.getAllDocuments(userId, search);
 
       return res.status(200).json({
         status: "success",
@@ -67,14 +69,20 @@ export const createDocumentController = (documentService, signatureRepository, f
      * @param {import("express").Response} res - Response object.
      */
     getDocumentById: asyncHandler(async (req, res, next) => {
-      const { id: documentId } = req.params;
+      const documentId = req.params.id;
+
+      // 1. Pastikan mengambil ID dari req.user (hasil dari middleware auth)
       const userId = req.user?.id;
 
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized: User ID tidak ditemukan." });
+      }
+
+      // 2. [FIX] KIRIM userId KE SERVICE
       const document = await documentService.getDocumentById(documentId, userId);
 
-      return res.status(200).json({
+      res.status(200).json({
         status: "success",
-        message: "Dokumen berhasil diambil.",
         data: document,
       });
     }),
@@ -218,7 +226,7 @@ export const createDocumentController = (documentService, signatureRepository, f
     getVersionFile: asyncHandler(async (req, res, next) => {
       const { documentId, versionId } = req.params;
       const userId = req.user?.id;
-      const isDownload = true; 
+      const isDownload = true;
 
       const signedUrl = await documentService.getVersionFileUrl(documentId, versionId, userId, isDownload);
 
@@ -249,19 +257,16 @@ export const createDocumentController = (documentService, signatureRepository, f
       const { documentId } = req.params;
       const userId = req.user?.id;
 
-      
       const documentData = await documentService.getDocumentById(documentId, userId);
       if (!documentData) {
         return res.status(404).json({ status: "fail", message: "Dokumen tidak ditemukan" });
       }
 
-      
       const filePath = await documentService.getDocumentFilePath(documentId, userId);
       const pdfBuffer = await fileStorage.downloadFileAsBuffer(filePath);
 
       console.log(`AI: Menganalisis dokumen ${documentId}...`);
 
-      
       const aiLocations = await aiService.detectSignatureLocations(pdfBuffer);
 
       if (aiLocations.length === 0) {
@@ -272,7 +277,6 @@ export const createDocumentController = (documentService, signatureRepository, f
         });
       }
 
-      
       const pdfDoc = await PDFDocument.load(pdfBuffer);
       const savedSignatures = [];
 
@@ -283,13 +287,11 @@ export const createDocumentController = (documentService, signatureRepository, f
         const page = pdfDoc.getPage(pageIndex);
         const { width: pageWidth, height: pageHeight } = page.getSize();
 
-        
         const positionX_Percent = loc.x / pageWidth;
         const positionY_Percent = loc.y / pageHeight;
         const width_Percent = loc.width / pageWidth;
         const height_Percent = loc.height / pageHeight;
 
-        
         const newSig = await signatureRepository.createSignature({
           documentVersionId: documentData.currentVersion.id,
           userId: userId,
@@ -299,7 +301,7 @@ export const createDocumentController = (documentService, signatureRepository, f
           width: width_Percent,
           height: height_Percent,
           signatureImageUrl: null,
-          type: "placeholder", 
+          type: "placeholder",
         });
 
         savedSignatures.push(newSig);
@@ -328,13 +330,18 @@ export const createDocumentController = (documentService, signatureRepository, f
     analyzeDocument: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
       const userId = req.user?.id;
+      const documentData = await documentService.getDocumentById(documentId, userId);
+
+      if (!documentData) {
+        return res.status(404).json({ status: "fail", message: "Dokumen tidak ditemukan." });
+      }
 
       const filePath = await documentService.getDocumentFilePath(documentId, userId);
       const pdfBuffer = await fileStorage.downloadFileAsBuffer(filePath);
 
-      console.log(`🤖 AI: Menganalisis konten dokumen ${documentId}...`);
+      console.log(`🤖 AI: Menganalisis dokumen '${documentData.title}' sebagai jenis [${documentData.type}]...`);
 
-      const analysisResult = await aiService.analyzeDocumentContent(pdfBuffer);
+      const analysisResult = await aiService.analyzeDocumentContent(pdfBuffer, documentData.type);
 
       if (!analysisResult || analysisResult.error) {
         return res.status(500).json({

@@ -63,11 +63,15 @@ export class PrismaGroupRepository extends GroupRepository {
               },
             },
           },
-
           documents: {
             orderBy: { createdAt: "desc" },
             include: {
               currentVersion: true,
+              signerRequests: {
+                include: {
+                  user: { select: { id: true, name: true } },
+                },
+              },
             },
           },
         },
