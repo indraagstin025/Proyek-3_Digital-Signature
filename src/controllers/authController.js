@@ -7,20 +7,15 @@ import { serialize } from "cookie";
  * @returns {Object} Kumpulan method controller untuk rute autentikasi.
  */
 export const createAuthController = (authService) => {
-    // Helper function untuk mendapatkan konfigurasi cookie yang konsisten
-    // Digunakan di Login dan Logout agar tidak terjadi mismatch
     const getCookieOptions = () => {
         const isProduction = process.env.NODE_ENV === "production";
-        const cookieDomain = process.env.COOKIE_DOMAIN; // Diambil dari environment variable
+        const cookieDomain = process.env.COOKIE_DOMAIN; 
 
         return {
             httpOnly: true,
             path: "/",
-            // Secure: True di production (HTTPS), False di development (HTTP)
             secure: isProduction,
-            // SameSite: 'None' di production (untuk cross-subdomain), 'Lax' di development
             sameSite: isProduction ? "none" : "lax",
-            // Domain: Di production pakai ".moodvis.my.id", di local biarkan undefined
             domain: isProduction && cookieDomain ? cookieDomain : undefined,
         };
     };
@@ -88,16 +83,14 @@ export const createAuthController = (authService) => {
 
             const baseCookieOptions = getCookieOptions();
 
-            // Menimpa cookie dengan expired date masa lalu untuk menghapusnya
-            // PENTING: Options (domain, path, secure, sameSite) harus SAMA PERSIS dengan saat login
             res.setHeader("Set-Cookie", [
                 serialize("sb-access-token", "", {
                     ...baseCookieOptions,
-                    expires: new Date(0), // Expire segera
+                    expires: new Date(0),
                 }),
                 serialize("sb-refresh-token", "", {
                     ...baseCookieOptions,
-                    expires: new Date(0), // Expire segera
+                    expires: new Date(0),
                 }),
             ]);
 

@@ -71,36 +71,41 @@ export const createPackageController = (packageService) => {
      * - Membubuhkan tanda tangan ke setiap dokumen PDF dalam paket.
      * - Menyimpan riwayat audit trail (termasuk IP Address).
      * 4. Mengembalikan status keberhasilan.
-     * * @route   POST /api/packages/:packageId/sign
+     * @route   POST /api/packages/:packageId/sign
      * @param {import("express").Request} req - Params: packageId, Body: signatures (Array).
      * @param {import("express").Response} res - Response object.
      */
     signPackage: asyncHandler(async (req, res, next) => {
-      const userId = req.user?.id;
-      const { packageId } = req.params;
-      const { signatures } = req.body;
+        const userId = req.user?.id;
+        const { packageId } = req.params;
+        const { signatures } = req.body;
 
-      if (!signatures || !Array.isArray(signatures) || signatures.length === 0) {
-        throw CommonError.BadRequest("Array 'signatures' (berisi data TTD) wajib diisi.");
-      }
-
-      const getRealIpAddress = (req) => {
-        const forwardedFor = req.headers["x-forwarded-for"];
-        if (forwardedFor && typeof forwardedFor === "string") {
-          return forwardedFor.split(",")[0].trim();
+        if (!signatures || !Array.isArray(signatures) || signatures.length === 0) {
+            throw CommonError.BadRequest("Array 'signatures' (berisi data TTD) wajib diisi.");
         }
-        return req.ip || req.connection.remoteAddress;
-      };
 
-      const userIpAddress = getRealIpAddress(req);
+        const getRealIpAddress = (req) => {
+            const forwardedFor = req.headers["x-forwarded-for"];
+            if (forwardedFor && typeof forwardedFor === "string") {
+                return forwardedFor.split(",")[0].trim();
+            }
+            return req.ip || req.connection.remoteAddress;
+        };
 
-      const result = await packageService.signPackage(packageId, userId, signatures, userIpAddress);
+        const userIpAddress = getRealIpAddress(req);
+        const result = await packageService.signPackage(
+            packageId,
+            userId,
+            signatures,
+            userIpAddress,
+            req 
+        );
 
-      return res.status(200).json({
-        status: "success",
-        message: "Paket berhasil ditandatangani.",
-        data: result,
-      });
+        return res.status(200).json({
+            status: "success",
+            message: "Paket berhasil ditandatangani.",
+            data: result,
+        });
     }),
   };
 };
