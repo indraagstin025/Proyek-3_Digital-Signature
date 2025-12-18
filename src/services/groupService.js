@@ -444,7 +444,11 @@ export class GroupService {
 
       console.log(`[GroupService] Mencoba mengirim notifikasi ke ${users.length} user...`);
 
-      const appUrl = process.env.CLIENT_URL || "http://localhost:5173";
+      // KODE LAMA (Nonaktif):
+      // const appUrl = process.env.CLIENT_URL || "http://localhost:5173";
+
+      // KODE BARU: Menggunakan SITE_URL (dari .env) dengan normalisasi trailing slash agar link WA valid
+      const appUrl = (process.env.SITE_URL || process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, "");
       const documentLink = `${appUrl}/dashboard/documents`;
 
       const notificationPromises = users.map(async (user) => {
