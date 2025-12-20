@@ -160,8 +160,12 @@ export const createGroupController = (groupService) => {
 
       const invitation = await groupService.createInvitation(groupId, inviterId, role);
 
-      // Menggunakan Environment Variable untuk URL Frontend
-      const frontendUrl = process.env.SITE_URL || "http://localhost:5173";
+      // KODE LAMA (Nonaktif): Langsung menggabungkan URL sehingga berisiko double slash jika .env diakhiri "/"
+      // const frontendUrl = process.env.SITE_URL || "http://localhost:5173";
+      // const invitationLink = `${frontendUrl}/join?token=${invitation.token}`;
+
+      // KODE BARU: Normalisasi URL dengan menghapus trailing slash (/) agar tidak terjadi error 404 (Double Slash)
+      const frontendUrl = (process.env.SITE_URL || "http://localhost:5173").replace(/\/$/, "");
       const invitationLink = `${frontendUrl}/join?token=${invitation.token}`;
 
       return res.status(201).json({
