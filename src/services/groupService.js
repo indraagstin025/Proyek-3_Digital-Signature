@@ -15,13 +15,35 @@ export class GroupService {
    * @param {Object} documentRepository - Repository untuk entitas Document.
    * @param {Object} fileStorage - Service untuk upload file (S3/Local).
    * @param {Object} groupDocumentSignerRepository - Repository untuk entitas GroupDocumentSigner.
-   * @param {Object} signatureRepository - Repository untuk entitas Signature.
+   * @param {Object} signatureRepository - Repository untuk entitas Signature (Personal).
    * @param {Object} versionRepository - Repository untuk entitas DocumentVersion.
    * @param {Object} pdfService - Service untuk manipulasi PDF.
+   * @param {Object} groupSignatureRepository - Repository untuk entitas Signature (Group).
    * @throws {Error} Jika dependency wajib tidak disediakan.
    */
-  constructor(groupRepository, groupMemberRepository, groupInvitationRepository, documentRepository, fileStorage, groupDocumentSignerRepository, signatureRepository, versionRepository, pdfService) {
-    if (!groupRepository || !groupMemberRepository || !groupInvitationRepository || !documentRepository || !fileStorage || !signatureRepository || !versionRepository || !pdfService) {
+  constructor(
+      groupRepository,
+      groupMemberRepository,
+      groupInvitationRepository,
+      documentRepository,
+      fileStorage,
+      groupDocumentSignerRepository,
+      signatureRepository,
+      versionRepository,
+      pdfService,
+      groupSignatureRepository
+  ) {
+    if (
+        !groupRepository ||
+        !groupMemberRepository ||
+        !groupInvitationRepository ||
+        !documentRepository ||
+        !fileStorage ||
+        !signatureRepository ||
+        !versionRepository ||
+        !pdfService ||
+        !groupSignatureRepository
+    ) {
       throw new Error("Repository utama dan FileStorage harus disediakan.");
     }
 
@@ -34,11 +56,12 @@ export class GroupService {
     this.signatureRepository = signatureRepository;
     this.versionRepository = versionRepository;
     this.pdfService = pdfService;
+    this.groupSignatureRepository = groupSignatureRepository;
   }
 
   /**
    * Membuat grup baru dengan admin yang ditentukan.
-   * * @param {string} adminId - ID User pembuat grup.
+   * @param {string} adminId - ID User pembuat grup.
    * @param {string} name - Nama grup.
    * @returns {Promise<Object>} Objek grup yang baru dibuat.
    * @throws {GroupError} Jika nama kosong.
@@ -54,7 +77,7 @@ export class GroupService {
 
   /**
    * Mengambil detail grup berdasarkan ID dengan validasi keanggotaan.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} userId - ID User yang meminta data.
    * @returns {Promise<Object>} Detail grup beserta relasinya.
    * @throws {GroupError} Jika user bukan anggota atau grup tidak ditemukan.
@@ -71,7 +94,7 @@ export class GroupService {
   /**
    * Membuat token undangan untuk bergabung ke grup.
    * Token berlaku selama 24 jam.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} inviterId - ID User pembuat undangan (Harus Admin).
    * @param {string} role - Role yang akan diberikan (default: 'member').
    * @returns {Promise<Object>} Data undangan termasuk token.
@@ -100,7 +123,7 @@ export class GroupService {
 
   /**
    * Menerima undangan grup berdasarkan token.
-   * * @param {string} token - Token undangan.
+   * @param {string} token - Token undangan.
    * @param {string} userId - ID User yang menerima undangan.
    * @returns {Promise<Object>} Data keanggotaan baru.
    * @throws {GroupError} Jika token tidak valid, kadaluwarsa, atau user sudah bergabung.
@@ -124,7 +147,7 @@ export class GroupService {
 
   /**
    * Memindahkan dokumen dari personal draft ke dalam grup.
-   * * @param {string} documentId - ID Dokumen.
+   * @param {string} documentId - ID Dokumen.
    * @param {number|string} groupId - ID Grup tujuan.
    * @param {string} userId - ID User pemilik dokumen.
    * @param {string[]} [signerUserIds=[]] - Array ID User yang harus tanda tangan.
@@ -147,7 +170,9 @@ export class GroupService {
       const group = await this.groupRepository.findById(groupId);
       const groupName = group ? group.name : "Grup Dokumen";
 
-      this._notifySigners(signerUserIds, document.title, groupName).catch((err) => console.error("Notification Error on Document Assignment:", err));
+      this._notifySigners(signerUserIds, document.title, groupName).catch((err) =>
+          console.error("Notification Error on Document Assignment:", err)
+      );
     } else {
       dataToUpdate.status = "draft";
     }
@@ -159,14 +184,15 @@ export class GroupService {
 
   /**
    * Mengeluarkan anggota dari grup.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} adminId - ID Admin yang melakukan aksi.
    * @param {string} userIdToRemove - ID User yang akan dikeluarkan.
    * @throws {GroupError} Jika bukan admin atau mencoba mengeluarkan pemilik utama.
    */
   async removeMember(groupId, adminId, userIdToRemove) {
     const admin = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
-    if (!admin || admin.role !== "admin_group") throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
+    if (!admin || admin.role !== "admin_group")
+      throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
 
     const target = await this.groupMemberRepository.findByGroupAndUser(groupId, userIdToRemove);
     if (!target) throw GroupError.NotFound("Anggota tidak ditemukan di grup ini.");
@@ -179,32 +205,34 @@ export class GroupService {
 
   /**
    * Mengubah nama grup.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} userId - ID Admin.
    * @param {string} name - Nama baru.
    * @returns {Promise<Object>} Data grup yang diperbarui.
    */
   async updateGroup(groupId, userId, name) {
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
-    if (!member || member.role !== "admin_group") throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");
+    if (!member || member.role !== "admin_group")
+      throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");
     return this.groupRepository.update(groupId, { name });
   }
 
   /**
    * Menghapus grup secara permanen.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} userId - ID Pemilik utama.
    */
   async deleteGroup(groupId, userId) {
     const group = await this.groupRepository.findById(groupId);
     if (!group) throw GroupError.NotFound();
-    if (group.adminId !== userId) throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");
+    if (group.adminId !== userId)
+      throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");
     await this.groupRepository.deleteById(groupId);
   }
 
   /**
    * Mengambil semua grup di mana user terdaftar sebagai anggota.
-   * * @param {string} userId - ID User.
+   * @param {string} userId - ID User.
    * @returns {Promise<Array>} Array objek ringkasan grup.
    */
   async getAllUserGroups(userId) {
@@ -212,22 +240,22 @@ export class GroupService {
       include: { group: { include: { _count: { select: { members: true, documents: true } } } } },
     });
     return memberships
-      .map(
-        (m) =>
-          m.group && {
-            id: m.group.id,
-            name: m.group.name,
-            docs_count: m.group._count ? m.group._count.documents : 0,
-            members_count: m.group._count ? m.group._count.members : 0,
-          }
-      )
-      .filter(Boolean);
+        .map(
+            (m) =>
+                m.group && {
+                  id: m.group.id,
+                  name: m.group.name,
+                  docs_count: m.group._count ? m.group._count.documents : 0,
+                  members_count: m.group._count ? m.group._count.members : 0,
+                }
+        )
+        .filter(Boolean);
   }
 
   /**
    * Memperbarui daftar penanda tangan (Checklist Signer) untuk dokumen yang sudah ada.
    * Menghandle penambahan signer baru dan penghapusan signer yang belum tanda tangan (pending).
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} documentId - ID Dokumen.
    * @param {string} adminId - ID User yang melakukan edit (Admin Grup).
    * @param {string[]} newUserIds - Array ID User hasil checklist terbaru.
@@ -265,7 +293,9 @@ export class GroupService {
       await this.groupDocumentSignerRepository.createSigners(documentId, toAdd);
 
       const group = await this.groupRepository.findById(groupId);
-      this._notifySigners(toAdd, document.title, group.name).catch((err) => console.error("Notification Error during Signer Update:", err));
+      this._notifySigners(toAdd, document.title, group.name).catch((err) =>
+          console.error("Notification Error during Signer Update:", err)
+      );
     }
 
     const allSignersCount = newUserIds.length;
@@ -291,7 +321,7 @@ export class GroupService {
   /**
    * Melepaskan dokumen dari grup (Unassign).
    * Dokumen akan kehilangan asosiasi grup dan semua data permintaan tanda tangan akan dihapus.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} documentId - ID Dokumen.
    * @param {string} userId - ID Admin.
    * @returns {Promise<Object>} Dokumen yang telah diupdate.
@@ -325,7 +355,7 @@ export class GroupService {
   /**
    * Mengupload dokumen baru langsung ke dalam grup.
    * Mengirim notifikasi WhatsApp ke anggota yang dipilih.
-   * * @param {string} userId - ID Uploader.
+   * @param {string} userId - ID Uploader.
    * @param {number|string} groupId - ID Grup.
    * @param {File} file - Objek File (Multer).
    * @param {string} title - Judul Dokumen.
@@ -341,7 +371,14 @@ export class GroupService {
     const filePath = await this.fileStorage.uploadDocument(file, userId);
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-    const newDoc = await this.documentRepository.createGroupDocument(userId, groupId, title, filePath, hash, signerUserIds);
+    const newDoc = await this.documentRepository.createGroupDocument(
+        userId,
+        groupId,
+        title,
+        filePath,
+        hash,
+        signerUserIds
+    );
 
     if (signerUserIds && signerUserIds.length > 0) {
       const groupName = member.group ? member.group.name : "Grup Dokumen";
@@ -356,7 +393,7 @@ export class GroupService {
    * Finalisasi Dokumen Grup (Hanya Admin).
    * Menggabungkan semua tanda tangan visual ke dalam PDF (Burn),
    * membuat versi final, dan mengubah status dokumen menjadi 'completed'.
-   * * @param {number|string} groupId - ID Grup.
+   * @param {number|string} groupId - ID Grup.
    * @param {string} documentId - ID Dokumen.
    * @param {string} adminId - ID Admin.
    * @returns {Promise<Object>} URL file final dan pesan sukses.
@@ -369,7 +406,9 @@ export class GroupService {
 
     const pendingCount = await this.groupDocumentSignerRepository.countPendingSigners(documentId);
     if (pendingCount > 0) {
-      throw CommonError.BadRequest(`Belum bisa finalisasi. Masih ada ${pendingCount} orang yang belum tanda tangan.`);
+      throw CommonError.BadRequest(
+          `Belum bisa finalisasi. Masih ada ${pendingCount} orang yang belum tanda tangan.`
+      );
     }
 
     const document = await this.documentRepository.findById(documentId, adminId);
@@ -379,7 +418,11 @@ export class GroupService {
 
     const currentVersion = document.currentVersion;
 
-    const allSignatures = await this.signatureRepository.findGroupSignaturesByVersionId(currentVersion.id);
+    const allSignatures = await this.groupSignatureRepository.findAllByVersionId(currentVersion.id);
+
+    if (!allSignatures || allSignatures.length === 0) {
+      throw new Error("Tidak ada tanda tangan yang ditemukan untuk difinalisasi.");
+    }
 
     const signaturesPayload = allSignatures.map((sig) => ({
       signatureImageUrl: sig.signatureImageUrl,
@@ -390,7 +433,11 @@ export class GroupService {
       height: sig.height,
     }));
 
-    const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(currentVersion.id, signaturesPayload, { displayQrCode: false });
+    const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(
+        currentVersion.id,
+        signaturesPayload,
+        { displayQrCode: false }
+    );
 
     const newHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
 
@@ -408,19 +455,13 @@ export class GroupService {
       signedFileUrl: publicUrl,
     });
 
-    if (this.signatureRepository.updateGroupSignatureVersion) {
-      for (const sig of allSignatures) {
-        await this.signatureRepository.updateGroupSignatureVersion(sig.id, newVersion.id);
-      }
-    }
-
     return { message: "Dokumen berhasil difinalisasi.", url: publicUrl };
   }
 
   /**
    * [PRIVATE HELPER] Mengirim notifikasi WhatsApp ke daftar signer.
    * Berjalan secara paralel menggunakan Promise.allSettled.
-   * * @private
+   * @private
    * @param {string[]} signerIds - Array ID User.
    * @param {string} docTitle - Judul Dokumen.
    * @param {string} groupName - Nama Grup.

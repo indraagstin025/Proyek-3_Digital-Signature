@@ -137,6 +137,7 @@ model DocumentVersion {
   document          Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
   documentId        String    @map("document_id") @db.Uuid
   documentAsCurrent Document? @relation("CurrentVersion")
+  description       String?   @db.Text
 
   uploader User?   @relation("UploadedBy", fields: [userId], references: [id], onDelete: SetNull)
   userId   String? @map("user_id") @db.Uuid
@@ -232,6 +233,7 @@ model PackageSignature {
   height            Float
   signerId          String          @map("signer_id") @db.Uuid
   signer            User            @relation(fields: [signerId], references: [id], onDelete: Cascade)
+  status            String          @default("draft")
   createdAt         DateTime        @default(now()) @map("created_at")
   ipAddress         String?         @map("ip_address")
   userAgent         String?         @map("user_agent")

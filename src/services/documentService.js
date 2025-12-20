@@ -15,8 +15,8 @@ export class DocumentService {
    * @param {object} aiService
    * @throws {Error} Jika ada dependency yang tidak diberikan
    */
-  constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository, groupDocumentSignerRepository, aiService) {
-    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService) {
+  constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository, groupDocumentSignerRepository, aiService, groupSignatureRepository) {
+    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService || !groupSignatureRepository) {
       throw new Error("Semua repository dan service harus disediakan.");
     }
 
@@ -28,6 +28,7 @@ export class DocumentService {
     this.groupMemberRepository = groupMemberRepository;
     this.groupDocumentSignerRepository = groupDocumentSignerRepository;
     this.aiService = aiService;
+    this.groupSignatureRepository = groupSignatureRepository;
   }
 
   /**
@@ -215,52 +216,68 @@ export class DocumentService {
    * @returns {Promise<object>}
    */
   async useOldVersion(documentId, versionId, userId) {
-    const document = await this.getDocumentById(documentId, userId);
-    const version = await this.versionRepository.findById(versionId);
+    // 1. Validasi Dokumen & Versi
+    const document = await this.documentRepository.findById(documentId, userId);
+    if (!document) throw DocumentError.NotFound("Dokumen tidak ditemukan.");
 
+    const version = await this.versionRepository.findById(versionId);
     if (!version || version.documentId !== documentId) {
       throw DocumentError.InvalidVersion(versionId, documentId);
     }
 
+    // 2. Cek apakah ini Versi Pertama (V1)?
     const allVersions = await this.versionRepository.findAllByDocumentId(documentId);
+    // Sort asc (terlama ke terbaru)
     allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
     const isFirstVersion = allVersions.length > 0 && allVersions[0].id === versionId;
-
-    const hasPersonalSig = version.signaturesPersonal?.some((s) => s.signatureImageUrl);
-    const hasGroupSig = version.signaturesGroup && version.signaturesGroup.length > 0;
-
-    const isBurnedFinal = !!version.signedFileHash;
-
-    const isTargetVersionSigned = hasPersonalSig || hasGroupSig || isBurnedFinal;
 
     let newStatus = "pending";
     let newSignedFileUrl = null;
 
     if (isFirstVersion) {
-      console.log(`🔄 [ROLLBACK] Kembali ke Versi Awal (V1). Reset status ke Pending.`);
-      newStatus = "pending";
+      console.log(`🔄 [ROLLBACK] Kembali ke Versi Awal (V1). Cleaning Signatures...`);
+      newStatus = "pending"; // Dokumen jadi mentah lagi
 
+      // A. Hapus Semua Signature Personal di Versi ini
+      // Parameter userId = null artinya "Hapus SEMUA, bukan cuma punya user ini"
+      if (this.signatureRepository) {
+        await this.signatureRepository.deleteBySignerAndVersion(null, versionId);
+      }
+
+      // B. Hapus Semua Signature Group di Versi ini (PENTING: Pakai Repo Group)
+      if (this.groupSignatureRepository) {
+        await this.groupSignatureRepository.deleteBySignerAndVersion(null, versionId);
+      }
+
+      // C. Reset Status Checklist Signer (Jika Dokumen Group)
+      // Semua anggota statusnya jadi 'PENDING' lagi agar bisa ttd ulang
       if (document.groupId && this.groupDocumentSignerRepository) {
-        await this.groupDocumentSignerRepository.resetSigners(documentId);
-
-        if (this.signatureRepository) {
-          await this.signatureRepository.deleteBySignerAndVersion(null, versionId, true);
+        if (typeof this.groupDocumentSignerRepository.resetSigners === "function") {
+          await this.groupDocumentSignerRepository.resetSigners(documentId);
         }
       }
-    } else if (isTargetVersionSigned) {
-      console.log(`🔒 [ROLLBACK] Kembali ke Versi Signed (V2). Mengunci dokumen...`);
-      newStatus = "completed";
-      newSignedFileUrl = version.url;
 
-      if (document.groupId && this.groupDocumentSignerRepository) {
-        if (typeof this.groupDocumentSignerRepository.markAllAsSigned === "function") {
-          await this.groupDocumentSignerRepository.markAllAsSigned(documentId);
-        }
-      }
     } else {
-      newStatus = "pending";
+      // Logic jika rollback ke versi yang sudah jadi (V2, V3, dst)
+      // Biasanya versi selain V1 adalah hasil burn PDF yang sudah ada isinya
+
+      const isBurnedFinal = !!version.signedFileHash || !!version.url;
+
+      if (isBurnedFinal) {
+        console.log(`🔒 [ROLLBACK] Kembali ke Versi Signed. Mengunci dokumen...`);
+        newStatus = "completed";
+        newSignedFileUrl = version.url;
+
+        // Opsional: Jika dokumen grup, tandai semua signer 'SIGNED' (karena ini versi jadi)
+        // Tapi hati-hati, biasanya rollback ke completed jarang dilakukan kecuali untuk view history.
+      } else {
+        // Jika V2 tapi belum diburn (kasus jarang), tetap pending
+        newStatus = "pending";
+      }
     }
 
+    // 3. Update Dokumen Utama
     return this.documentRepository.update(documentId, {
       currentVersionId: versionId,
       status: newStatus,

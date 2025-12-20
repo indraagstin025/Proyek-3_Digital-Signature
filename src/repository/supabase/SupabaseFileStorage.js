@@ -6,33 +6,77 @@ import CommonError from "../../errors/CommonError.js";
 /**
  * @class SupabaseFileStorage
  * @description Service untuk manajemen file menggunakan Supabase Storage.
- * Mencakup upload, download, delete, dan utilitas path.
+ * Mencakup upload (dengan Retry Logic), download, delete, dan utilitas path.
  */
 class SupabaseFileStorage {
   /**
-   * @description Upload file umum ke Supabase Storage.
-   * @param {string} filePath - Path tujuan penyimpanan file di bucket.
-   * @param {Buffer} buffer - Buffer file yang akan diupload.
-   * @param {string} contentType - MIME type file.
-   * @returns {Promise<string>} Relative path file di bucket.
-   * @throws {CommonError.SupabaseError}
+   * [INTERNAL HELPER] Wrapper untuk melakukan upload dengan mekanisme RETRY.
+   * Mengatasi masalah "Unexpected token <" (502 Bad Gateway) dari Supabase.
    */
-  async uploadFile(filePath, buffer, contentType) {
-    const { error } = await supabaseAdmin.storage.from(supabaseBucket).upload(filePath, buffer, { contentType, upsert: true });
+  async _uploadWithRetry(filePath, buffer, contentType) {
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    let lastError = null;
 
-    if (error) {
-      throw CommonError.SupabaseError(`Gagal mengunggah file generik: ${error.message}`);
+    while (attempt < MAX_RETRIES) {
+      try {
+        if (attempt > 0) {
+          console.log(`⚠️ [Supabase] Retry upload #${attempt} for ${filePath}...`);
+        }
+
+        const { error } = await supabaseAdmin.storage
+            .from(supabaseBucket)
+            .upload(filePath, buffer, {
+              contentType,
+              upsert: true,
+            });
+
+        if (error) throw error;
+
+        // Jika sukses, langsung return path
+        return filePath;
+
+      } catch (err) {
+        lastError = err;
+        attempt++;
+
+        // Cek apakah errornya Network/HTML (Bad Gateway)
+        const isNetworkError = err.message && (
+            err.message.includes("<!DOCTYPE") ||
+            err.message.includes("Unexpected token") ||
+            err.message.includes("fetch failed") ||
+            err.status === 502 ||
+            err.status === 503 ||
+            err.status === 504
+        );
+
+        // Jika errornya BUKAN masalah jaringan (misal: file corrupt, permission denied), jangan retry.
+        if (!isNetworkError) break;
+
+        // Tunggu sebentar sebelum coba lagi (Backoff: 1s, 2s, 3s)
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+      }
     }
 
-    return filePath;
+    // Jika sudah habis kesempatan retry, lempar error
+    console.error(`❌ [Supabase] Upload gagal total setelah ${MAX_RETRIES}x:`, lastError.message);
+
+    if (lastError.message && lastError.message.includes("<!DOCTYPE")) {
+      throw CommonError.SupabaseError("Layanan Storage sedang sibuk (502 Bad Gateway). Silakan coba sebentar lagi.");
+    }
+
+    throw CommonError.SupabaseError(`Gagal mengunggah file: ${lastError.message}`);
   }
 
   /**
-   * @description Upload dokumen user ke Supabase Storage (auto-generate nama unik).
-   * @param {Express.Multer.File} file - File dokumen yang akan diupload.
-   * @param {string} userId - ID pengguna pemilik dokumen.
-   * @returns {Promise<string>} Relative path file di bucket.
-   * @throws {CommonError.SupabaseError|Error}
+   * @description Upload file umum ke Supabase Storage (With Retry).
+   */
+  async uploadFile(filePath, buffer, contentType) {
+    return this._uploadWithRetry(filePath, buffer, contentType);
+  }
+
+  /**
+   * @description Upload dokumen user ke Supabase Storage (auto-generate nama unik) + Retry.
    */
   async uploadDocument(file, userId) {
     if (!file || !userId) {
@@ -43,22 +87,22 @@ class SupabaseFileStorage {
     const uniqueFileName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
     const filePath = `documents/${userId}/${uniqueFileName}`;
 
-    const { error } = await supabaseAdmin.storage.from(supabaseBucket).upload(filePath, file.buffer, { contentType: file.mimetype });
+    return this._uploadWithRetry(filePath, file.buffer, file.mimetype);
+  }
 
-    if (error) {
-      throw CommonError.SupabaseError(`Gagal mengunggah dokumen: ${error.message}`);
-    }
+  /**
+   * @description Upload foto profil user ke Supabase Storage + Retry.
+   */
+  async uploadProfilePicture(file, userId) {
+    if (!file) throw new Error("File tidak ditemukan.");
+    const ext = path.extname(file.originalname);
+    const fileName = `profile-pictures/${userId}/${Date.now()}${ext}`;
 
-    return filePath;
+    return this._uploadWithRetry(fileName, file.buffer, file.mimetype);
   }
 
   /**
    * @description Generate signed URL untuk akses file private.
-   * @param {string} filePath - Relative path file di bucket.
-   * @param {number} expiresIn - Masa berlaku dalam detik (default: 60).
-   * @param {string} [downloadFilename] - Opsional: Nama file kustom untuk diunduh.
-   * @returns {Promise<string>} Signed URL.
-   * @throws {CommonError.SupabaseError}
    */
   async getSignedUrl(filePath, expiresIn = 60, downloadFilename = null) {
     const options = downloadFilename ? { transform: {}, download: downloadFilename } : { transform: {} };
@@ -74,9 +118,6 @@ class SupabaseFileStorage {
 
   /**
    * @description Download file dan mengembalikannya sebagai buffer.
-   * @param {string} filePath - Relative path file di bucket.
-   * @returns {Promise<Buffer>} Buffer file.
-   * @throws {CommonError.SupabaseError|CommonError.InternalServerError}
    */
   async downloadFileAsBuffer(filePath) {
     const { data, error } = await supabaseAdmin.storage.from(supabaseBucket).download(filePath);
@@ -91,8 +132,6 @@ class SupabaseFileStorage {
 
   /**
    * @description Menghapus file berdasarkan relative path.
-   * @param {string} filePath - Relative path file di bucket.
-   * @returns {Promise<void>}
    */
   async deleteFile(filePath) {
     if (!filePath || typeof filePath !== "string") {
@@ -104,27 +143,6 @@ class SupabaseFileStorage {
     if (error) {
       throw CommonError.SupabaseError(`Supabase gagal menghapus file: ${error.message}`);
     }
-  }
-
-  /**
-   * @description Upload foto profil user ke Supabase Storage.
-   * @param {Express.Multer.File} file - File gambar profil.
-   * @param {string} userId - ID pengguna.
-   * @returns {Promise<string>} Relative path file di bucket.
-   * @throws {CommonError.SupabaseError|Error}
-   */
-  async uploadProfilePicture(file, userId) {
-    if (!file) throw new Error("File tidak ditemukan.");
-    const ext = path.extname(file.originalname);
-    const fileName = `profile-pictures/${userId}/${Date.now()}${ext}`;
-
-    const { error } = await supabaseAdmin.storage.from(supabaseBucket).upload(fileName, file.buffer, { contentType: file.mimetype });
-
-    if (error) {
-      throw CommonError.SupabaseError(`Upload profile gagal: ${error.message}`);
-    }
-
-    return fileName;
   }
 }
 
