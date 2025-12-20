@@ -88,25 +88,34 @@ const prisma = new PrismaClient();
 
 const allowedOrigins = [
     "https://www.moodvis.my.id",
+    "https://moodvis.my.id",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175"
 ];
 
 const corsOptions = {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
     optionsSuccessStatus: 204,
 };
 
 const io = new Server(httpServer, {
+    path: "/socket.io/",
     cors: {
         origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true
-    }
+    },
+    transports: ["websocket", "polling"]
 });
 
 initSocket(io);
