@@ -79,7 +79,7 @@ import { createHistoryRoutes } from "./routes/historyRoutes.js";
  * Inisialisasi aplikasi dan Prisma Client
  */
 const app = express();
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 const httpServer = createServer(app);
 const prisma = new PrismaClient();
 
