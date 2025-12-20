@@ -9,24 +9,14 @@ import { serialize } from "cookie";
 export const createAuthController = (authService) => {
     const getCookieOptions = () => {
         const isProduction = process.env.NODE_ENV === "production";
-        const cookieDomain = process.env.COOKIE_DOMAIN; // Isi: .moodvis.my.id
+        const cookieDomain = process.env.COOKIE_DOMAIN;
 
         return {
             httpOnly: true,
             path: "/",
-            // Secure WAJIB true karena backend Anda HTTPS
             secure: isProduction,
-
-            // PENTING: Gunakan 'Lax'.
-            // Chrome Mobile kadang membuang cookie 'None' jika tidak dianggap 'Secure' sempurna.
-            // 'Lax' + Domain yang sama (.moodvis.my.id) adalah kombinasi emas.
-            sameSite: "lax",
-
-            // Pastikan ini .moodvis.my.id
+            sameSite: isProduction ? "none" : "lax",
             domain: isProduction && cookieDomain ? cookieDomain : undefined,
-
-            // Tambahkan MaxAge eksplisit agar tidak dianggap "Session Cookie" (yang hilang saat browser tutup)
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 Hari
         };
     };
 
