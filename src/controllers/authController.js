@@ -9,23 +9,13 @@ import { serialize } from "cookie";
 export const createAuthController = (authService) => {
     const getCookieOptions = () => {
         const isProduction = process.env.NODE_ENV === "production";
-
-        // Pastikan ini mengambil value ".moodvis.my.id" dari .env
-        // Jika undefined, fallback ke undefined (untuk localhost)
         const cookieDomain = process.env.COOKIE_DOMAIN;
 
         return {
             httpOnly: true,
             path: "/",
-            secure: isProduction, // Wajib TRUE (HTTPS)
-
-            // GUNAKAN LAX.
-            // Karena kita satu induk domain, Lax lebih ramah mobile daripada None.
+            secure: isProduction,
             sameSite: "lax",
-
-            // INI KUNCINYA:
-            // Kita paksa cookie duduk di ".moodvis.my.id"
-            // Sehingga "app.moodvis..." dan "www.moodvis..." bisa saling baca.
             domain: isProduction && cookieDomain ? cookieDomain : undefined,
         };
     };
