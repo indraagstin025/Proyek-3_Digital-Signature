@@ -3,30 +3,9 @@ import CommonError from "../errors/CommonError.js";
 import DocumentError from "../errors/DocumentError.js";
 
 /**
- * Payload tanda tangan dalam paket.
- * @typedef {object} SignaturePayload
- * @property {string} packageDocId
- * @property {string} signatureImageUrl
- * @property {number} pageNumber
- * @property {number} positionX
- * @property {number} positionY
- * @property {number} width
- * @property {number} height
- * @property {boolean} [displayQrCode=true]
- */
-
-/**
- * Service untuk seluruh lifecycle Signing Package (batch)
- * termasuk create, signing, verifikasi & integritas hash.
+ * Service untuk seluruh lifecycle Signing Package (batch).
  */
 export class PackageService {
-  /**
-   * @param {*} packageRepository
-   * @param {*} documentRepository
-   * @param {*} versionRepository
-   * @param {*} pdfService
-   * @param {*} auditService
-   */
   constructor(packageRepository, documentRepository, versionRepository, pdfService, auditService) {
     if (!packageRepository || !documentRepository || !versionRepository || !pdfService || !auditService) {
       throw CommonError.InternalServerError("PackageService: Repository & PDF Service wajib diberikan.");
@@ -40,18 +19,20 @@ export class PackageService {
 
   /**
    * Membuat package beserta kumpulan dokumen versi aktif.
-   *
-   * **Alur Kerja:**
-   * 1. Validasi tiap dokumen.
-   * 2. Ambil `currentVersionId` → jika tidak ada → reject.
-   * 3. Jika dokumen telah selesai (completed), tidak bisa dimasukkan ke paket.
-   * 4. Simpan package berikut seluruh docVersion ke DB.
+   * * [OPTIMASI]: Menggunakan Promise.all untuk fetch metadata dokumen
+   * karena ini ringan (hanya database query) dan mempercepat respon UI.
    */
   async createPackage(userId, title, documentIds) {
     const docVersionIds = [];
 
-    for (const docId of documentIds) {
-      const doc = await this.documentRepository.findById(docId, userId);
+    // 1. Fetch semua dokumen secara paralel (Cepat)
+    const docPromises = documentIds.map((docId) => this.documentRepository.findById(docId, userId));
+    const docs = await Promise.all(docPromises);
+
+    // 2. Validasi
+    for (let i = 0; i < docs.length; i++) {
+      const doc = docs[i];
+      const docId = documentIds[i];
 
       if (!doc) throw DocumentError.NotFound(docId);
       if (!doc.currentVersionId) throw DocumentError.InvalidVersion("Tidak memiliki versi aktif", docId);
@@ -65,29 +46,14 @@ export class PackageService {
     return await this.packageRepository.createPackageWithDocuments(userId, title, docVersionIds);
   }
 
-  /** Mengambil metadata package + relasi dokumen */
   async getPackageDetails(packageId, userId) {
     return await this.packageRepository.findPackageById(packageId, userId);
   }
 
   /**
    * Eksekusi signing untuk seluruh dokumen dalam paket.
-   *
-   * **Flow Signing:**
-   * 1. Ambil package dan cek status (completed → tolak).
-   * 2. Loop setiap dokumen pada paket.
-   * 3. Filter payload signature yang sesuai packageDocumentId.
-   * 4. Simpan signature ke tabel → dapatkan ID.
-   * 5. Generate PDF baru dengan QR Code + verification URL opsional.
-   * 6. Hitung hash SHA-256 file hasil.
-   * 7. Simpan sebagai versi baru dokumen & mark `completed`.
-   * 8. Jika gagal → rollback signature yang sempat tersimpan.
-   *
-   * @param {string} packageId
-   * @param {string} userId
-   * @param {SignaturePayload[]} signaturesPayload
-   * @param {string} userIpAddress
-   * @returns {Promise<{packageId:string, status:'completed'|'partial_failure', success:string[], failed:any[]}>}
+   * * [STRATEGI]: Menggunakan SEQUENTIAL LOOP (for...of) untuk mencegah RAM Crash.
+   * Proses satu per satu, selesai, bersihkan memori, baru lanjut ke dokumen berikutnya.
    */
   async signPackage(packageId, userId, signaturesPayload, userIpAddress, req = null) {
     const pkg = await this.getPackageDetails(packageId, userId);
@@ -95,15 +61,23 @@ export class PackageService {
 
     const results = { success: [], failed: [] };
 
+    // Loop Sequential (Wajib untuk Railway 512MB)
     for (const packageDoc of pkg.documents) {
       const originalDocId = packageDoc.docVersion.document.id;
       const originalVersionId = packageDoc.docVersion.id;
+      const docTitle = packageDoc.docVersion.document.title;
+
       let createdSignatureIds = [];
+      let signedFileBuffer = null; // Inisialisasi variabel buffer
 
       try {
+        console.log(`[PackageService] 🔄 Processing: ${docTitle}...`);
+
+        // 1. Filter Config Signature
         const signaturesForThisDoc = signaturesPayload.filter((sig) => sig.packageDocId === packageDoc.id);
         if (signaturesForThisDoc.length === 0) throw new Error("Tidak ada konfigurasi tanda tangan untuk dokumen ini.");
 
+        // 2. Siapkan Data Signature DB
         const signaturesToCreate = signaturesForThisDoc.map((sig) => ({
           packageDocumentId: packageDoc.id,
           signerId: userId,
@@ -116,19 +90,29 @@ export class PackageService {
           ipAddress: userIpAddress,
         }));
 
+        // 3. Simpan Placeholder ke DB
         const createdSignatures = await this.packageRepository.createPackageSignatures(signaturesToCreate);
         if (!createdSignatures?.length) throw new Error("Database gagal menyimpan tanda tangan.");
 
         createdSignatureIds = createdSignatures.map((s) => s.id);
         const firstSignatureId = createdSignatures[0].id;
 
+        // 4. Generate URL Verifikasi
         const base = (process.env.VERIFICATION_URL || "http://localhost:5173").replace(/\/$/, "");
         const verificationUrl = `${base}/verify/${firstSignatureId}`;
         const displayQrCode = signaturesForThisDoc[0].displayQrCode ?? true;
 
-        const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForThisDoc, { displayQrCode, verificationUrl });
+        // 5. 🔥 PROSES BERAT: PDF GENERATION 🔥
+        // Hasilnya adalah Buffer besar
+        const pdfResult = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForThisDoc, { displayQrCode, verificationUrl });
 
+        signedFileBuffer = pdfResult.signedFileBuffer; // Simpan buffer
+        const publicUrl = pdfResult.publicUrl;
+
+        // 6. Hashing (CPU Bound)
         const hash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
+
+        // 7. Update DB (Versi Baru)
         const newVersion = await this.versionRepository.create({
           documentId: originalDocId,
           userId,
@@ -137,6 +121,7 @@ export class PackageService {
           signedFileHash: hash,
         });
 
+        // 8. Update Status Dokumen
         await this.packageRepository.updatePackageDocumentVersion(packageId, originalVersionId, newVersion.id);
         await this.documentRepository.update(originalDocId, {
           currentVersionId: newVersion.id,
@@ -144,40 +129,45 @@ export class PackageService {
           signedFileUrl: publicUrl,
         });
 
+        console.log(`[PackageService] ✅ Success: ${docTitle}`);
         results.success.push(originalDocId);
-      } catch (error) {
-        console.error(`[PackageService] Failed doc ${originalDocId}:`, error);
 
+      } catch (error) {
+        console.error(`[PackageService] ❌ Failed doc ${originalDocId}:`, error.message);
+
+        // Rollback: Hapus signature yang sempat terbuat di DB jika PDF gagal
         if (createdSignatureIds.length > 0) await this.packageRepository.deleteSignaturesByIds(createdSignatureIds);
 
         results.failed.push({ documentId: originalDocId, error: error.message });
+      } finally {
+        // [MANUAL GC HELP]
+        // Sangat Penting: Kosongkan variabel buffer agar RAM segera dilepas
+        // sebelum lanjut ke iterasi loop dokumen berikutnya.
+        signedFileBuffer = null;
       }
     }
 
     const status = results.failed.length === 0 ? "completed" : "partial_failure";
     await this.packageRepository.updatePackageStatus(packageId, status);
 
-    // [BARU] CATAT KE AUDIT LOG
+    // Audit Log
     if (this.auditService) {
       const successCount = results.success.length;
       const failCount = results.failed.length;
-
       await this.auditService.log(
-        "SIGN_PACKAGE", // Pastikan enum ini ada di schema.prisma
-        userId,
-        packageId,
-        `User menandatangani paket. Sukses: ${successCount}, Gagal: ${failCount}`,
-        req
+          "SIGN_PACKAGE",
+          userId,
+          packageId,
+          `User menandatangani paket. Sukses: ${successCount}, Gagal: ${failCount}`,
+          req
       );
     }
 
     return { packageId, status, ...results };
   }
 
-  /**
-   * Mengambil data verifikasi 1 signature dalam package.
-   * Digunakan halaman `/verify/:signatureId` (scanner/QR Code).
-   */
+  // ... (Method verification lainnya tetap sama) ...
+
   async getPackageSignatureVerificationDetails(signatureId) {
     const sig = await this.packageRepository.findPackageSignatureById(signatureId);
     if (!sig) return null;
@@ -202,16 +192,6 @@ export class PackageService {
     };
   }
 
-  /**
-   * Verifikasi integritas file yang diupload user (manual upload).
-   * Menghitung hash ulang & dibandingkan dengan hash versi database.
-   *
-   * @returns {{
-   *  signerName:string, signerEmail:string, documentTitle:string,
-   *  signedAt:string, verificationStatus:string, isHashMatch:boolean,
-   *  storedFileHash:string, recalculatedFileHash:string
-   * } | null}
-   */
   async verifyUploadedPackageFile(signatureId, uploadedFileBuffer) {
     const sig = await this.packageRepository.findPackageSignatureById(signatureId);
     if (!sig) return null;
