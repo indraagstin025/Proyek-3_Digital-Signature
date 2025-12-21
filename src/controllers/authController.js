@@ -7,31 +7,31 @@ import { serialize } from "cookie";
  * @returns {Object} Kumpulan method controller untuk rute autentikasi.
  */
 export const createAuthController = (authService) => {
+
+    /**
+     * Helper untuk mendapatkan konfigurasi cookie yang konsisten.
+     * PENTING: Harus SAMA PERSIS dengan yang ada di authMiddleware.js
+     */
     const getCookieOptions = () => {
         const isProduction = process.env.NODE_ENV === "production";
 
-        // Pastikan variabel ini ada di Railway
+        // Pastikan variabel ini diisi ".moodvis.my.id" di Railway
         const cookieDomain = process.env.COOKIE_DOMAIN;
 
         return {
-            httpOnly: true, // Biar aman dari XSS
+            httpOnly: true, // Wajib agar tidak bisa diakses JS client
             path: "/",
 
-            // WAJIB: Secure harus true karena production Anda HTTPS
+            // Production wajib HTTPS (Secure)
             secure: isProduction,
 
-            // WAJIB 'Lax'.
-            // Jangan pakai 'None' atau 'Strict' untuk kasus subdomain (www & api).
-            // 'Lax' paling bersahabat dengan browser HP Android & iOS.
+            // GUNAKAN 'lax' (Sama seperti Middleware)
+            // Aman untuk Mobile dan Cross-Subdomain (www <-> api)
             sameSite: "lax",
 
-            // INI KUNCINYA:
-            // Kita harus set domain secara eksplisit ke ".moodvis.my.id"
-            // Tanpa ini, frontend (www) tidak akan pernah punya akses ke cookie backend (api).
+            // WAJIB ADA DOMAIN (Sama seperti Middleware)
+            // Agar cookie bisa dibaca oleh frontend 'www'
             domain: isProduction && cookieDomain ? cookieDomain : undefined,
-
-            // Tambahkan durasi expire yang jelas (7 hari)
-            maxAge: 7 * 24 * 60 * 60 * 1000
         };
     };
 
@@ -63,22 +63,29 @@ export const createAuthController = (authService) => {
          */
         login: asyncHandler(async (req, res) => {
             const { email, password } = req.body;
+
+            // 1. Proses Login ke Supabase
             const { session, user } = await authService.loginUser(email, password);
 
-            const OneWeek = 7 * 24 * 60 * 60 * 1000;
-            const baseCookieOptions = getCookieOptions();
+            // 2. Ambil Config Cookie (Lax + Domain)
+            const cookieOptions = getCookieOptions();
 
-            // Set header cookie
+            // 3. Debugging Ukuran Token (Opsional, untuk memantau limit 4KB)
+            // Jika access token terlalu besar, cookie akan gagal diset browser tanpa error
+            if (process.env.NODE_ENV !== 'production') {
+                const tokenSize = Buffer.byteLength(session.access_token || '', 'utf8');
+                console.log(`[AUTH] Login Token Size: ${tokenSize} bytes`);
+            }
+
+            // 4. Set Header Cookie
             res.setHeader("Set-Cookie", [
                 serialize("sb-access-token", session.access_token, {
-                    ...baseCookieOptions,
-                    maxAge: session.expires_in, // Sesuai expire dari Supabase
-                    expires: new Date(Date.now() + session.expires_in * 1000),
+                    ...cookieOptions,
+                    maxAge: session.expires_in, // Sesuai expire dari Supabase (Detik)
                 }),
                 serialize("sb-refresh-token", session.refresh_token, {
-                    ...baseCookieOptions,
-                    maxAge: 60 * 60 * 24 * 7, // 7 hari
-                    expires: new Date(Date.now() + OneWeek),
+                    ...cookieOptions,
+                    maxAge: 60 * 60 * 24 * 7, // 7 hari (Detik)
                 }),
             ]);
 
@@ -96,15 +103,19 @@ export const createAuthController = (authService) => {
         logout: asyncHandler(async (req, res) => {
             await authService.logoutUser();
 
-            const baseCookieOptions = getCookieOptions();
+            const cookieOptions = getCookieOptions();
 
+            // Hapus cookie dengan men-set expire ke masa lalu (Date 0)
+            // PENTING: Options (domain/path) harus sama persis agar bisa terhapus
             res.setHeader("Set-Cookie", [
                 serialize("sb-access-token", "", {
-                    ...baseCookieOptions,
+                    ...cookieOptions,
+                    maxAge: -1,
                     expires: new Date(0),
                 }),
                 serialize("sb-refresh-token", "", {
-                    ...baseCookieOptions,
+                    ...cookieOptions,
+                    maxAge: -1,
                     expires: new Date(0),
                 }),
             ]);
