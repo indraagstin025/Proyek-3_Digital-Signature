@@ -141,8 +141,8 @@ app.use(morgan(":method :url :status :res[content-length] - :response-time ms", 
 /**
  * Body Parser
  */
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 /**
  * ======================================================
@@ -160,29 +160,15 @@ app.use((err, req, res, next) => {
 });
 
 app.use(cookieParser());
-
-/**
- * ======================================================
- * 🔍 DEBUG MIDDLEWARE (Hapus nanti setelah Production Fix)
- * ======================================================
- * Middleware ini akan mencetak status Cookie & Header yang diterima server
- */
 app.use((req, res, next) => {
-    // Hanya log request API agar tidak spam
-    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
-        console.log('--- [DEBUG REQUEST] ---');
-        console.log(`Method/URL: ${req.method} ${req.originalUrl}`);
-        console.log(`Origin: ${req.headers.origin}`);
-        console.log(`X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`); // Harus 'https'
 
-        // Cek Cookie
+    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
         if (req.cookies && Object.keys(req.cookies).length > 0) {
             console.log('✅ Cookies Diterima:', Object.keys(req.cookies));
-            // console.log('Value:', req.cookies); // Uncomment jika ingin lihat isinya
         } else {
             console.log('❌ TIDAK ADA COOKIES YANG DITERIMA');
         }
-        console.log('-----------------------');
+
     }
     next();
 });
@@ -325,6 +311,10 @@ app.use(errorHandler);
  * Start Server
  */
 const port = process.env.PORT || 3000;
-httpServer.listen(port, () => {
+const server = httpServer.listen(port, () => {
     logger.info(`Server berjalan pada http://localhost:${port} (WebSocket Ready)`);
 });
+
+server.keepAliveTimeout = 65000;
+server.headersTimeout = 66000;
+server.requestTimeout = 300000;
