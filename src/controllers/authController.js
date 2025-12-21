@@ -9,14 +9,29 @@ import { serialize } from "cookie";
 export const createAuthController = (authService) => {
     const getCookieOptions = () => {
         const isProduction = process.env.NODE_ENV === "production";
+
+        // Pastikan variabel ini ada di Railway
         const cookieDomain = process.env.COOKIE_DOMAIN;
 
         return {
-            httpOnly: true,
+            httpOnly: true, // Biar aman dari XSS
             path: "/",
+
+            // WAJIB: Secure harus true karena production Anda HTTPS
             secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
+
+            // WAJIB 'Lax'.
+            // Jangan pakai 'None' atau 'Strict' untuk kasus subdomain (www & api).
+            // 'Lax' paling bersahabat dengan browser HP Android & iOS.
+            sameSite: "lax",
+
+            // INI KUNCINYA:
+            // Kita harus set domain secara eksplisit ke ".moodvis.my.id"
+            // Tanpa ini, frontend (www) tidak akan pernah punya akses ke cookie backend (api).
             domain: isProduction && cookieDomain ? cookieDomain : undefined,
+
+            // Tambahkan durasi expire yang jelas (7 hari)
+            maxAge: 7 * 24 * 60 * 60 * 1000
         };
     };
 

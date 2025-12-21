@@ -79,13 +79,16 @@ import { createHistoryRoutes } from "./routes/historyRoutes.js";
  * Inisialisasi aplikasi dan Prisma Client
  */
 const app = express();
+
+// [PENTING] Trust Proxy ditaruh paling atas agar mendeteksi HTTPS dari Railway/Cloudflare
+app.set("trust proxy", 1);
+
 const httpServer = createServer(app);
 const prisma = new PrismaClient();
 
 /**
  * Konfigurasi CORS
  */
-
 const allowedOrigins = [
     "https://www.moodvis.my.id",
     "https://moodvis.my.id",
@@ -96,15 +99,19 @@ const allowedOrigins = [
 
 const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Izinkan request tanpa origin (seperti dari curl/mobile apps tertentu)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.log("Blocked by CORS:", origin); // Log jika ada yg kena blok
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Cache-Control"],
     optionsSuccessStatus: 204,
 };
 
@@ -121,7 +128,7 @@ const io = new Server(httpServer, {
 initSocket(io);
 
 app.use(cors(corsOptions));
-app.set("trust proxy", 1);
+
 
 /**
  * Logging HTTP Logger
@@ -153,6 +160,32 @@ app.use((err, req, res, next) => {
 });
 
 app.use(cookieParser());
+
+/**
+ * ======================================================
+ * 🔍 DEBUG MIDDLEWARE (Hapus nanti setelah Production Fix)
+ * ======================================================
+ * Middleware ini akan mencetak status Cookie & Header yang diterima server
+ */
+app.use((req, res, next) => {
+    // Hanya log request API agar tidak spam
+    if (req.path.startsWith('/api') || req.path.startsWith('/socket.io')) {
+        console.log('--- [DEBUG REQUEST] ---');
+        console.log(`Method/URL: ${req.method} ${req.originalUrl}`);
+        console.log(`Origin: ${req.headers.origin}`);
+        console.log(`X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`); // Harus 'https'
+
+        // Cek Cookie
+        if (req.cookies && Object.keys(req.cookies).length > 0) {
+            console.log('✅ Cookies Diterima:', Object.keys(req.cookies));
+            // console.log('Value:', req.cookies); // Uncomment jika ingin lihat isinya
+        } else {
+            console.log('❌ TIDAK ADA COOKIES YANG DITERIMA');
+        }
+        console.log('-----------------------');
+    }
+    next();
+});
 
 /**
  * Dependency Injection (Repositories + Services + Controllers)
@@ -198,7 +231,7 @@ const signatureService = new SignatureService(
 );
 
 const groupSignatureService = new GroupSignatureService(
-    prismaGroupSignatureRepository, // Pastikan variabel ini benar
+    prismaGroupSignatureRepository,
     groupDocumentSignerRepository,
     documentRepository,
     versionRepository,
