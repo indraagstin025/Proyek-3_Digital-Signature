@@ -1,76 +1,80 @@
+// file: src/services/aiService.js
 import axios from "axios";
 import FormData from "form-data";
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:5000";
 
 export const aiService = {
+
   /**
-   * Mengirim buffer PDF ke AI Service (Python) untuk deteksi layout.
-   * Perhatikan nama fungsinya: detectSignatureLocations (JAMAK/PLURAL)
+   * Hybrid Analysis: Menangani URL (String) ataupun Buffer.
+   * @param {string|Buffer} sourceData - Bisa berupa URL string atau File Buffer.
+   * @param {string} mode - 'url' atau 'buffer'.
+   * @param {string} docType - Tipe dokumen.
    */
-  async detectSignatureLocations(fileBuffer, fileName = "document.pdf") {
+  async analyzeDocumentContent(sourceData, mode, docType = "General") {
     try {
-      const form = new FormData();
-      form.append("file", fileBuffer, fileName);
+      let response;
 
-      const response = await axios.post(`${AI_SERVICE_URL}/analyze-layout`, form, {
-        headers: {
-          ...form.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
+      // ====================================================
+      // SKENARIO 1: MODE URL (Production / Cloud Storage)
+      // ====================================================
+      if (mode === 'url') {
+        console.log(`📡 [AI Service] Mengirim JSON URL ke Python...`);
 
-      const result = response.data;
+        // Pastikan sourceData benar-benar string URL, bukan Buffer
+        if (typeof sourceData !== 'string') {
+          throw new Error("Mode URL dipilih, tapi data bukan string.");
+        }
 
-      if (result.status === "success" && result.locations) {
-        return result.locations.map((loc) => ({
-          pageNumber: loc.page_number,
-          x: loc.coordinates.x,
-          y: loc.coordinates.y,
-          width: loc.coordinates.width,
-          height: loc.coordinates.height,
-          keyword: loc.keyword_found,
-        }));
+        response = await axios.post(`${AI_SERVICE_URL}/analyze-content`, {
+          file_url: sourceData,
+          document_type: docType
+        }, {
+          headers: { "Content-Type": "application/json" },
+          timeout: 120000
+        });
       }
 
-      return [];
-    } catch (error) {
-      console.error("AI Service Error:", error.message);
+          // ====================================================
+          // SKENARIO 2: MODE BUFFER (Localhost / Local Disk)
+      // ====================================================
+      else if (mode === 'buffer') {
+        console.log(`📡 [AI Service] Uploading Buffer ke Python...`);
 
-      return [];
-    }
-  },
+        const form = new FormData();
+        // Di sini sourceData PASTI Buffer, jadi aman masuk FormData
+        form.append("file", sourceData, "document.pdf");
+        form.append("document_type", docType);
 
-  /**
-   * Mengirim dokumen ke AI Service.
-   * [UPDATE] Menambahkan parameter 'docType' agar Python bisa melakukan analisis kontekstual.
-   * * @param {Buffer} fileBuffer - Buffer file PDF.
-   * @param {string} docType - Tipe dokumen (default: 'General').
-   * @param {string} fileName - Nama file (opsional).
-   */
-  async analyzeDocumentContent(fileBuffer, docType = "General", fileName = "document.pdf") {
-    try {
-      const form = new FormData();
-      form.append("file", fileBuffer, fileName);
-      form.append("document_type", docType || "General");
+        response = await axios.post(`${AI_SERVICE_URL}/analyze-content`, form, {
+          headers: { ...form.getHeaders() },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          timeout: 120000
+        });
+      }
 
-      const response = await axios.post(`${AI_SERVICE_URL}/analyze-content`, form, {
-        headers: {
-          ...form.getHeaders(),
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
+      else {
+        throw new Error("Mode tidak valid (harus 'url' atau 'buffer').");
+      }
 
+      // Handle Response
       const result = response.data;
       if (result.status === "success") {
         return result.data;
       }
+
+      if (result.summary || result.risk_analysis) return result;
+
       return null;
+
     } catch (error) {
-      console.error("AI Content Analysis Error:", error.message);
-      return null;
+      console.error("❌ AI Service Error:", error.message);
+      if (error.response) {
+        console.error("   Python Response:", error.response.data);
+      }
+      return { error: error.message };
     }
   },
 };

@@ -327,21 +327,47 @@ export const createDocumentController = (documentService, signatureRepository, f
      * @param {import("express").Request} req - Params: documentId.
      * @param {import("express").Response} res - Response object.
      */
+    /**
+     * @description Menganalisis konten dokumen menggunakan AI (Ringkasan/Insight).
+     * [PERBAIKAN] Mengirim URL File ke Python, bukan Buffer.
+     */
     analyzeDocument: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
       const userId = req.user?.id;
-      const documentData = await documentService.getDocumentById(documentId, userId);
 
+      const documentData = await documentService.getDocumentById(documentId, userId);
       if (!documentData) {
         return res.status(404).json({ status: "fail", message: "Dokumen tidak ditemukan." });
       }
 
-      const filePath = await documentService.getDocumentFilePath(documentId, userId);
-      const pdfBuffer = await fileStorage.downloadFileAsBuffer(filePath);
+      let fileUrl = null;
+      try {
+        fileUrl = await documentService.getDocumentFileUrl(documentId, userId);
+      } catch (e) {
+        console.warn("⚠️ Gagal generate URL, mencoba fallback ke Buffer.");
+      }
+      const isUrlValid = fileUrl && typeof fileUrl === 'string' && fileUrl.startsWith("http");
 
-      console.log(`🤖 AI: Menganalisis dokumen '${documentData.title}' sebagai jenis [${documentData.type}]...`);
+      let sourceData;
+      let mode;
 
-      const analysisResult = await aiService.analyzeDocumentContent(pdfBuffer, documentData.type);
+      if (isUrlValid) {
+        if (process.env.NODE_ENV === 'production') {
+          const maskedUrl = fileUrl.split('?')[0] + '?token=HIDDEN';
+          console.log(`🤖 [Mode: URL] Mengirim Link ke AI: ${maskedUrl}`);
+        } else {
+          console.log(`🤖 [Mode: URL] Mengirim Link ke AI: ${fileUrl}`);
+        }
+
+        mode = 'url';
+        sourceData = fileUrl;
+      }
+
+      const analysisResult = await aiService.analyzeDocumentContent(
+          sourceData,
+          mode,
+          documentData.type
+      );
 
       if (!analysisResult || analysisResult.error) {
         return res.status(500).json({
