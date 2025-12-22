@@ -370,9 +370,15 @@ export const createDocumentController = (documentService, signatureRepository, f
       );
 
       if (!analysisResult || analysisResult.error) {
-        return res.status(500).json({
+
+        console.error("⚠️ AI menolak memproses:", analysisResult?.error);
+
+        // Jangan return 500 jika itu hanya validasi (misal dokumen kosong)
+        // Gunakan 422 (Unprocessable Entity) atau 400
+        return res.status(400).json({
           status: "fail",
-          message: "Gagal menganalisis dokumen.",
+          // [PENTING] Ambil pesan error spesifik dari Python
+          message: analysisResult?.error || "Gagal menganalisis dokumen (AI tidak merespons).",
         });
       }
 
