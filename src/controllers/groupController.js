@@ -327,22 +327,18 @@ export const createGroupController = (groupService) => {
           });
       }),
 
-      updateDocumentSigners: asyncHandler(async (req, res) => {
+      updateDocumentSigners: async (req, res) => {
           const { groupId, documentId } = req.params;
-          const { signerUserIds } = req.body; // Array ID User baru: ["uuid-1", "uuid-2"]
-          const adminId = req.user.id; // Dari Token JWT
+          const { signerUserIds } = req.body;
+          const adminId = req.user.id; // Dari middleware auth
 
-          // Validasi input dasar
-          if (!Array.isArray(signerUserIds)) {
-              return res.status(400).json({
-                  status: "fail",
-                  message: "Format signerUserIds harus berupa array."
-              });
-          }
+          // 🔥 Pastikan groupId di-parse menjadi integer jika di DB Anda integer
+          const groupIdInt = parseInt(groupId);
 
           // Panggil Service
-          const result = await groupService.updateGroupDocumentSigners(
-              parseInt(groupId), // Pastikan ID grup jadi Integer
+          // Pastikan service ini adalah yang sudah kita update dengan logic Socket.io
+          const updatedDocument = await groupService.updateGroupDocumentSigners(
+              groupIdInt,
               documentId,
               adminId,
               signerUserIds
@@ -350,19 +346,20 @@ export const createGroupController = (groupService) => {
 
           return res.status(200).json({
               status: "success",
-              message: result.message,
-              data: {
-                  addedCount: result.added,
-                  removedCount: result.removed
-              }
+              message: "Daftar penanda tangan diperbarui.",
+              data: updatedDocument,
           });
-      }),
+      },
 
-      
+
+
+      // src/controllers/groupController.js
+
       finalizeDocument: asyncHandler(async (req, res) => {
           const { groupId, documentId } = req.params;
           const adminId = req.user.id;
 
+          // 'result' sekarang berisi DATA DOKUMEN LENGKAP dari Service
           const result = await groupService.finalizeGroupDocument(
               parseInt(groupId),
               documentId,
@@ -371,8 +368,25 @@ export const createGroupController = (groupService) => {
 
           return res.status(200).json({
               status: "success",
-              message: result.message,
-              data: result
+              message: "Dokumen berhasil difinalisasi.", // Tulis pesan manual di sini
+              data: result // Kirim objek dokumen ke frontend untuk update instan
+          });
+      }),
+
+      /**
+       * @description Menghapus dokumen grup secara permanen.
+       * @route DELETE /groups/:groupId/documents/:documentId/delete
+       */
+      deleteGroupDocument: asyncHandler(async (req, res, next) => {
+          const groupId = validateAndParseGroupId(req.params.groupId);
+          const { documentId } = req.params;
+          const userId = req.user?.id;
+
+          await groupService.deleteGroupDocument(groupId, documentId, userId);
+
+          return res.status(200).json({
+              status: "success",
+              message: "Dokumen berhasil dihapus permanen.",
           });
       }),
   };

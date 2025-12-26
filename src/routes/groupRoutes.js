@@ -2,7 +2,6 @@ import express from "express";
 import { body, param } from "express-validator";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validate.js";
-// Pastikan path ini sesuai dengan lokasi middleware multer Anda
 import { uploadDocument } from "../middleware/uploadMiddleware.js";
 
 /**
@@ -13,39 +12,67 @@ import { uploadDocument } from "../middleware/uploadMiddleware.js";
 export default (groupController) => {
     const router = express.Router();
 
-    // Middleware Auth berlaku untuk semua route di bawah ini
+    // 🔒 Middleware Auth berlaku untuk semua route di bawah ini
     router.use(authMiddleware);
 
-    // --- Group Management Routes ---
+    // ==========================================
+    // 1. GROUP MANAGEMENT (CRUD)
+    // ==========================================
 
     router.route("/")
         .post(
-            body("name").notEmpty().withMessage("Nama grup tidak boleh kosong."),
+            // Membuat Grup Baru
+            body("name").trim().notEmpty().withMessage("Nama grup tidak boleh kosong."),
             validate,
             groupController.createGroup
         )
-        .get(groupController.getAllUserGroups);
+        .get(
+            // Mengambil Daftar Grup User
+            groupController.getAllUserGroups
+        );
 
     router.route("/:groupId")
         .get(
-            param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
+            // Detail Grup
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
             validate,
             groupController.getGroupById
         )
         .put(
-            param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-            body("name").notEmpty().withMessage("Nama grup tidak boleh kosong."),
+            // Update Nama Grup
+            [
+                param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+                body("name").trim().notEmpty().withMessage("Nama grup tidak boleh kosong."),
+            ],
             validate,
             groupController.updateGroup
         )
         .delete(
-            param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
+            // Hapus Grup (Permanen)
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
             validate,
             groupController.deleteGroup
         );
 
-    // --- Invitation Routes ---
+    // ==========================================
+    // 2. MEMBER MANAGEMENT
+    // ==========================================
 
+    router.delete(
+        "/:groupId/members/:userIdToRemove",
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            param("userIdToRemove").isUUID().withMessage("ID User tidak valid (UUID)."),
+        ],
+        validate,
+        groupController.removeMember
+    );
+
+    // ==========================================
+    // 3. INVITATION SYSTEM
+    // ==========================================
+
+    // Terima Undangan (Join via Token)
     router.post(
         "/invitations/accept",
         body("token").notEmpty().withMessage("Token undangan wajib diisi."),
@@ -53,80 +80,88 @@ export default (groupController) => {
         groupController.acceptInvitation
     );
 
+    // Buat Undangan Baru (Generate Token)
     router.post(
         "/:groupId/invitations",
-        param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-        body("role").isIn(["admin_group", "signer", "viewer"]).withMessage("Role tidak valid. Pilih 'admin_group', 'signer', atau 'viewer'."),
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            body("role").isIn(["admin_group", "signer", "viewer"]).withMessage("Role tidak valid."),
+        ],
         validate,
         groupController.createInvitation
     );
 
-    // --- Document Routes (Group Context) ---
+    // ==========================================
+    // 4. DOCUMENT MANAGEMENT (GROUP CONTEXT)
+    // ==========================================
 
-    // 1. Upload Dokumen Baru ke Grup (Multipart)
+    // A. Upload Dokumen Baru ke Grup
     router.post(
         "/:groupId/documents/upload",
-        // Validasi URL
-        param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-        // Handle File
-        uploadDocument.single("file"),
-        // Validasi Body (signerUserIds string/json yang diparsing controller/multer)
-        body("signerUserIds").notEmpty().withMessage("Daftar penanda tangan (signerUserIds) wajib dipilih."),
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            uploadDocument.single("file"), // Handle Multipart File
+            body("title").notEmpty().withMessage("Judul dokumen wajib diisi."),
+            // Validasi signerUserIds dilakukan di controller karena bentuknya FormData string
+        ],
         validate,
         groupController.uploadGroupDocument
     );
 
-    // 2. Assign Dokumen yang SUDAH ADA ke Grup
+    // B. Assign (Pindahkan) Dokumen Draft ke Grup
     router.put(
         "/:groupId/documents",
-        param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-        body("documentId").isUUID().withMessage("Format documentId harus UUID."),
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            body("documentId").isUUID().withMessage("ID Dokumen tidak valid."),
+        ],
         validate,
         groupController.assignDocumentToGroup
     );
 
-    // 3. Unassign (Hapus) Dokumen dari Grup
+    // C. Unassign (Lepaskan) Dokumen dari Grup - Soft Remove dari list grup
     router.delete(
         "/:groupId/documents/:documentId",
-        param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-        param("documentId").isUUID().withMessage("Format documentId harus UUID."),
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            param("documentId").isUUID().withMessage("ID Dokumen tidak valid."),
+        ],
         validate,
         groupController.unassignDocumentFromGroup
     );
 
-    // 4. [BARU] Edit Checklist Signer untuk Dokumen yang sudah ada
+    // D. Delete Permanen Dokumen Grup (Hard Delete) - 🔥 ROUTE BARU
+    router.delete(
+        "/:groupId/documents/:documentId/delete",
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            param("documentId").isUUID().withMessage("ID Dokumen tidak valid."),
+        ],
+        validate,
+        groupController.deleteGroupDocument
+    );
+
+    // E. Kelola Penanda Tangan (Signers)
     router.put(
         "/:groupId/documents/:documentId/signers",
         [
-            param("groupId").isInt({min: 1}).withMessage("Format ID Grup harus angka (integer)."),
-            param("documentId").isUUID().withMessage("Format documentId harus UUID."),
-            body("signerUserIds")
-                .isArray()
-                .withMessage("signerUserIds harus berupa array ID User."),
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            param("documentId").isUUID().withMessage("ID Dokumen tidak valid."),
+            body("signerUserIds").isArray().withMessage("Data signer harus berupa array ID User."),
         ],
         validate,
         groupController.updateDocumentSigners
     );
 
-
-    // groupRoutes.js
-    // Endpoint Finalisasi (POST)
+    // F. Finalisasi Dokumen (Burn Signature)
     router.post(
         "/:groupId/documents/:documentId/finalize",
-        param("groupId").isInt(),
-        param("documentId").isUUID(),
+        [
+            param("groupId").isInt({ min: 1 }).withMessage("ID Grup harus berupa angka."),
+            param("documentId").isUUID().withMessage("ID Dokumen tidak valid."),
+        ],
         validate,
         groupController.finalizeDocument
-    );
-
-    // --- Member Management Routes ---
-
-    router.delete(
-        "/:groupId/members/:userIdToRemove",
-        param("groupId").isInt({ min: 1 }).withMessage("Format ID Grup harus angka (integer)."),
-        param("userIdToRemove").isUUID().withMessage("Format userIdToRemove harus UUID."),
-        validate,
-        groupController.removeMember
     );
 
     return router;
