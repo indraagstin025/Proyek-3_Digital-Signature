@@ -244,10 +244,10 @@ const groupService = new GroupService(
     documentRepository,
     fileStorage,
     groupDocumentSignerRepository,
-    signatureRepository,
     versionRepository,
     pdfService,
-    prismaGroupSignatureRepository
+    prismaGroupSignatureRepository,
+    io
 );
 
 const packageService = new PackageService(
@@ -290,6 +290,9 @@ app.use("/api/packages", createPackageRoutes(packageController));
 app.use("/api/dashboard", createDashboardRoutes(dashboardController));
 app.use("/api/history", createHistoryRoutes(historyController));
 app.use("/api/group-signatures", createGroupSignatureRoutes(groupSignatureController));
+app.use('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date() });
+});
 
 /**
  * Root Route App
