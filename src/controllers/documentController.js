@@ -23,11 +23,11 @@ export const createDocumentController = (documentService, signatureRepository, f
      * @param {import("express").Response} res - Response object.
      */
     createDocument: asyncHandler(async (req, res, next) => {
-      const { title } = req.body;
+      const { title, type } = req.body;
+
       const file = req.file;
       const userId = req.user?.id;
-
-      const document = await documentService.createDocument(userId, file, title);
+      const document = await documentService.createDocument(userId, file, title, type);
 
       return res.status(201).json({
         status: "success",
@@ -35,6 +35,7 @@ export const createDocumentController = (documentService, signatureRepository, f
         data: document,
       });
     }),
+
 
     /**
      * @description Mengambil daftar semua dokumen milik pengguna yang sedang login.
@@ -207,12 +208,20 @@ export const createDocumentController = (documentService, signatureRepository, f
       const userId = req.user?.id;
       const isDownload = req.query.purpose === "download";
 
-      const signedUrl = await documentService.getDocumentFileUrl(documentId, userId, isDownload);
+      const filePath = await documentService.getDocumentFilePath(documentId, userId);
+
+      if (!filePath) {
+        return res.status(404).json({ status: "fail", message: "File tidak ditemukan." });
+      }
+
+      const signedUrl = await fileStorage.getSignedUrl(filePath, 60);
+      if (!signedUrl) {
+        throw new Error("Gagal generate URL dari Storage Service.");
+      }
 
       return res.status(200).json({
         success: true,
         url: signedUrl,
-        expiresIn: 60,
         mode: isDownload ? "download" : "view",
       });
     }),
@@ -238,83 +247,6 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Menggunakan AI untuk mendeteksi posisi tanda tangan dan membuat placeholder otomatis.
-     * * **Proses Kode:**
-     * 1. Mengambil data dokumen dan jalur file (file path) dari service.
-     * 2. Mengunduh file PDF asli menjadi Buffer menggunakan `fileStorage`.
-     * 3. Mengirim Buffer ke `aiService.detectSignatureLocations` untuk analisis visual/teks.
-     * 4. Jika lokasi ditemukan, memuat PDF menggunakan library `pdf-lib` untuk mendapatkan ukuran halaman.
-     * 5. Melakukan loop pada setiap lokasi yang ditemukan:
-     * - Mengonversi koordinat absolut (pixel) menjadi persentase (%) agar responsif.
-     * - Menyimpan posisi tersebut sebagai `placeholder` signature baru di database via `signatureRepository`.
-     * 6. Mengembalikan daftar signature placeholder yang berhasil dibuat.
-     * * @route   POST /api/documents/:documentId/auto-tag
-     * @param {import("express").Request} req - Params: documentId.
-     * @param {import("express").Response} res - Response object.
-     */
-    autoTagDocument: asyncHandler(async (req, res, next) => {
-      const { documentId } = req.params;
-      const userId = req.user?.id;
-
-      const documentData = await documentService.getDocumentById(documentId, userId);
-      if (!documentData) {
-        return res.status(404).json({ status: "fail", message: "Dokumen tidak ditemukan" });
-      }
-
-      const filePath = await documentService.getDocumentFilePath(documentId, userId);
-      const pdfBuffer = await fileStorage.downloadFileAsBuffer(filePath);
-
-      console.log(`AI: Menganalisis dokumen ${documentId}...`);
-
-      const aiLocations = await aiService.detectSignatureLocations(pdfBuffer);
-
-      if (aiLocations.length === 0) {
-        return res.status(200).json({
-          status: "success",
-          message: "AI selesai bekerja, namun tidak menemukan kata kunci tanda tangan.",
-          data: [],
-        });
-      }
-
-      const pdfDoc = await PDFDocument.load(pdfBuffer);
-      const savedSignatures = [];
-
-      for (const loc of aiLocations) {
-        const pageIndex = loc.pageNumber - 1;
-        if (pageIndex < 0 || pageIndex >= pdfDoc.getPageCount()) continue;
-
-        const page = pdfDoc.getPage(pageIndex);
-        const { width: pageWidth, height: pageHeight } = page.getSize();
-
-        const positionX_Percent = loc.x / pageWidth;
-        const positionY_Percent = loc.y / pageHeight;
-        const width_Percent = loc.width / pageWidth;
-        const height_Percent = loc.height / pageHeight;
-
-        const newSig = await signatureRepository.createSignature({
-          documentVersionId: documentData.currentVersion.id,
-          userId: userId,
-          pageNumber: loc.pageNumber,
-          positionX: positionX_Percent,
-          positionY: positionY_Percent,
-          width: width_Percent,
-          height: height_Percent,
-          signatureImageUrl: null,
-          type: "placeholder",
-        });
-
-        savedSignatures.push(newSig);
-      }
-
-      console.log(`✅ AI: Berhasil menempatkan ${savedSignatures.length} tanda tangan.`);
-
-      return res.status(200).json({
-        status: "success",
-        message: `Berhasil menempatkan ${savedSignatures.length} tanda tangan otomatis!`,
-        data: savedSignatures,
-      });
-    }),
 
     /**
      * @description Menganalisis konten dokumen menggunakan AI (Ringkasan/Insight).
@@ -354,9 +286,8 @@ export const createDocumentController = (documentService, signatureRepository, f
       if (isUrlValid) {
         if (process.env.NODE_ENV === 'production') {
           const maskedUrl = fileUrl.split('?')[0] + '?token=HIDDEN';
-          console.log(`🤖 [Mode: URL] Mengirim Link ke AI: ${maskedUrl}`);
         } else {
-          console.log(`🤖 [Mode: URL] Mengirim Link ke AI: ${fileUrl}`);
+
         }
 
         mode = 'url';
@@ -371,13 +302,8 @@ export const createDocumentController = (documentService, signatureRepository, f
 
       if (!analysisResult || analysisResult.error) {
 
-        console.error("⚠️ AI menolak memproses:", analysisResult?.error);
-
-        // Jangan return 500 jika itu hanya validasi (misal dokumen kosong)
-        // Gunakan 422 (Unprocessable Entity) atau 400
         return res.status(400).json({
           status: "fail",
-          // [PENTING] Ambil pesan error spesifik dari Python
           message: analysisResult?.error || "Gagal menganalisis dokumen (AI tidak merespons).",
         });
       }

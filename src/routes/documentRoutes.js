@@ -84,13 +84,6 @@ export default (documentController) => {
   router.get("/:documentId/versions/:versionId/file", authMiddleware, documentController.getVersionFile);
 
   /**
-   * @route POST /api/documents/:documentId/auto-tag
-   * @desc  Mendeteksi posisi tanda tangan otomatis menggunakan AI Service.
-   * @acces Private
-   */
-  router.post("/:documentId/auto-tag", authMiddleware, documentController.autoTagDocument);
-
-  /**
    * @route   POST /api/documents/:documentId/analyze
    * @desc    Menganalisis isi dokumen (Ringkasan, Risiko, Pihak).
    * @access  Private

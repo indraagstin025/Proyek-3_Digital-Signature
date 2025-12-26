@@ -69,32 +69,29 @@ export class DocumentService {
    * @throws {CommonError} Jika file duplikat
    * @returns {Promise<object>}
    */
-  async createDocument(userId, file, title) {
+  async createDocument(userId, file, title, manualType) {
     if (!file) throw new Error("File dokumen wajib diunggah.");
-
     await this._validateFile(file);
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
 
     if (existingVersion) {
-      throw CommonError.BadRequest(`File ini sudah pernah diunggah pada dokumen: "${existingVersion.document.title}". Tidak diizinkan mengupload file duplikat.`);
+      throw CommonError.BadRequest(
+          `File ini sudah pernah diunggah pada dokumen: "${existingVersion.document.title}". Tidak diizinkan mengupload file duplikat.`
+      );
     }
 
-    let detectedType = "General";
+    const finalType = manualType || "General";
 
-    try {
-      const aiAnalysis = await this.aiService.analyzeDocumentContent(file.buffer);
-
-      if (aiAnalysis && aiAnalysis.document_type) {
-        detectedType = aiAnalysis.document_type;
-        console.log(`✅ Tipe Dokumen Tersimpan: ${detectedType}`);
-      }
-    } catch (error) {
-      console.warn("⚠️ Gagal klasifikasi otomatis, lanjut dengan General.");
-    }
-
+    console.log(`📂 Uploading Document: "${title}" | Type: "${finalType}"`);
     const filePath = await this.fileStorage.uploadDocument(file, userId);
-    return this.documentRepository.createWithFirstVersion(userId, title, filePath, hash, detectedType);
+    return this.documentRepository.createWithFirstVersion(
+        userId,
+        title,
+        filePath,
+        hash,
+        finalType
+    );
   }
 
   /**
