@@ -166,6 +166,9 @@ export const createDocumentController = (documentService, signatureRepository, f
       const { documentId, versionId } = req.params;
       const userId = req.user?.id;
 
+      if (!documentId || !versionId) {
+      }
+
       const updatedDocument = await documentService.useOldVersion(documentId, versionId, userId);
 
       return res.status(200).json({
@@ -207,17 +210,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       const { documentId } = req.params;
       const userId = req.user?.id;
       const isDownload = req.query.purpose === "download";
-
-      const filePath = await documentService.getDocumentFilePath(documentId, userId);
-
-      if (!filePath) {
-        return res.status(404).json({ status: "fail", message: "File tidak ditemukan." });
-      }
-
-      const signedUrl = await fileStorage.getSignedUrl(filePath, 60);
-      if (!signedUrl) {
-        throw new Error("Gagal generate URL dari Storage Service.");
-      }
+      const signedUrl = await documentService.getDocumentFileUrl(documentId, userId, isDownload);
 
       return res.status(200).json({
         success: true,

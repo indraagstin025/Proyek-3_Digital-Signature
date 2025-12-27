@@ -239,28 +239,29 @@ export const createGroupController = (groupService) => {
      * @param {import("express").Request} req - Params: groupId, Body: documentId.
      * @param {import("express").Response} res - Response object.
      */
-    assignDocumentToGroup: asyncHandler(async (req, res, next) => {
-        const groupId = validateAndParseGroupId(req.params.groupId);
-        const userId = req.user?.id;
-        const { documentId, signerUserIds } = req.body;
+      assignDocumentToGroup: asyncHandler(async (req, res, next) => {
 
-        if (!documentId) {
-            throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
-        }
+          const groupId = validateAndParseGroupId(req.params.groupId);
+          const userId = req.user?.id;
+          const { documentId, signerUserIds } = req.body;
 
-        const updatedDocument = await groupService.assignDocumentToGroup(
-            documentId,
-            groupId,
-            userId,
-            signerUserIds
-        );
+          if (!documentId) {
+              throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
+          }
 
-        return res.status(200).json({
-            status: "success",
-            message: "Dokumen berhasil dimasukkan ke grup.",
-            data: updatedDocument,
-        });
-    }),
+          const updatedDocument = await groupService.assignDocumentToGroup(
+              documentId,
+              groupId,
+              userId,
+              signerUserIds
+          );
+
+          return res.status(200).json({
+              status: "success",
+              message: "Dokumen berhasil dimasukkan ke grup.",
+              data: updatedDocument,
+          });
+      }),
 
     /**
      * @description Melepaskan dokumen dari grup (Mengembalikan menjadi privat).
