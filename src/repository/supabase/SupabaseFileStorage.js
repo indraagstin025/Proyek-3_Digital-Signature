@@ -85,9 +85,14 @@ class SupabaseFileStorage {
 
     const ext = path.extname(file.originalname);
     const uniqueFileName = `${crypto.randomBytes(16).toString("hex")}${ext}`;
+
+    // Path tujuan: documents/USER_ID/file.pdf
     const filePath = `documents/${userId}/${uniqueFileName}`;
 
-    return this._uploadWithRetry(filePath, file.buffer, file.mimetype);
+    // [TAMBAHAN] Paksa mime type jadi application/pdf jika terdeteksi octet-stream
+    const contentType = file.mimetype === 'application/pdf' ? 'application/pdf' : 'application/pdf';
+
+    return this._uploadWithRetry(filePath, file.buffer, contentType);
   }
 
   /**

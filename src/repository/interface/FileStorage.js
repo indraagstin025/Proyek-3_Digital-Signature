@@ -17,7 +17,7 @@ class FileStorage {
     }
     this.supabase = supabaseClient;
 
-    this.bucketName = "profile-pictures";
+    this.bucketName = "avatar";
   }
 
   /**
@@ -42,26 +42,43 @@ class FileStorage {
     return data.signedUrl;
   }
 
+
   /**
-   * UBAH: Upload foto profil dan kembalikan PATH FILE.
-   * Tidak lagi mengembalikan URL publik.
-   * @param {Express.Multer.File} file - File dari middleware multer.
-   * @param {string} userId - ID pengguna untuk membuat folder unik.
-   * @returns {Promise<string>} Path file relatif yang akan disimpan ke database.
-   * @throws {Error} Jika gagal mengunggah file.
+   * [UBAH] Mendapatkan Public URL (Link Bersih).
+   * Tidak lagi menggunakan createSignedUrl.
+   * * @param {string} filePath - Path relatif file di bucket.
+   * @returns {string} URL publik file.
+   */
+  getPublicUrl(filePath) {
+    if (!filePath) return null;
+
+    // Logic Supabase untuk Public URL (Synchronous / Tidak perlu await)
+    const { data } = this.supabase.storage
+        .from(this.bucketName)
+        .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
+
+  /**
+   * [UBAH] Upload foto profil ke bucket 'avatar'.
    */
   async uploadProfilePicture(file, userId) {
     if (!file) throw new Error("File untuk diunggah tidak ditemukan.");
 
     const ext = path.extname(file.originalname);
-
     const fileName = `${Date.now()}${ext}`;
-    const filePath = `profile-pictures/${userId}/${fileName}`;
 
-    const { error } = await this.supabase.storage.from(this.bucketName).upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false,
-    });
+    // Path: userId/filename.jpg (Lebih rapi tanpa folder 'profile-pictures' lagi karena bucketnya sudah khusus)
+    const filePath = `${userId}/${fileName}`;
+
+    // Upload dengan opsi public (biasanya default untuk bucket public)
+    const { error } = await this.supabase.storage
+        .from(this.bucketName)
+        .upload(filePath, file.buffer, {
+          contentType: file.mimetype,
+          upsert: true, // Timpa jika nama sama
+        });
 
     if (error) {
       throw new Error(`Gagal upload foto profil ke Supabase: ${error.message}`);
@@ -71,18 +88,14 @@ class FileStorage {
   }
 
   /**
-   * UBAH: Hapus file dari storage berdasarkan PATH FILE.
-   * Lebih robust dan tidak bergantung pada parsing URL.
-   * @param {string} filePath - Path relatif file yang akan dihapus.
-   * @returns {Promise<void>}
+   * Hapus file dari storage.
    */
   async deleteFile(filePath) {
-    if (!filePath || typeof filePath !== "string") {
-      console.warn("deleteFile dipanggil dengan filePath yang tidak valid, proses dilewati.");
-      return;
-    }
+    if (!filePath || typeof filePath !== "string") return;
 
-    const { error } = await this.supabase.storage.from(this.bucketName).remove([filePath]);
+    const { error } = await this.supabase.storage
+        .from(this.bucketName)
+        .remove([filePath]);
 
     if (error) {
       throw new Error(`Gagal hapus file di Supabase: ${error.message}`);

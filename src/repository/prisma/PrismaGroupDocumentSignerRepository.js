@@ -158,4 +158,24 @@ export class PrismaGroupDocumentSignerRepository {
       throw CommonError.DatabaseError(`Gagal mengunci signer: ${err.message}`);
     }
   }
+
+  async deletePendingSignersByGroupAndUser(groupId, userId) {
+    try {
+      // Logic: Hapus row di GroupDocumentSigner JIKA:
+      // 1. Usernya adalah user yang di-kick
+      // 2. Statusnya masih 'PENDING'
+      // 3. Dokumennya ada di dalam groupId yang dimaksud
+      return await this.prisma.groupDocumentSigner.deleteMany({
+        where: {
+          userId: userId,
+          status: "PENDING",
+          document: {
+            groupId: groupId,
+          },
+        },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal membersihkan status signer member: ${err.message}`);
+    }
+  }
 }

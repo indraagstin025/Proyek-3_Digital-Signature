@@ -58,10 +58,10 @@ export class PrismaDocumentRepository {
    */
   async findAllByUserId(userId, search = "") {
     const searchFilter = search
-      ? {
+        ? {
           OR: [{ title: { contains: search, mode: "insensitive" } }, { type: { contains: search, mode: "insensitive" } }],
         }
-      : {};
+        : {};
 
     return this.prisma.document.findMany({
       where: {
@@ -69,11 +69,9 @@ export class PrismaDocumentRepository {
           {
             OR: [{ userId: userId }, { group: { members: { some: { userId: userId } } } }],
           },
-
           searchFilter,
         ],
       },
-
       include: {
         signerRequests: {
           where: { userId: userId },
@@ -86,7 +84,18 @@ export class PrismaDocumentRepository {
             packages: { include: { signatures: true, package: true } },
           },
         },
-        group: { select: { name: true } },
+        // [FIX DI SINI] Ambil info Admin & Members agar Frontend bisa cek hak akses
+        group: {
+          select: {
+            id: true,
+            name: true,
+            adminId: true, // <--- PENTING: Untuk cek admin
+            members: {     // <--- PENTING: Untuk cek role member user ini
+              where: { userId: userId },
+              select: { role: true }
+            }
+          }
+        },
       },
       orderBy: { createdAt: "desc" },
     });
