@@ -213,18 +213,34 @@ export class DocumentService {
    * @returns {Promise<object>}
    */
   async useOldVersion(documentId, versionId, userId) {
-    // 1. Validasi Dokumen & Versi
     const document = await this.documentRepository.findById(documentId, userId);
     if (!document) throw DocumentError.NotFound("Dokumen tidak ditemukan.");
+
+    const requestUserId = String(userId);
+    const docOwnerId = String(document.userId);
+    const isUploader = requestUserId === docOwnerId;
+
+    if (document.groupId) {
+      if (!isUploader) {
+        const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
+        if (!member || member.role !== "admin_group") {
+          throw DocumentError.Forbidden(
+              "Akses Ditolak: Hanya Admin Grup yang dapat mengembalikan versi dokumen. Signer hanya diizinkan menandatangani."
+          );
+        }
+      }
+    } else {
+      if (!isUploader) {
+        throw DocumentError.Forbidden("Anda tidak memiliki akses untuk mengubah dokumen ini.");
+      }
+    }
 
     const version = await this.versionRepository.findById(versionId);
     if (!version || version.documentId !== documentId) {
       throw DocumentError.InvalidVersion(versionId, documentId);
     }
 
-    // 2. Cek apakah ini Versi Pertama (V1)?
     const allVersions = await this.versionRepository.findAllByDocumentId(documentId);
-    // Sort asc (terlama ke terbaru)
     allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
     const isFirstVersion = allVersions.length > 0 && allVersions[0].id === versionId;
@@ -234,76 +250,32 @@ export class DocumentService {
 
     if (isFirstVersion) {
       console.log(`🔄 [ROLLBACK] Kembali ke Versi Awal (V1). Cleaning Signatures...`);
-      newStatus = "pending"; // Dokumen jadi mentah lagi
+      newStatus = "pending";
 
-      // A. Hapus Semua Signature Personal di Versi ini
-      // Parameter userId = null artinya "Hapus SEMUA, bukan cuma punya user ini"
-      if (this.signatureRepository) {
-        await this.signatureRepository.deleteBySignerAndVersion(null, versionId);
-      }
+      if (this.signatureRepository) await this.signatureRepository.deleteBySignerAndVersion(null, versionId);
+      if (this.groupSignatureRepository) await this.groupSignatureRepository.deleteBySignerAndVersion(null, versionId);
 
-      // B. Hapus Semua Signature Group di Versi ini (PENTING: Pakai Repo Group)
-      if (this.groupSignatureRepository) {
-        await this.groupSignatureRepository.deleteBySignerAndVersion(null, versionId);
-      }
-
-      // C. Reset Status Checklist Signer (Jika Dokumen Group)
-      // Semua anggota statusnya jadi 'PENDING' lagi agar bisa ttd ulang
       if (document.groupId && this.groupDocumentSignerRepository) {
         if (typeof this.groupDocumentSignerRepository.resetSigners === "function") {
           await this.groupDocumentSignerRepository.resetSigners(documentId);
         }
       }
-
     } else {
-      // Logic jika rollback ke versi yang sudah jadi (V2, V3, dst)
-      // Biasanya versi selain V1 adalah hasil burn PDF yang sudah ada isinya
-
       const isBurnedFinal = !!version.signedFileHash || !!version.url;
-
       if (isBurnedFinal) {
-        console.log(`🔒 [ROLLBACK] Kembali ke Versi Signed. Mengunci dokumen...`);
         newStatus = "completed";
         newSignedFileUrl = version.url;
-
-        // Opsional: Jika dokumen grup, tandai semua signer 'SIGNED' (karena ini versi jadi)
-        // Tapi hati-hati, biasanya rollback ke completed jarang dilakukan kecuali untuk view history.
       } else {
-        // Jika V2 tapi belum diburn (kasus jarang), tetap pending
         newStatus = "pending";
       }
     }
 
-    // 3. Update Dokumen Utama
+    // 4. Update Database
     return this.documentRepository.update(documentId, {
       currentVersionId: versionId,
       status: newStatus,
       signedFileUrl: newSignedFileUrl,
     });
-  }
-
-  /**
-   * Menghapus versi dokumen tertentu.
-   * Tidak boleh menghapus versi yang sedang aktif.
-   *
-   * @returns {Promise<{message:string}>}
-   */
-  async deleteVersion(documentId, versionId, userId) {
-    const document = await this.getDocumentById(documentId, userId);
-
-    if (document.currentVersion.id === versionId) {
-      throw DocumentError.DeleteActiveVersionFailed();
-    }
-
-    const versionToDelete = await this.versionRepository.findById(versionId);
-    if (!versionToDelete || versionToDelete.documentId !== documentId) {
-      throw DocumentError.InvalidVersion(versionId, documentId);
-    }
-
-    await this.fileStorage.deleteFile(versionToDelete.url);
-    await this.versionRepository.deleteById(versionId);
-
-    return { message: "Versi dokumen berhasil dihapus." };
   }
 
   /**
@@ -313,9 +285,13 @@ export class DocumentService {
    * @param {boolean} isDownload
    * @returns {Promise<string>} Signed URL file
    */
+// File: services/documentService.js
+
   async getDocumentFileUrl(documentId, userId, isDownload = false) {
+    // 1. Ambil dokumen & validasi kepemilikan
     const document = await this.getDocumentById(documentId, userId);
 
+    // 2. Validasi Versi Aktif
     if (!document.currentVersionId || !document.currentVersion) {
       throw new Error("Dokumen tidak memiliki versi aktif.");
     }
@@ -323,11 +299,14 @@ export class DocumentService {
     const currentVersion = document.currentVersion;
     let customFilename = null;
 
+    // 3. Jika Download, bersihkan nama file agar aman di URL
     if (isDownload) {
+      // Regex membersihkan karakter aneh
       const sanitizedTitle = document.title.replace(/\.pdf$/i, "").replace(/[\s/\\?%*:|"<>]/g, "_");
       customFilename = `${sanitizedTitle}.pdf`;
     }
 
+    // 4. Generate URL menggunakan Storage Private (SupabaseFileStorage)
     return this.fileStorage.getSignedUrl(currentVersion.url, 60, customFilename);
   }
 

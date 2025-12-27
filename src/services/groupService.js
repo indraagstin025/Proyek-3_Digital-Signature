@@ -175,28 +175,38 @@ export class GroupService {
    */
   async assignDocumentToGroup(documentId, groupId, userId, signerUserIds = []) {
     const document = await this.documentRepository.findById(documentId, userId);
-    if (!document) throw DocumentError.NotFound(documentId);
+    if (!document) {
+      throw DocumentError.NotFound(documentId);
+    }
+
+    if (document.status === "completed" || document.status === "archived") {
+      throw GroupError.BadRequest(
+          "Dokumen yang sudah selesai (Completed) atau diarsipkan tidak dapat dipindahkan ke grup. Silakan upload ulang file asli atau duplikat dokumen tersebut."
+      );
+    }
 
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
-    if (!member) throw GroupError.UnauthorizedAccess("Anda harus menjadi anggota grup.");
+    if (!member) {
+      throw GroupError.UnauthorizedAccess("Anda harus menjadi anggota grup untuk melakukan ini.");
+    }
 
     const dataToUpdate = { groupId };
 
     if (signerUserIds && signerUserIds.length > 0 && this.groupDocumentSignerRepository) {
       await this.groupDocumentSignerRepository.createSigners(documentId, signerUserIds);
+
       dataToUpdate.status = "pending";
 
       const group = await this.groupRepository.findById(groupId);
       const groupName = group ? group.name : "Grup Dokumen";
       this._notifySigners(signerUserIds, document.title, groupName).catch((err) =>
-          console.error("Notification Error on Document Assignment:", err)
+          console.error("[Notification Error] Gagal kirim email assign:", err)
       );
     } else {
       dataToUpdate.status = "draft";
     }
 
     const updatedDoc = await this.documentRepository.update(documentId, dataToUpdate);
-
     if (this.io) {
       const roomName = `group_${groupId}`;
       const fullDoc = await this.documentRepository.findById(documentId, userId);
@@ -221,28 +231,76 @@ export class GroupService {
    * @returns {Promise<void>}
    * @throws {GroupError} If the requester is not admin, target not found, or target is the owner.
    */
+  /**
+   * [UPDATED] Removes a member from the group.
+   * Melakukan validasi, pembersihan draft tanda tangan, pembersihan status signer pending,
+   * menghapus member, dan mengirim notifikasi realtime.
+   */
   async removeMember(groupId, adminId, userIdToRemove) {
+    // 1. Validasi: Pastikan requester adalah Admin Grup
     const admin = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
     if (!admin || admin.role !== "admin_group")
       throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
 
+    // 2. Validasi: Pastikan target yang mau di-kick memang ada di grup
     const target = await this.groupMemberRepository.findByGroupAndUser(groupId, userIdToRemove);
     if (!target) throw GroupError.NotFound("Anggota tidak ditemukan di grup ini.");
 
+    // 3. Validasi: Ambil data grup (termasuk dokumen) & Cek Owner
+    // findById di PrismaGroupRepository sudah meng-include 'documents', jadi kita manfaatkan itu.
     const group = await this.groupRepository.findById(groupId);
-    if (group.adminId === userIdToRemove) throw GroupError.BadRequest("Tidak dapat mengeluarkan pemilik utama grup.");
+    if (!group) throw GroupError.NotFound("Grup tidak ditemukan.");
+
+    if (group.adminId === userIdToRemove) {
+      throw GroupError.BadRequest("Tidak dapat mengeluarkan pemilik utama grup.");
+    }
 
     const memberName = target.user?.name || "Anggota";
 
+    // --- [CLEANUP PROCESS START] ---
+
+    // A. Hapus Draft Tanda Tangan (Cleanup Sampah Data)
+    // Kita gunakan 'group.documents' yang didapat dari langkah no. 3
+    if (this.groupSignatureRepository && group.documents && group.documents.length > 0) {
+      try {
+        // Jalankan penghapusan draft secara paralel untuk semua dokumen di grup ini
+        const cleanupPromises = group.documents.map(doc =>
+            this.groupSignatureRepository.deleteDrafts(doc.id, userIdToRemove)
+        );
+        await Promise.all(cleanupPromises);
+      } catch (err) {
+        console.warn("[Cleanup Warning] Gagal membersihkan draft signature:", err.message);
+        // Kita warn saja, jangan throw error agar proses kick tetap jalan
+      }
+    }
+
+    // B. Hapus PENDING Signers (Cleanup Status Dokumen)
+    // Agar jumlah "Total Signers" di dokumen berkurang (misal dari 3 jadi 2)
+    if (this.groupDocumentSignerRepository) {
+      await this.groupDocumentSignerRepository.deletePendingSignersByGroupAndUser(groupId, userIdToRemove);
+    }
+
+    // --- [CLEANUP PROCESS END] ---
+
+    // 4. Action Utama: Hapus Member dari Database
     await this.groupMemberRepository.deleteById(target.id);
 
+    // 5. Realtime Notification (Socket.IO)
     if (this.io) {
       const roomName = `group_${groupId}`;
+
+      // Update Tab Anggota (User hilang dari list)
       this.io.to(roomName).emit("group_member_update", {
         action: "kicked",
         userId: userIdToRemove,
         memberName: memberName,
         message: `${memberName} dikeluarkan dari grup.`
+      });
+
+      // Update Tab Dokumen (Refetch data agar status signer berubah)
+      this.io.to(roomName).emit("group_document_update", {
+        action: "signer_update",
+        message: "Daftar penanda tangan disesuaikan otomatis."
       });
     }
   }

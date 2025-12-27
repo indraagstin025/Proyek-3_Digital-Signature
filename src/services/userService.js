@@ -11,6 +11,10 @@ export class UserService {
     this.fileStorage = fileStorage;
   }
 
+  /**
+   * Mengambil profil user login.
+   * Mengubah path file menjadi Public URL bersih.
+   */
   async getMyProfile(userId) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -18,13 +22,16 @@ export class UserService {
     }
 
     if (user.profilePictureUrl) {
-      const signedUrl = await this.fileStorage.getSignedUrl(user.profilePictureUrl, 3600);
-      user.profilePictureUrl = signedUrl;
+      // [UBAH] Menggunakan getPublicUrl (Sync) - Link Bersih
+      user.profilePictureUrl = this.fileStorage.getPublicUrl(user.profilePictureUrl);
     }
 
     return user;
   }
 
+  /**
+   * Update data teks user (Tanpa ganti foto).
+   */
   async updateUserProfile(userId, profileData) {
     const allowedUpdates = {};
     if (profileData.name !== undefined) allowedUpdates.name = profileData.name;
@@ -41,6 +48,9 @@ export class UserService {
     return this.getMyProfile(userId);
   }
 
+  /**
+   * Upload foto baru ke bucket 'avatar' (Public) dan update profil.
+   */
   async updateUserProfileWithNewPicture(userId, profileData, file) {
     const allowedUpdates = {};
     if (profileData.name !== undefined) allowedUpdates.name = profileData.name;
@@ -54,22 +64,30 @@ export class UserService {
 
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingPicture = await this.userRepository.findProfilePictureByHash(userId, hash);
+
+    // Opsional: Jika ingin mengizinkan upload ulang foto yang sama (misal user tidak sengaja hapus),
+    // Anda bisa melonggarkan validasi ini atau langsung me-return foto lama.
     if (existingPicture) {
       throw UserError.DuplicateProfilePicture();
     }
 
+    // 1. Upload ke FileStorage (Bucket 'avatar')
     const filePath = await this.fileStorage.uploadProfilePicture(file, userId);
     if (!filePath) {
       throw CommonError.ServiceUnavailable("Layanan penyimpanan file gagal.");
     }
 
+    // 2. Simpan Path ke Database (Tabel ProfilePictures)
     const newPicture = await this.userRepository.createProfilePicture(userId, {
       url: filePath,
       hash,
       isActive: true,
     });
 
+    // 3. Set foto lain jadi tidak aktif
     await this.userRepository.deactivateOtherProfilePictures(userId, newPicture.id);
+
+    // 4. Update URL aktif di tabel User
     allowedUpdates.profilePictureUrl = newPicture.url;
 
     await this.userRepository.update(userId, allowedUpdates);
@@ -77,6 +95,9 @@ export class UserService {
     return this.getFullUserProfileData(userId);
   }
 
+  /**
+   * Menggunakan kembali foto lama dari history.
+   */
   async updateUserProfileWithOldPicture(userId, profileData, profilePictureId) {
     const picture = await this.userRepository.findProfilePictureById(userId, profilePictureId);
     if (!picture) {
@@ -94,6 +115,9 @@ export class UserService {
     return this.getFullUserProfileData(userId);
   }
 
+  /**
+   * Mengambil history foto profil dengan URL Public.
+   */
   async getUserProfilePictures(userId) {
     const picturesFromDb = await this.userRepository.findAllProfilePictures(userId);
 
@@ -101,19 +125,21 @@ export class UserService {
       return [];
     }
 
-    const picturesWithSignedUrls = await Promise.all(
-      picturesFromDb.map(async (picture) => {
-        const signedUrl = await this.fileStorage.getSignedUrl(picture.url);
-        return {
-          ...picture,
-          url: signedUrl,
-        };
-      })
-    );
+    // [UBAH] Mapping ke Public URL (Sync)
+    const picturesWithPublicUrls = picturesFromDb.map((picture) => {
+      return {
+        ...picture,
+        // Konversi path database (userId/file.jpg) menjadi Full Public URL
+        url: this.fileStorage.getPublicUrl(picture.url),
+      };
+    });
 
-    return picturesWithSignedUrls;
+    return picturesWithPublicUrls;
   }
 
+  /**
+   * Menghapus foto profil dari storage dan database.
+   */
   async deleteUserProfilePicture(userId, pictureId) {
     const picture = await this.userRepository.findProfilePictureById(userId, pictureId);
     if (!picture) {
@@ -122,12 +148,19 @@ export class UserService {
     if (picture.isActive) {
       throw UserError.CannotDeleteActivePicture();
     }
+
+    // Hapus file fisik di Supabase
     await this.fileStorage.deleteFile(picture.url);
+
+    // Hapus record di Database
     await this.userRepository.deleteProfilePicture(userId, pictureId);
 
     return this.getFullUserProfileData(userId);
   }
 
+  /**
+   * Helper untuk mengambil data lengkap (User + History Foto).
+   */
   async getFullUserProfileData(userId) {
     const userProfile = await this.getMyProfile(userId);
     const pictureHistory = await this.getUserProfilePictures(userId);
