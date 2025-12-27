@@ -16,6 +16,7 @@ import { initSocket } from "./socket/socketHandler.js";
 
 import logger from './utils/logger.js';
 import { supabase, supabaseBucket } from './config/supabaseClient.js';
+import FileStorage from "./repository/interface/FileStorage.js";
 import errorHandler from './middleware/errorHandler.js';
 import AuthError from './errors/AuthError.js';
 import CommonError from './errors/CommonError.js';
@@ -183,6 +184,7 @@ const documentRepository = new PrismaDocumentRepository(prisma);
 const versionRepository = new PrismaVersionRepository(prisma);
 const signatureRepository = new PrismaSignatureRepository(prisma);
 const fileStorage = new SupabaseFileStorage(prisma, supabaseBucket);
+const avatarStorage = new FileStorage(supabase);
 const groupRepository = new PrismaGroupRepository(prisma);
 const groupMemberRepository = new PrismaGroupMemberRepository(prisma);
 const groupInvitationRepository = new PrismaGroupInvitationRepository(prisma);
@@ -200,7 +202,7 @@ const auditService = new AuditService(auditRepository);
 const adminService = new AdminService(adminRepository, auditService);
 const historyService = new HistoryService(historyRepository);
 const userService = new UserService(userRepository,
-    fileStorage
+    avatarStorage
 );
 
 const pdfService = new PDFService(versionRepository,
