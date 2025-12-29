@@ -331,17 +331,16 @@ export const createGroupController = (groupService) => {
       updateDocumentSigners: async (req, res) => {
           const { groupId, documentId } = req.params;
           const { signerUserIds } = req.body;
-          const adminId = req.user.id; // Dari middleware auth
 
-          // 🔥 Pastikan groupId di-parse menjadi integer jika di DB Anda integer
+          // [UBAH NAMA VARIABEL] dari 'adminId' menjadi 'requestorId' atau 'userId'
+          const requestorId = req.user.id;
+
           const groupIdInt = parseInt(groupId);
 
-          // Panggil Service
-          // Pastikan service ini adalah yang sudah kita update dengan logic Socket.io
           const updatedDocument = await groupService.updateGroupDocumentSigners(
               groupIdInt,
               documentId,
-              adminId,
+              requestorId, // Kirim ID user (bisa admin, bisa owner)
               signerUserIds
           );
 
@@ -351,28 +350,6 @@ export const createGroupController = (groupService) => {
               data: updatedDocument,
           });
       },
-
-
-
-      // src/controllers/groupController.js
-
-      finalizeDocument: asyncHandler(async (req, res) => {
-          const { groupId, documentId } = req.params;
-          const adminId = req.user.id;
-
-          // 'result' sekarang berisi DATA DOKUMEN LENGKAP dari Service
-          const result = await groupService.finalizeGroupDocument(
-              parseInt(groupId),
-              documentId,
-              adminId
-          );
-
-          return res.status(200).json({
-              status: "success",
-              message: "Dokumen berhasil difinalisasi.", // Tulis pesan manual di sini
-              data: result // Kirim objek dokumen ke frontend untuk update instan
-          });
-      }),
 
       /**
        * @description Menghapus dokumen grup secara permanen.
@@ -388,6 +365,28 @@ export const createGroupController = (groupService) => {
           return res.status(200).json({
               status: "success",
               message: "Dokumen berhasil dihapus permanen.",
+          });
+      }),
+
+      finalizeDocument: asyncHandler(async (req, res) => {
+          const {groupId, documentId} = req.params;
+          const requestorId = req.user.id;
+
+          // Panggil Service
+          const result = await groupService.finalizeGroupDocument(
+              parseInt(groupId),
+              documentId,
+              requestorId
+          );
+
+          return res.status(200).json({
+              status: "success",
+              message: "Dokumen berhasil difinalisasi.",
+              data: {
+                  url: result.url,
+                  accessCode: result.accessCode, // [PENTING] Kirim PIN ke frontend
+                  document: result.document
+              }
           });
       }),
   };

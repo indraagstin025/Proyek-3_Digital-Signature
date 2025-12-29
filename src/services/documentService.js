@@ -365,4 +365,65 @@ export class DocumentService {
 
     return version.url;
   }
+
+  // File: services/documentService.js
+
+  /**
+   * [BARU] Menghapus satu versi spesifik dari riwayat dokumen.
+   * Method ini menangani validasi hak akses dan pembersihan file fisik.
+   */
+  async deleteVersion(documentId, versionId, userId) {
+    // 1. Cek keberadaan dokumen (Gunakan findByIdSimple agar tidak berat load relasinya)
+    const document = await this.documentRepository.findByIdSimple(documentId);
+
+    if (!document) {
+      throw DocumentError.NotFound("Dokumen tidak ditemukan.");
+    }
+
+    // 2. Validasi Hak Akses (Hanya Pemilik atau Admin Grup yang boleh hapus)
+    let canDelete = false;
+
+    // A. Cek Pemilik Personal
+    if (document.userId === userId) {
+      canDelete = true;
+    }
+
+    // B. Cek Admin Grup (Jika dokumen milik grup)
+    if (!canDelete && document.groupId) {
+      const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
+      if (member && member.role === "admin_group") {
+        canDelete = true;
+      }
+    }
+
+    if (!canDelete) {
+      throw DocumentError.Forbidden("Anda tidak memiliki izin untuk menghapus versi dokumen ini.");
+    }
+
+    // 3. Ambil data versi (untuk mendapatkan URL file fisik sebelum record DB dihapus)
+    let versionToDelete;
+    try {
+      versionToDelete = await this.versionRepository.findById(versionId);
+    } catch (e) {
+      throw DocumentError.NotFound("Versi dokumen tidak ditemukan.");
+    }
+
+    // 4. Hapus Record Database
+    // (Repository akan melempar error jika user mencoba menghapus Versi Aktif / Current Version)
+    await this.versionRepository.deleteById(versionId);
+
+    // 5. Hapus File Fisik di Storage (Cleanup)
+    if (versionToDelete.url) {
+      try {
+        await this.fileStorage.deleteFile(versionToDelete.url);
+      } catch (err) {
+        // Log warning saja agar flow tidak error total jika file di S3 sudah hilang duluan
+        console.warn(`[Warning] Gagal menghapus file fisik versi ${versionId}:`, err.message);
+      }
+    }
+
+    return { message: "Versi dokumen berhasil dihapus." };
+  }
 }
+
+

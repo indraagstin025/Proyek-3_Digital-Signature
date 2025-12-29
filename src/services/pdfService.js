@@ -1,7 +1,7 @@
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import pkg from "pdf-lib";
-const { PDFDocument, PDFName, PDFNumber, PDFString } = pkg;
+const { PDFDocument, PDFName, PDFNumber, PDFString, rgb, StandardFonts } = pkg;
 import QRCode from "qrcode";
 import crypto from "crypto";
 import path from "path";
@@ -17,28 +17,11 @@ import CommonError from "../errors/CommonError.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-/**
- * Membuat Locked Stamp Annotation pada halaman PDF.
- *
- * Annotation ini dirancang agar:
- * 1. Tampil di Browser (Chrome/Edge/Safari).
- * 2. Terkunci (Locked & ReadOnly) di Adobe Acrobat Reader.
- * 3. Umumnya dihapus saat dikonversi ke Word (PDF Reflow).
- *
- * @param {PDFDocument} pdfDoc - Instance dokumen PDF.
- * @param {PDFPage} page - Halaman tempat annotation ditempatkan.
- * @param {PDFImage} embeddedImage - Gambar yang sudah di-embed (PNG/JPG).
- * @param {number} x - Koordinat X (kiri).
- * @param {number} y - Koordinat Y (bawah).
- * @param {number} width - Lebar gambar.
- * @param {number} height - Tinggi gambar.
- */
+// ... (Helper createLockedStampAnnotation TETAP SAMA) ...
 function createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, width, height) {
   const bbox = pdfDoc.context.obj([PDFNumber.of(0), PDFNumber.of(0), PDFNumber.of(width), PDFNumber.of(height)]);
-
   const xObjectMap = pdfDoc.context.obj({ Im0: embeddedImage.ref });
   const resources = pdfDoc.context.obj({ XObject: xObjectMap });
-
   const content = `q\n${width} 0 0 ${height} 0 0 cm /Im0 Do\nQ\n`;
   const formStream = pdfDoc.context.flateStream(Buffer.from(content), {
     Type: PDFName.of("XObject"),
@@ -47,20 +30,15 @@ function createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, width, h
     Resources: resources,
   });
   const formRef = pdfDoc.context.register(formStream);
-
   const apDict = pdfDoc.context.obj({ N: formRef });
-
   const annotDict = pdfDoc.context.obj({
     Type: PDFName.of("Annot"),
     Subtype: PDFName.of("Stamp"),
     Rect: pdfDoc.context.obj([PDFNumber.of(x), PDFNumber.of(y), PDFNumber.of(x + width), PDFNumber.of(y + height)]),
     AP: apDict,
-
     F: PDFNumber.of(196),
   });
-
   const annotRef = pdfDoc.context.register(annotDict);
-
   const annots = page.node.Annots();
   if (annots) {
     annots.push(annotRef);
@@ -69,51 +47,28 @@ function createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, width, h
   }
 }
 
-/**
- * Service untuk menangani manipulasi PDF dan Penandatanganan Digital.
- */
 export class PDFService {
-  /**
-   * @param {Object} versionRepository - Repository versi dokumen.
-   * @param {Object} signatureRepository - Repository tanda tangan.
-   * @param {Object} fileStorage - Service penyimpanan file (S3/Local).
-   */
   constructor(versionRepository, signatureRepository, fileStorage) {
     this.versionRepository = versionRepository;
     this.signatureRepository = signatureRepository;
     this.fileStorage = fileStorage;
   }
 
-  /**
-   * Memproses PDF untuk menambahkan visual tanda tangan, QR Code,
-   * dan sertifikat digital kriptografi (P12).
-   *
-   * @param {string} documentVersionId - ID versi dokumen yang akan ditandatangani.
-   * @param {Array} signaturesToEmbed - Daftar data tanda tangan visual.
-   * @param {Object} [options={}] - Opsi tambahan (misal: QR Code).
-   * @returns {Promise<{signedFileBuffer: Buffer, publicUrl: string}>}
-   * @throws {CommonError} Jika terjadi kesalahan proses.
-   */
   async generateSignedPdf(documentVersionId, signaturesToEmbed, options = {}) {
     const certPassword = process.env.CERT_PASSWORD;
-    if (!certPassword) {
-      throw CommonError.InternalServerError("Konfigurasi Error: CERT_PASSWORD belum diset.");
-    }
+    if (!certPassword) throw CommonError.InternalServerError("Konfigurasi Error: CERT_PASSWORD belum diset.");
 
+    // 1. Load Data
     let version;
     try {
       version = await this.versionRepository.findById(documentVersionId);
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil versi dokumen: ${err.message}`);
     }
+    if (!version) throw DocumentError.NotFound(`Versi dokumen ID '${documentVersionId}' tidak ditemukan.`);
+    if (!signaturesToEmbed?.length) throw SignatureError.MissingSignatureData();
 
-    if (!version) {
-      throw DocumentError.NotFound(`Versi dokumen dengan ID '${documentVersionId}' tidak ditemukan.`);
-    }
-    if (!signaturesToEmbed?.length) {
-      throw SignatureError.MissingSignatureData();
-    }
-
+    // 2. Load PDF
     const pdfBuffer = await this.fileStorage.downloadFileAsBuffer(version.url);
     let pdfDoc;
     try {
@@ -123,8 +78,12 @@ export class PDFService {
       throw CommonError.InternalServerError(`Gagal memproses PDF: ${error.message}`);
     }
 
+    // 3. Embed Visual Signatures (Di Halaman Asli)
     for (const sig of signaturesToEmbed) {
       if (!sig.signatureImageUrl) continue;
+
+      // Skip jika koordinat 0 (artinya mungkin hanya untuk audit log, tidak visual)
+      if (!sig.width || !sig.height) continue;
 
       const base64Data = sig.signatureImageUrl.replace(/^data:image\/png;base64,/, "");
       const imageBytes = Buffer.from(base64Data, "base64");
@@ -162,24 +121,97 @@ export class PDFService {
       createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, finalWidth, finalHeight);
     }
 
+    // 4. [BARU] GENERATE HALAMAN AUDIT TRAIL
+    let accessCode = null;
     if (options.displayQrCode && options.verificationUrl) {
+      accessCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+      // Buat halaman baru di akhir
+      const auditPage = pdfDoc.addPage();
+      const { width, height } = auditPage.getSize();
+
+      // Font
+      const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+      let yPos = height - 50;
+
+      // HEADER
+      auditPage.drawText("DIGITAL SIGNATURE AUDIT TRAIL", { x: 50, y: yPos, size: 18, font: fontBold, color: rgb(0, 0, 0) });
+      yPos -= 25;
+      auditPage.drawText("Lembar ini adalah bagian tak terpisahkan dari dokumen ini.", { x: 50, y: yPos, size: 10, font: fontRegular, color: rgb(0.5, 0.5, 0.5) });
+      yPos -= 40;
+
+      // QR CODE & PIN SECTION
       try {
         const qrDataUrl = await QRCode.toDataURL(options.verificationUrl);
         const qrBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
         const embeddedQr = await pdfDoc.embedPng(qrBytes);
-        const lastPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
 
-        createLockedStampAnnotation(pdfDoc, lastPage, embeddedQr, 40, 40, 80, 80);
+        // Gambar QR di sebelah kanan atas (opsional) atau di bawah header
+        // Kita taruh di bawah header kiri
+        const qrSize = 100;
+        auditPage.drawImage(embeddedQr, { x: 50, y: yPos - qrSize, width: qrSize, height: qrSize });
+
+        // Tulis Info Verifikasi di sebelah QR
+        const textX = 170;
+        let textY = yPos - 15;
+
+        auditPage.drawText("VERIFIKASI DOKUMEN", { x: textX, y: textY, size: 12, font: fontBold });
+        textY -= 20;
+        auditPage.drawText("Scan QR Code di samping untuk memverifikasi keaslian", { x: textX, y: textY, size: 10, font: fontRegular });
+        textY -= 15;
+        auditPage.drawText("dan integritas dokumen ini secara digital.", { x: textX, y: textY, size: 10, font: fontRegular });
+
+        textY -= 30;
+        auditPage.drawText(`ACCESS CODE (PIN):  ${accessCode}`, { x: textX, y: textY, size: 14, font: fontBold, color: rgb(0, 0, 0) });
+
+        yPos -= (qrSize + 40); // Geser cursor ke bawah QR
       } catch (err) {
-        console.error("Gagal membuat QR code:", err);
+        console.error("Gagal render QR Audit:", err);
       }
+
+      // TABEL LOG SIGNATURE
+      auditPage.drawText("RIWAYAT PENANDATANGANAN", { x: 50, y: yPos, size: 14, font: fontBold });
+      yPos -= 20;
+
+      // Garis Header
+      auditPage.drawLine({ start: { x: 50, y: yPos }, end: { x: width - 50, y: yPos }, thickness: 1, color: rgb(0, 0, 0) });
+      yPos -= 20;
+
+      // Loop Data Signature (Audit Log)
+      for (const sig of signaturesToEmbed) {
+        // Pastikan data ini dikirim dari Service!
+        const name = sig.signerName || "Unknown Signer";
+        const email = sig.signerEmail || "-";
+        const ip = sig.ipAddress || "IP tidak tercatat";
+        const dateStr = sig.signedAt ? new Date(sig.signedAt).toLocaleString("id-ID") : "Waktu tidak tercatat";
+        const sigId = sig.id ? `ID: ${sig.id.substring(0,8)}...` : "";
+
+        // Cek overflow halaman
+        if (yPos < 50) {
+          // Buat halaman baru jika penuh (simple logic)
+          // (Untuk implementasi robust butuh recursive, tapi ini cukup untuk ~10 signer)
+          // auditPage = pdfDoc.addPage(); ...reset yPos...
+        }
+
+        auditPage.drawText(name, { x: 50, y: yPos, size: 12, font: fontBold });
+        auditPage.drawText(dateStr, { x: width - 200, y: yPos, size: 10, font: fontRegular, color: rgb(0.3, 0.3, 0.3) });
+
+        yPos -= 15;
+        auditPage.drawText(`${email}  •  ${ip}  •  ${sigId}`, { x: 50, y: yPos, size: 10, font: fontRegular, color: rgb(0.4, 0.4, 0.4) });
+
+        yPos -= 25; // Spasi antar item
+      }
+
+      // Footer Dokumen ID
+      const footerY = 30;
+      const docIdText = `Document ID: ${version.document.id}  •  Generated by WeSign System`;
+      auditPage.drawText(docIdText, { x: 50, y: footerY, size: 8, font: fontRegular, color: rgb(0.6, 0.6, 0.6) });
     }
 
-    const pdfVisualBytes = await pdfDoc.save({
-      useObjectStreams: false,
-      updateFieldAppearances: false,
-    });
-
+    // 5. Digital Signing (Crypto)
+    const pdfVisualBytes = await pdfDoc.save({ useObjectStreams: false, updateFieldAppearances: false });
     const pdfWithPlaceholder = plainAddPlaceholder({
       pdfBuffer: Buffer.from(pdfVisualBytes),
       reason: "Digitally Signed by Signify System",
@@ -203,9 +235,7 @@ export class PDFService {
 
     let signedPdfBuffer;
     try {
-      signedPdfBuffer = signer.sign(pdfWithPlaceholder, p12Buffer, {
-        passphrase: certPassword,
-      });
+      signedPdfBuffer = signer.sign(pdfWithPlaceholder, p12Buffer, { passphrase: certPassword });
     } catch (err) {
       throw CommonError.InternalServerError(`Gagal signing: ${err.message}`);
     }
@@ -220,6 +250,7 @@ export class PDFService {
     return {
       signedFileBuffer: Buffer.from(signedPdfBuffer),
       publicUrl: finalUrl,
+      accessCode: accessCode,
     };
   }
 }

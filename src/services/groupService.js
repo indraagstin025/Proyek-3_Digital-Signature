@@ -381,27 +381,39 @@ export class GroupService {
    * @throws {GroupError} If access denied or document not found.
    * @throws {CommonError} If attempting to modify a completed document or removing a user who has already signed.
    */
-  async updateGroupDocumentSigners(groupId, documentId, adminId, newUserIds) {
-    const adminMember = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
-    if (!adminMember || adminMember.role !== "admin_group") {
-      throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengelola penanda tangan.");
+  async updateGroupDocumentSigners(groupId, documentId, requestorId, newUserIds) {
+    // 1. Cek Membership
+    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, requestorId);
+    if (!member) {
+      throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
     }
 
-    const document = await this.documentRepository.findById(documentId, adminId);
+    // 2. Ambil Dokumen
+    const document = await this.documentRepository.findById(documentId, requestorId);
     if (!document || document.groupId !== groupId) {
       throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");
+    }
+
+    // 3. [LOGIKA BARU] Cek Hak Akses
+    const isAdmin = member.role === "admin_group";
+    const isOwner = document.userId === requestorId;
+
+    if (!isAdmin && !isOwner) {
+      throw GroupError.UnauthorizedAccess("Hanya Admin atau Pemilik Dokumen yang dapat mengubah daftar penanda tangan.");
     }
 
     if (document.status === "completed" || document.status === "archived") {
       throw CommonError.BadRequest("Tidak dapat mengubah penanda tangan untuk dokumen yang sudah selesai.");
     }
 
+    // --- Proses Diffing (Tambah/Hapus Signer) ---
     const currentSigners = document.signerRequests || [];
     const currentSignerIds = currentSigners.map((s) => s.userId);
 
     const toAdd = newUserIds.filter((id) => !currentSignerIds.includes(id));
     const toRemove = currentSignerIds.filter((id) => !newUserIds.includes(id));
 
+    // Validasi: Jangan hapus user yang sudah 'SIGNED'
     for (const userId of toRemove) {
       const signerData = currentSigners.find(s => s.userId === userId);
       if (signerData && signerData.status === "SIGNED") {
@@ -409,27 +421,24 @@ export class GroupService {
       }
     }
 
+    // Eksekusi DB Changes
     const dbPromises = [];
-
     for (const userId of toRemove) {
       dbPromises.push(this.groupDocumentSignerRepository.deleteSpecificSigner(documentId, userId));
     }
-
     if (toAdd.length > 0) {
       dbPromises.push(this.groupDocumentSignerRepository.createSigners(documentId, toAdd));
     }
-
     await Promise.all(dbPromises);
 
+    // Update Status Dokumen (Draft <-> Pending)
     const allSignersCount = newUserIds.length;
     let newStatus = document.status;
-
     if (allSignersCount > 0 && newStatus === "draft") {
       newStatus = "pending";
     } else if (allSignersCount === 0 && newStatus === "pending") {
       newStatus = "draft";
     }
-
     if (document.status !== newStatus) {
       await this.documentRepository.update(documentId, { status: newStatus });
     }
@@ -443,8 +452,7 @@ export class GroupService {
       });
     }
 
-    const updatedDoc = await this.documentRepository.findById(documentId, adminId);
-    return updatedDoc;
+    return await this.documentRepository.findById(documentId, requestorId);
   }
 
   /**
@@ -456,12 +464,12 @@ export class GroupService {
    * @returns {Promise<Object>} The update result.
    * @throws {GroupError} If access denied or document not found.
    */
-  async unassignDocumentFromGroup(groupId, documentId, userId) {
-    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
-    if (!member || member.role !== "admin_group") {
-      throw GroupError.UnauthorizedAccess("Hanya admin yang bisa menghapus dokumen dari grup.");
-    }
+  async unassignDocumentFromGroup(groupId, documentId, requestorId) {
+    // 1. Cek Membership
+    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, requestorId);
+    if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
 
+    // 2. Ambil Dokumen
     const document = await this.documentRepository.findFirst({
       where: { id: documentId, groupId },
     });
@@ -470,14 +478,25 @@ export class GroupService {
       throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");
     }
 
+    // 3. [LOGIKA BARU] Cek Hak Akses
+    const isAdmin = member.role === "admin_group";
+    const isOwner = document.userId === requestorId;
+
+    if (!isAdmin && !isOwner) {
+      throw GroupError.UnauthorizedAccess("Hanya Admin atau Pemilik Dokumen yang bisa menghapus dokumen dari grup.");
+    }
+
     const docTitle = document.title;
 
+    // Hapus data signer di dokumen ini sebelum di-unassign
     if (this.groupDocumentSignerRepository) {
       await this.groupDocumentSignerRepository.deleteByDocumentId(documentId);
     }
 
+    // Set groupId jadi NULL (kembali ke privat)
     const result = await this.documentRepository.update(documentId, {
       groupId: null,
+      status: 'draft' // Reset status ke draft karena signer dihapus
     });
 
     if (this.io) {
@@ -567,52 +586,76 @@ export class GroupService {
    * @returns {Promise<Object>} The updated document object.
    * @throws {GroupError} If user is not admin.
    * @throws {CommonError} If document is already completed or still has pending signatures.
+   /**
+   * Finalizes a group document.
+   * [UPDATED] Mengembalikan accessCode agar bisa ditampilkan di Controller.
    */
-  async finalizeGroupDocument(groupId, documentId, adminId) {
-    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
-    if (!member || member.role !== "admin_group") {
-      throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat memfinalisasi dokumen.");
-    }
+  async finalizeGroupDocument(groupId, documentId, requestorId) {
+    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, requestorId);
+    if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
+
+    const document = await this.documentRepository.findFirst({
+      where: { id: documentId, groupId: groupId },
+      include: { currentVersion: true }
+    });
+
+    if (!document || !document.currentVersion) throw CommonError.NotFound("Dokumen tidak valid.");
+
+    const isAdmin = member.role === "admin_group";
+    const isOwner = document.userId === requestorId;
+
+    if (!isAdmin && !isOwner) throw GroupError.UnauthorizedAccess("Akses ditolak.");
 
     const pendingCount = await this.groupDocumentSignerRepository.countPendingSigners(documentId);
-    if (pendingCount > 0) {
-      throw CommonError.BadRequest(
-          `Belum bisa finalisasi. Masih ada ${pendingCount} orang yang belum tanda tangan.`
-      );
-    }
+    if (pendingCount > 0) throw CommonError.BadRequest(`Masih ada ${pendingCount} orang yang belum tanda tangan.`);
 
-    const document = await this.documentRepository.findById(documentId, adminId);
-    if (document.status === "completed") {
-      throw CommonError.BadRequest("Dokumen sudah difinalisasi sebelumnya.");
-    }
+    if (document.status === "completed") throw CommonError.BadRequest("Dokumen sudah difinalisasi.");
 
     const currentVersion = document.currentVersion;
+    // pastikan findAllByVersionId melakukan include: { signer: true }
     const allSignatures = await this.groupSignatureRepository.findAllByVersionId(currentVersion.id);
 
-    if (!allSignatures || allSignatures.length === 0) {
-      throw new Error("Tidak ada tanda tangan yang ditemukan untuk difinalisasi.");
-    }
+    if (!allSignatures || allSignatures.length === 0) throw new Error("Tidak ada tanda tangan.");
 
+    // --- GENERATE PDF ---
+    const referenceSignatureId = allSignatures[0].id;
+    const BASE_VERIFY_URL = process.env.VERIFICATION_URL || "http://localhost:5173";
+    const verificationUrl = `${BASE_VERIFY_URL.replace(/\/$/, "")}/verify/${referenceSignatureId}`;
+
+    // [FIX] Map data lengkap (Visual + Audit)
     const signaturesPayload = allSignatures.map((sig) => ({
+      // Data Visual
       signatureImageUrl: sig.signatureImageUrl,
       pageNumber: sig.pageNumber,
       positionX: sig.positionX,
       positionY: sig.positionY,
       width: sig.width,
       height: sig.height,
+
+      // Data Audit (Dari relasi signer)
+      id: sig.id,
+      signerName: sig.signer ? sig.signer.name : "Unknown",
+      signerEmail: sig.signer ? sig.signer.email : "-",
+      ipAddress: sig.ipAddress || "-",
+      signedAt: sig.signedAt || sig.createdAt
     }));
 
-    const { signedFileBuffer, publicUrl } = await this.pdfService.generateSignedPdf(
+    const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(
         currentVersion.id,
         signaturesPayload,
-        { displayQrCode: false }
+        { displayQrCode: true, verificationUrl }
     );
 
-    const newHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
+    // Simpan PIN
+    if (accessCode) {
+      await this.groupSignatureRepository.update(referenceSignatureId, { accessCode });
+    }
 
+    // Update Versi
+    const newHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
     const newVersion = await this.versionRepository.create({
       documentId: documentId,
-      userId: adminId,
+      userId: requestorId,
       url: publicUrl,
       hash: newHash,
       signedFileHash: newHash,
@@ -626,23 +669,22 @@ export class GroupService {
 
     if (this.io) {
       const roomName = `group_${groupId}`;
-
       this.io.to(roomName).emit("group_document_update", {
         action: "finalized",
-        documentId: documentId,
-        status: "completed",
-        signedFileUrl: publicUrl
-      });
-
-      this.io.to(documentId).emit("document_status_update", {
-        documentId: documentId,
+        documentId,
         status: "completed",
         signedFileUrl: publicUrl
       });
     }
 
-    const updatedDoc = await this.documentRepository.findById(documentId, adminId);
-    return updatedDoc;
+    const updatedDoc = await this.documentRepository.findById(documentId, requestorId);
+
+    // [FIX] Return paket lengkap agar controller bisa kirim accessCode
+    return {
+      document: updatedDoc,
+      url: publicUrl,
+      accessCode: accessCode
+    };
   }
 
   /**
@@ -704,42 +746,52 @@ export class GroupService {
    * @returns {Promise<void>}
    * @throws {GroupError} Jika user bukan admin atau dokumen tidak ditemukan.
    */
-  async deleteGroupDocument(groupId, documentId, userId) {
-    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
+  async deleteGroupDocument(groupId, documentId, requestorId) {
+    // 1. Cek Membership
+    const member = await this.groupMemberRepository.findByGroupAndUser(groupId, requestorId);
+    if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
 
-    if (!member || member.role !== "admin_group") {
-      throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat menghapus dokumen.");
+    // 2. Ambil Dokumen
+    const document = await this.documentRepository.findFirst({
+      where: { id: documentId, groupId: groupId }
+    });
+
+    if (!document) {
+      throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");
     }
 
-    const document = await this.documentRepository.findById(documentId, userId);
-    if (!document || document.groupId !== groupId) {
-      throw GroupError.NotFound("Dokumen tidak ditemukan di dalam grup ini.");
+    // 3. [LOGIKA BARU] Cek Hak Akses (Admin ATAU Owner)
+    const isAdmin = member.role === "admin_group";
+    const isOwner = document.userId === requestorId;
+
+    if (!isAdmin && !isOwner) {
+      throw GroupError.UnauthorizedAccess("Hanya Admin atau Pemilik Dokumen yang dapat menghapusnya.");
     }
 
     const docTitle = document.title;
 
+    // ... Lanjutkan proses delete ...
     if (typeof this.documentRepository.deleteById === 'function') {
       await this.documentRepository.deleteById(documentId);
-    } else if (typeof this.documentRepository.delete === 'function') {
-      await this.documentRepository.delete(documentId);
     } else {
+      // Fallback jika method deleteById belum ada/berbeda nama
       if (this.documentRepository.prisma) {
         await this.documentRepository.prisma.document.delete({ where: { id: documentId } });
       } else {
-        throw new Error("Method deleteById tidak ditemukan di DocumentRepository.");
+        await this.documentRepository.delete(documentId);
       }
     }
 
     if (this.io) {
       const roomName = `group_${groupId}`;
-      const actorName = member.user?.name || "Admin Grup";
+      const actorName = member.user?.name || "User";
 
       this.io.to(roomName).emit("group_document_update", {
         action: "removed_document",
-        actorId: userId,
+        actorId: requestorId,
         uploaderName: actorName,
         document: { id: documentId, title: docTitle },
-        message: `Dokumen "${docTitle}" telah dihapus permanen.`
+        message: `Dokumen "${docTitle}" telah dihapus.`
       });
     }
   }
