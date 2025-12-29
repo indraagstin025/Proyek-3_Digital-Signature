@@ -107,7 +107,6 @@ export class PrismaAdminRepository {
         this.prisma.user.count(),
         this.prisma.document.count(),
         this.prisma.group.count(),
-
         this.prisma.signaturePersonal.count().then((c1) => this.prisma.signatureGroup.count().then((c2) => c1 + c2)),
       ]);
 
@@ -136,14 +135,38 @@ export class PrismaAdminRepository {
   /**
    * Mengambil semua dokumen untuk keperluan moderasi admin.
    */
-  async findAllDocuments(limit = 50) {
+  async findAllDocuments() {
     return await this.prisma.document.findMany({
-      take: limit,
+      // Hapus 'take: limit' agar mengambil semua data
       orderBy: { createdAt: "desc" },
       include: {
-        owner: { select: { name: true, email: true } },
-        group: { select: { name: true } },
+        owner: {
+          select: { name: true, email: true }
+        },
+        group: {
+          select: { name: true }
+        },
       },
     });
+  }
+
+  async getTrafficStats() {
+    const twentyFourHoursAgo = new Date(new Date() - 24 * 60 * 60 * 1000);
+
+    try {
+      return await this.prisma.apiRequestLog.findMany({
+        where: {
+          createdAt: {
+            gte: twentyFourHoursAgo,
+          },
+        },
+        select: {
+          createdAt: true, // Kita hanya butuh waktu request-nya
+        },
+      });
+    } catch (error) {
+      console.error("Gagal ambil traffic stats:", error);
+      return []; // Return array kosong jika gagal, jangan throw error agar dashboard tetap jalan
+    }
   }
 }

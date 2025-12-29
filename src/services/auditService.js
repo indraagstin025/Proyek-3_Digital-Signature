@@ -25,7 +25,7 @@ export class AuditService {
     });
   }
 
-  async getAllLogs() {
-    return this.auditRepository.findAllLogs();
+  async getAllLogs(page, limit) {
+    return this.auditRepository.findAllLogs(page, limit);
   }
 }

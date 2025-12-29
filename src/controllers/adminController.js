@@ -93,12 +93,16 @@ export const createAdminController = (adminService) => {
      * @route GET /api/admin/audit-logs
      */
     getAuditLogs: asyncHandler(async (req, res) => {
-      const logs = await adminService.getAllAuditLogs();
+      // Ambil page & limit dari query, default page 1 limit 10
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+
+      const result = await adminService.getAllAuditLogs(page, limit);
 
       res.status(200).json({
         success: true,
-        count: logs.length,
-        data: logs,
+        data: result.data,
+        pagination: result.meta, // Kirim metadata pagination ke frontend
       });
     }),
 
