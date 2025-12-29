@@ -40,6 +40,10 @@ class CommonError extends BaseError {
     static ServiceUnavailable(message = "Layanan sementara tidak tersedia.") {
         return new CommonError("SERVICE_UNAVAILABLE", 503, message);
     }
+
+    static Forbidden(message = "Akses ditolak. Anda tidak memiliki hak akses") {
+        return new CommonError("FORBIDDEN", 403, message);
+    }
 }
 
 export default CommonError;

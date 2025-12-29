@@ -151,20 +151,25 @@ model DocumentVersion {
 }
 
 model SignaturePersonal {
-  id                String          @id @default(uuid()) @db.Uuid
+  id                String        @id @default(uuid()) @db.Uuid
   method            SigningMethod
-  signatureImageUrl String          @map("signature_image_url")
-  qrCodeDataUrl     String?         @map("qr_code_data_url")
-  width             Float           @default(0) @map("width")
-  height            Float           @default(0) @map("height")
-  positionX         Float           @map("position_x")
-  positionY         Float           @map("position_y")
-  pageNumber        Int             @map("page_number")
-  signedAt          DateTime        @default(now()) @map("signed_at")
-  ipAddress         String?         @map("ip_address")
-  userAgent         String?         @map("user_agent") @db.Text
-  signerPublicKey   String?         @map("signer_public_key") @db.Text
-  displayQrCode     Boolean         @default(true) @map("display_qr_code")
+  signatureImageUrl String        @map("signature_image_url")
+  qrCodeDataUrl     String?       @map("qr_code_data_url")
+  width             Float         @default(0) @map("width")
+  height            Float         @default(0) @map("height")
+  positionX         Float         @map("position_x")
+  positionY         Float         @map("position_y")
+  pageNumber        Int           @map("page_number")
+  signedAt          DateTime      @default(now()) @map("signed_at")
+  ipAddress         String?       @map("ip_address")
+  userAgent         String?       @map("user_agent") @db.Text
+  signerPublicKey   String?       @map("signer_public_key") @db.Text
+  displayQrCode     Boolean       @default(true) @map("display_qr_code")
+
+  // [BARU] Access Code untuk Verifikasi
+  accessCode        String?         @map("access_code")
+  retryCount        Int             @default(0) @map("retry_count")
+  lockedUntil       DateTime?       @map("locked_until")
   status            String          @default("draft")
   documentVersionId String          @map("document_version_id") @db.Uuid
   documentVersion   DocumentVersion @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)
@@ -176,17 +181,23 @@ model SignaturePersonal {
 }
 
 model SignatureGroup {
-  id                String               @id @default(uuid()) @db.Uuid
+  id                String        @id @default(uuid()) @db.Uuid
   method            SigningMethod
-  signatureImageUrl String               @map("signature_image_url")
-  width             Float                @default(0) @map("width")
-  height            Float                @default(0) @map("height")
-  positionX         Float                @map("position_x")
-  positionY         Float                @map("position_y")
-  pageNumber        Int                  @map("page_number")
-  signedAt          DateTime             @default(now()) @map("signed_at")
-  ipAddress         String?              @map("ip_address")
-  userAgent         String?              @map("user_agent") @db.Text
+  signatureImageUrl String        @map("signature_image_url")
+  width             Float         @default(0) @map("width")
+  height            Float         @default(0) @map("height")
+  positionX         Float         @map("position_x")
+  positionY         Float         @map("position_y")
+  pageNumber        Int           @map("page_number")
+  signedAt          DateTime      @default(now()) @map("signed_at")
+  ipAddress         String?       @map("ip_address")
+  userAgent         String?       @map("user_agent") @db.Text
+
+  // [BARU] Access Code untuk Verifikasi
+  accessCode  String?   @map("access_code")
+  retryCount  Int       @default(0) @map("retry_count")
+  lockedUntil DateTime? @map("locked_until")
+
   status            String               @default("draft")
   documentVersionId String               @map("document_version_id") @db.Uuid
   documentVersion   DocumentVersion      @relation(fields: [documentVersionId], references: [id], onDelete: Cascade)
@@ -237,6 +248,11 @@ model PackageSignature {
   createdAt         DateTime        @default(now()) @map("created_at")
   ipAddress         String?         @map("ip_address")
   userAgent         String?         @map("user_agent")
+
+  // [BARU] Access Code untuk Verifikasi
+  accessCode  String?   @map("access_code")
+  retryCount  Int       @default(0) @map("retry_count")
+  lockedUntil DateTime? @map("locked_until")
 
   @@map("package_signatures")
 }
@@ -316,24 +332,25 @@ model AuditLog {
   userAgent   String?     @map("user_agent")
   createdAt   DateTime    @default(now()) @map("created_at")
 
+  @@index([createdAt])
+  @@index([actorId])
   @@map("audit_logs")
 }
 
 model ApiRequestLog {
-  id         String   @id @default(uuid()) @db.Uuid // Tambahkan @db.Uuid biar konsisten
+  id         String   @id @default(uuid()) @db.Uuid
   method     String
   endpoint   String
   statusCode Int
   duration   Int
-  ipAddress  String?  @map("ip_address") // Opsional: map ke snake_case biar rapi
-  userAgent  String?  @map("user_agent") // Opsional: map ke snake_case biar rapi
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  // PERBAIKAN UTAMA DISINI:
-  userId String? @map("user_id") @db.Uuid // Gunakan String? (nullable) & map ke user_id
+  userId String? @map("user_id") @db.Uuid
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
   @@index([userId])
-  @@map("api_request_logs") // Tambahkan ini biar nama tabel konsisten
+  @@map("api_request_logs")
 }

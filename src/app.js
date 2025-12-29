@@ -13,7 +13,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 import { initSocket } from "./socket/socketHandler.js";
-
+import { trafficLogger } from "./middleware/trafficLogger.js";
 import logger from './utils/logger.js';
 import { supabase, supabaseBucket } from './config/supabaseClient.js';
 import FileStorage from "./repository/interface/FileStorage.js";
@@ -174,6 +174,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(trafficLogger);
+
 /**
  * Dependency Injection (Repositories + Services + Controllers)
  */
@@ -272,7 +274,7 @@ const documentController = createDocumentController(
     fileStorage
 );
 const groupSignatureController = createGroupSignatureController(groupSignatureService);
-const signatureController = createSignatureController(documentService, signatureService, packageService);
+const signatureController = createSignatureController(documentService, signatureService, packageService, groupSignatureService);
 const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);
 const dashboardController = createDashboardController(dashboardService);
