@@ -51,14 +51,14 @@ export class PrismaPackageRepository extends PackageRepository {
   async findPackageById(packageId, userId) {
     try {
       const pkg = await this.prisma.signingPackage.findFirst({
-        where: { id: packageId, userId: userId },
+        where: {id: packageId, userId: userId},
         include: {
           documents: {
-            orderBy: { order: "asc" },
+            orderBy: {order: "asc"},
             include: {
               docVersion: {
                 include: {
-                  document: { select: { id: true, title: true } },
+                  document: {select: {id: true, title: true}},
                 },
               },
             },
@@ -84,8 +84,8 @@ export class PrismaPackageRepository extends PackageRepository {
   async updatePackageStatus(packageId, status) {
     try {
       return await this.prisma.signingPackage.update({
-        where: { id: packageId },
-        data: { status: status },
+        where: {id: packageId},
+        data: {status: status},
       });
     } catch (error) {
       if (error.code === "P2025") {
@@ -113,7 +113,7 @@ export class PrismaPackageRepository extends PackageRepository {
       }
 
       return await this.prisma.packageDocument.update({
-        where: { id: packageDoc.id },
+        where: {id: packageDoc.id},
         data: {
           docVersionId: newVersionId,
         },
@@ -131,7 +131,7 @@ export class PrismaPackageRepository extends PackageRepository {
    */
   async createPackageSignatures(signaturesData) {
     try {
-      const promises = signaturesData.map((data) => this.prisma.packageSignature.create({ data: data }));
+      const promises = signaturesData.map((data) => this.prisma.packageSignature.create({data: data}));
 
       return await Promise.all(promises);
     } catch (error) {
@@ -147,7 +147,7 @@ export class PrismaPackageRepository extends PackageRepository {
   async findPackageSignatureById(signatureId) {
     try {
       return await this.prisma.packageSignature.findUnique({
-        where: { id: signatureId },
+        where: {id: signatureId},
         include: {
           signer: {
             select: {
@@ -161,7 +161,7 @@ export class PrismaPackageRepository extends PackageRepository {
               docVersion: {
                 include: {
                   document: {
-                    select: { title: true },
+                    select: {title: true},
                   },
                 },
               },
@@ -178,11 +178,30 @@ export class PrismaPackageRepository extends PackageRepository {
     try {
       return await this.prisma.packageSignature.deleteMany({
         where: {
-          id: { in: signatureIds },
+          id: {in: signatureIds},
         },
       });
     } catch (error) {
       console.error("[Repo] Gagal rollback signatures:", error);
+    }
+  }
+
+
+  /**
+   * [UPDATE] Update data signature paket (misal: accessCode).
+   */
+  async updateSignature(signatureId, data) {
+    try {
+      return await this.prisma.packageSignature.update({
+        where: {id: signatureId},
+        data: {
+          accessCode: data.accessCode,
+          retryCount: data.retryCount,
+          lockedUntil: data.lockedUntil,
+        }
+      });
+    } catch (error) {
+      throw CommonError.DatabaseError(`Gagal update signature paket: ${error.message}`);
     }
   }
 }

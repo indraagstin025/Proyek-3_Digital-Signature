@@ -6,8 +6,6 @@ export class PrismaSignatureRepository extends SignatureRepository {
     this.prisma = prisma;
   }
 
-  // ... (Method create, findById, update, delete tetap sama) ...
-
   async create(data) {
     const { id, type, documentVersionId, userId, ...rest } = data;
     return this.prisma.signaturePersonal.create({
@@ -22,6 +20,13 @@ export class PrismaSignatureRepository extends SignatureRepository {
         signatureImageUrl: rest.signatureImageUrl || "",
         method: rest.method || "canvas",
         status: rest.status || "final",
+
+        // Data Audit
+        ipAddress: rest.ipAddress || null,
+        userAgent: rest.userAgent || null,
+
+        // [BARU] Access Code (PIN)
+        accessCode: rest.accessCode || null,
       },
     });
   }
@@ -56,6 +61,9 @@ export class PrismaSignatureRepository extends SignatureRepository {
           signatureImageUrl: data.signatureImageUrl,
           method: data.method,
           status: data.status,
+          accessCode: data.accessCode,
+          retryCount: data.retryCount,
+          lockedUntil: data.lockedUntil,
         },
       });
     } catch (error) {
@@ -71,17 +79,13 @@ export class PrismaSignatureRepository extends SignatureRepository {
   }
 
   /**
-   * [FIXED] Delete By Signer & Version.
-   * Logic:
-   * - Jika userId ada -> Hapus punya user itu saja (Re-sign).
-   * - Jika userId NULL -> Hapus SEMUA (Rollback).
+   * Delete By Signer & Version.
    */
   async deleteBySignerAndVersion(userId, documentVersionId) {
     const whereCondition = {
       documentVersionId: documentVersionId,
     };
 
-    // 🔥 PENTING: Hanya masukkan signerId ke filter jika userId TIDAK null
     if (userId) {
       whereCondition.signerId = userId;
     }
