@@ -52,6 +52,7 @@ import { HistoryService } from "./services/historyService.js";
 import { AuditService } from "./services/auditService.js";
 import { aiService } from "./services/aiService.js";
 import { GroupSignatureService } from "./services/groupSignatureService.js";
+import { PaymentService } from "./services/paymentService.js";
 
 import { createAuthController } from './controllers/authController.js';
 import { createUserController } from './controllers/userController.js';
@@ -63,6 +64,7 @@ import { createPackageController } from './controllers/packageController.js';
 import { createDashboardController } from './controllers/dashboardController.js';
 import { createHistoryController } from "./controllers/historyController.js";
 import { createGroupSignatureController } from "./controllers/groupSignatureController.js";
+import { createPaymentController } from "./controllers/paymentController.js";
 
 
 import createAuthRoutes from './routes/authRoutes.js';
@@ -75,6 +77,7 @@ import createGroupRoutes from './routes/groupRoutes.js';
 import { createPackageRoutes } from './routes/packageRoutes.js';
 import createDashboardRoutes from './routes/dashboardRoutes.js';
 import { createHistoryRoutes } from "./routes/historyRoutes.js";
+import createPaymentRoutes from './routes/paymentRoutes.js';
 
 /**
  * Inisialisasi aplikasi dan Prisma Client
@@ -239,7 +242,8 @@ const documentService = new DocumentService(
     groupMemberRepository,
     groupDocumentSignerRepository,
     aiService,
-    prismaGroupSignatureRepository
+    prismaGroupSignatureRepository,
+    userService
 );
 const groupService = new GroupService(
     groupRepository,
@@ -251,7 +255,8 @@ const groupService = new GroupService(
     versionRepository,
     pdfService,
     prismaGroupSignatureRepository,
-    io
+    io,
+    userService
 );
 
 const packageService = new PackageService(
@@ -259,8 +264,11 @@ const packageService = new PackageService(
     documentRepository,
     versionRepository,
     pdfService,
-    auditService
+    auditService,
+    userService
 );
+
+const paymentService = new PaymentService()
 
 /**
  * Controllers
@@ -279,6 +287,7 @@ const groupController = createGroupController(groupService);
 const packageController = createPackageController(packageService);
 const dashboardController = createDashboardController(dashboardService);
 const historyController = createHistoryController(historyService);
+const paymentController = createPaymentController(paymentService);
 
 
 /**
@@ -294,6 +303,7 @@ app.use("/api/packages", createPackageRoutes(packageController));
 app.use("/api/dashboard", createDashboardRoutes(dashboardController));
 app.use("/api/history", createHistoryRoutes(historyController));
 app.use("/api/group-signatures", createGroupSignatureRoutes(groupSignatureController));
+app.use("/api/payments", createPaymentRoutes(paymentController));
 app.use('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date() });
 });
