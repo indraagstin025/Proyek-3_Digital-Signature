@@ -1,40 +1,62 @@
 import crypto from "crypto";
 import CommonError from "../errors/CommonError.js";
 import DocumentError from "../errors/DocumentError.js";
+// [BARU] Import PaymentError untuk handling limitasi
+import PaymentError from "../errors/PaymentError.js";
 
 /**
  * Service untuk seluruh lifecycle Signing Package (batch).
  */
 export class PackageService {
-  constructor(packageRepository, documentRepository, versionRepository, pdfService, auditService) {
-    if (!packageRepository || !documentRepository || !versionRepository || !pdfService || !auditService) {
-      throw CommonError.InternalServerError("PackageService: Repository & PDF Service wajib diberikan.");
+  /**
+   * [UPDATED] Menambahkan userService di constructor
+   */
+  constructor(packageRepository, documentRepository, versionRepository, pdfService, auditService, userService) {
+    if (!packageRepository || !documentRepository || !versionRepository || !pdfService || !auditService || !userService) {
+      throw CommonError.InternalServerError("PackageService: Repository, Services, dan UserService wajib diberikan.");
     }
     this.packageRepository = packageRepository;
     this.documentRepository = documentRepository;
     this.versionRepository = versionRepository;
     this.pdfService = pdfService;
     this.auditService = auditService;
+    this.userService = userService; // [BARU] Inject UserService
   }
 
   /**
    * Membuat package beserta kumpulan dokumen versi aktif.
+   * [UPDATED] Menambahkan Pengecekan Limit Premium (3 vs 20).
    */
   async createPackage(userId, title, documentIds) {
+    // --- [LOGIC BARU] 1. Cek Limit Dokumen per Paket ---
+    // Gunakan userService yang sudah kita update sebelumnya
+    const isPremium = await this.userService.isUserPremium(userId);
+
+    const LIMIT_FREE = 3;
+    const LIMIT_PREMIUM = 20;
+    const limit = isPremium ? LIMIT_PREMIUM : LIMIT_FREE;
+
+    if (documentIds.length > limit) {
+      throw PaymentError.PremiumRequired(
+          `Maksimal ${limit} dokumen per paket. ${!isPremium ? "Upgrade ke Premium untuk kapasitas lebih besar (hingga 20 dokumen)." : ""}`
+      );
+    }
+    // ----------------------------------------------------
+
     const docVersionIds = [];
 
-    // 1. Fetch semua dokumen secara paralel (Cepat)
+    // 2. Fetch semua dokumen secara paralel (Cepat)
     const docPromises = documentIds.map((docId) => this.documentRepository.findById(docId, userId));
     const docs = await Promise.all(docPromises);
 
-    // 2. Validasi
+    // 3. Validasi Dokumen
     for (let i = 0; i < docs.length; i++) {
       const doc = docs[i];
       const docId = documentIds[i];
 
       if (!doc) throw DocumentError.NotFound(docId);
       if (!doc.currentVersionId) throw DocumentError.InvalidVersion("Tidak memiliki versi aktif", docId);
-      if (doc.status === "completed") throw CommonError.BadRequest(`Dokumen '${doc.title}' selesai & tidak dapat ditambah ke paket.`);
+      if (doc.status === "completed") throw CommonError.BadRequest(`Dokumen '${doc.title}' sudah selesai & tidak dapat ditambahkan ke paket.`);
 
       docVersionIds.push(doc.currentVersionId);
     }
@@ -50,15 +72,17 @@ export class PackageService {
 
   /**
    * Eksekusi signing untuk seluruh dokumen dalam paket.
-   * [UPDATED] Menangkap Access Code (PIN) dan menyimpannya.
+   * [FITUR] Menangkap Access Code (PIN) dan menyimpannya ke DB.
    */
   async signPackage(packageId, userId, signaturesPayload, userIpAddress, req = null) {
     const pkg = await this.getPackageDetails(packageId, userId);
     if (pkg.status === "completed") throw CommonError.BadRequest("Paket ini sudah selesai & tidak dapat diproses ulang.");
 
-    // [FIX] Ambil Data User untuk Audit Trail
+    // Ambil Data User untuk Audit Trail PDF
     let signerName = "User";
     let signerEmail = "user@email.com";
+
+    // Cek apakah repository punya akses ke prisma client user
     if (this.packageRepository.prisma) {
       const user = await this.packageRepository.prisma.user.findUnique({ where: { id: userId } });
       if(user) { signerName = user.name; signerEmail = user.email; }
@@ -66,7 +90,7 @@ export class PackageService {
 
     const results = { success: [], failed: [] };
 
-    // Loop Sequential
+    // Loop Sequential (Satu per satu agar aman memory)
     for (const packageDoc of pkg.documents) {
       const originalDocId = packageDoc.docVersion.document.id;
       const originalVersionId = packageDoc.docVersion.id;
@@ -82,7 +106,7 @@ export class PackageService {
         const signaturesForThisDoc = signaturesPayload.filter((sig) => sig.packageDocId === packageDoc.id);
         if (signaturesForThisDoc.length === 0) throw new Error("Tidak ada konfigurasi tanda tangan untuk dokumen ini.");
 
-        // 2. Siapkan Data Signature DB
+        // 2. Siapkan Data Signature DB (Audit Log Awal)
         const signaturesToCreate = signaturesForThisDoc.map((sig) => ({
           packageDocumentId: packageDoc.id,
           signerId: userId,
@@ -93,6 +117,7 @@ export class PackageService {
           width: sig.width,
           height: sig.height,
           ipAddress: userIpAddress,
+          // Status awal SIGNED, nanti diupdate jika ada PIN
         }));
 
         // 3. Simpan ke DB (Dapatkan ID)
@@ -107,33 +132,34 @@ export class PackageService {
         const verificationUrl = `${base}/verify/${firstSignatureId}`;
         const displayQrCode = signaturesForThisDoc[0].displayQrCode ?? true;
 
-        // [FIX] Konstruksi Payload PDF SETELAH ID signature tersedia
+        // 5. Konstruksi Payload untuk PDF Service
+        // Gabungkan data visual dengan data Audit (IP, Time, ID)
         const signaturesForPdf = signaturesForThisDoc.map((sig, index) => ({
-          ...sig, // Visual data
-          id: createdSignatureIds[index], // ID dari DB
+          ...sig,
+          id: createdSignatureIds[index], // ID Database
           signerName: signerName,
           signerEmail: signerEmail,
           ipAddress: userIpAddress,
           signedAt: new Date()
         }));
 
-        // 5. Generate PDF
+        // 6. Generate PDF (Burning)
         const pdfResult = await this.pdfService.generateSignedPdf(
             originalVersionId,
-            signaturesForPdf, // Gunakan payload gabungan
+            signaturesForPdf,
             { displayQrCode, verificationUrl }
         );
 
         signedFileBuffer = pdfResult.signedFileBuffer;
         const publicUrl = pdfResult.publicUrl;
-        const accessCode = pdfResult.accessCode;
+        const accessCode = pdfResult.accessCode; // PIN dari PDF Service
 
-        // [BARU] Simpan Access Code
+        // 7. [FITUR PIN] Simpan Access Code ke DB jika ada
         if (accessCode) {
           await this.packageRepository.updateSignature(firstSignatureId, { accessCode });
         }
 
-        // 6. Hashing & Versioning
+        // 8. Hashing & Versioning
         const hash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
 
         const newVersion = await this.versionRepository.create({
@@ -144,6 +170,7 @@ export class PackageService {
           signedFileHash: hash,
         });
 
+        // 9. Update Relasi & Status Dokumen
         await this.packageRepository.updatePackageDocumentVersion(packageId, originalVersionId, newVersion.id);
         await this.documentRepository.update(originalDocId, {
           currentVersionId: newVersion.id,
@@ -156,18 +183,20 @@ export class PackageService {
 
       } catch (error) {
         console.error(`[PackageService] ❌ Failed doc ${originalDocId}:`, error.message);
+        // Rollback signature di DB jika gagal generate PDF
         if (createdSignatureIds.length > 0) await this.packageRepository.deleteSignaturesByIds(createdSignatureIds);
         results.failed.push({ documentId: originalDocId, error: error.message });
       } finally {
-        signedFileBuffer = null;
+        signedFileBuffer = null; // Cleanup memory
       }
     }
 
+    // Update Status Paket
     const status = results.failed.length === 0 ? "completed" : "partial_failure";
     await this.packageRepository.updatePackageStatus(packageId, status);
 
     if (this.auditService) {
-      await this.auditService.log("SIGN_PACKAGE", userId, packageId, `User menandatangani paket.`, req);
+      await this.auditService.log("SIGN_PACKAGE", userId, packageId, `User menandatangani paket dokumen.`, req);
     }
 
     return { packageId, status, ...results };

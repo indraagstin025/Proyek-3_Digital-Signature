@@ -105,6 +105,17 @@ export class PrismaGroupMemberRepository extends GroupMemberRepository {
     }
   }
 
+
+  async countByGroupId(groupId) {
+    try {
+      return await this.prisma.groupMember.count({
+        where: { groupId: groupId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghitung anggota grup: ${err.message}`);
+    }
+  }
+
   /**
    * @description Menghapus keanggotaan berdasarkan ID unik record GroupMember.
    * @param {number} memberId - ID unik dari tabel GroupMember (INT).

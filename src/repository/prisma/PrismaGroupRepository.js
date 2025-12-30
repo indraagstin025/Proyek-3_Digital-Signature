@@ -48,21 +48,43 @@ export class PrismaGroupRepository extends GroupRepository {
    * @param {number} groupId - ID grup (Ingat, ini adalah INT).
    * @returns {Promise<object>} Objek grup, termasuk admin dan anggotanya.
    */
+  /**
+   * @description Mencari satu grup berdasarkan ID-nya (INT).
+   * [UPDATED] Mengambil status Admin dan Member untuk validasi Limit di Frontend.
+   */
   async findById(groupId) {
     try {
       return await this.prisma.group.findUnique({
         where: { id: groupId },
         include: {
+          // 1. DATA ADMIN (PEMILIK GRUP) - SANGAT PENTING
+          // Status Premium Admin menentukan limit seluruh grup.
           admin: {
-            select: { id: true, name: true, email: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              userStatus: true,   // <--- WAJIB: Agar frontend tahu Admin = Premium
+              premiumUntil: true
+            },
           },
+
+          // 2. DATA MEMBER (ANGGOTA)
           members: {
             include: {
               user: {
-                select: { id: true, name: true, email: true },
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  userStatus: true,
+                  profilePictureUrl: true     // (Opsional) Jika schema User punya kolom avatar
+                },
               },
             },
           },
+
+          // 3. DOKUMEN GRUP
           documents: {
             orderBy: { createdAt: "desc" },
             include: {
@@ -89,6 +111,16 @@ export class PrismaGroupRepository extends GroupRepository {
       });
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal memperbarui grup: ${err.message}`);
+    }
+  }
+
+  async countByAdminId(adminId) {
+    try {
+      return await this.prisma.group.count({
+        where: { adminId: adminId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghitung jumlah grup admin: ${err.message}`);
     }
   }
 

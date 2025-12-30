@@ -115,6 +115,16 @@ export class PrismaVersionRepository extends VersionRepository {
     }
   }
 
+  async countByDocumentId(documentId) {
+    try {
+      return await this.prisma.documentVersion.count({
+        where: { documentId: documentId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghitung versi dokumen: ${err.message}`);
+    }
+  }
+
   async deleteById(versionId) {
     try {
       const versionToDelete = await this.prisma.documentVersion.findUnique({

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import DocumentError from "../errors/DocumentError.js";
 import CommonError from "../errors/CommonError.js";
 import { isPdfEncrypted } from "../utils/pdfValidator.js";
+import userRepository from "../repository/interface/UserRepository.js";
 
 export class DocumentService {
   /**
@@ -13,10 +14,11 @@ export class DocumentService {
    * @param {object} pdfService - Service utility PDF
    * @param {object} groupMemberRepository - Repository yang mengecek akses dokumen grup
    * @param {object} aiService
+   * @param {object} userService
    * @throws {Error} Jika ada dependency yang tidak diberikan
    */
-  constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository, groupDocumentSignerRepository, aiService, groupSignatureRepository) {
-    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService || !groupSignatureRepository) {
+  constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository, groupDocumentSignerRepository, aiService, groupSignatureRepository, userService) {
+    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService || !groupSignatureRepository || !userService ) {
       throw new Error("Semua repository dan service harus disediakan.");
     }
 
@@ -29,6 +31,7 @@ export class DocumentService {
     this.groupDocumentSignerRepository = groupDocumentSignerRepository;
     this.aiService = aiService;
     this.groupSignatureRepository = groupSignatureRepository;
+    this.userService = userService;
   }
 
   /**
@@ -72,6 +75,16 @@ export class DocumentService {
   async createDocument(userId, file, title, manualType) {
     if (!file) throw new Error("File dokumen wajib diunggah.");
     await this._validateFile(file);
+    const isPremium = await this.userService.isUserPremium(userId);
+    const maxSize = isPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      const limitLabel = isPremium ? "50MB" : "10MB";
+      throw CommonError.BadRequest(
+          `Ukuran file melebihi batas paket Anda (${limitLabel}). ${!isPremium ? "Upgrade ke Premium untuk upload hingga 50MB." : ""}`
+      );
+    }
+
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
 
@@ -83,7 +96,7 @@ export class DocumentService {
 
     const finalType = manualType || "General";
 
-    console.log(`📂 Uploading Document: "${title}" | Type: "${finalType}"`);
+    console.log(`📂 Uploading Document: "${title}" | Type: "${finalType}" | Premium: ${isPremium}`);
     const filePath = await this.fileStorage.uploadDocument(file, userId);
     return this.documentRepository.createWithFirstVersion(
         userId,
@@ -92,6 +105,24 @@ export class DocumentService {
         hash,
         finalType
     );
+  }
+
+  /**
+   * Validasi Limit Versi.
+   * Dipanggil oleh SignatureService SEBELUM membuat tanda tangan/versi baru.
+   * Free: Max 5 Versi, Premium: Max 20 Versi.
+   */
+  async checkVersionLimitOrLock(documentId, userId) {
+    const isPremium = await this.userService.isUserPremium(userId);
+    const limit = isPremium ? 20 : 5;
+    const currentCount = await this.versionRepository.countByDocumentId(documentId);
+
+    if (currentCount >= limit) {
+      await this.documentRepository.update(documentId, { status: 'completed' });
+      throw CommonError.Forbidden(
+          `Batas revisi dokumen tercapai (${limit} versi). Dokumen otomatis dikunci menjadi 'Completed'. ${!isPremium ? "Upgrade ke Premium untuk batas 20 versi." : ""}`
+      );
+    }
   }
 
   /**

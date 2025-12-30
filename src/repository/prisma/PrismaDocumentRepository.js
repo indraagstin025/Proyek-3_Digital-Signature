@@ -245,6 +245,16 @@ export class PrismaDocumentRepository {
     });
   }
 
+  async countByGroupId(groupId) {
+    try {
+      return await this.prisma.document.count({
+        where: { groupId: groupId },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal menghitung dokumen grup: ${err.message}`);
+    }
+  }
+
   /**
    * [UPDATE/PASTIKAN] Menghapus dokumen murni berdasarkan ID.
    */

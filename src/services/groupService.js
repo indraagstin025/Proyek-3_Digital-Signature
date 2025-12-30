@@ -22,6 +22,7 @@ export class GroupService {
    * @param {Object} pdfService - Service for PDF manipulation (e.g., signing, burning).
    * @param {Object} groupSignatureRepository - Repository for Group Signature entity.
    * @param {Object} [io] - Socket.IO instance for realtime communication.
+   * @param {object} userService for user
    * @throws {Error} Throws if mandatory repositories or services are missing.
    */
   constructor(
@@ -34,7 +35,8 @@ export class GroupService {
       versionRepository,
       pdfService,
       groupSignatureRepository,
-      io
+      io,
+      userService
   ) {
     if (
         !groupRepository ||
@@ -44,7 +46,9 @@ export class GroupService {
         !fileStorage ||
         !versionRepository ||
         !pdfService ||
-        !groupSignatureRepository
+        !groupSignatureRepository ||
+        !userService
+
     ) {
       throw new Error("Repository utama dan FileStorage harus disediakan.");
     }
@@ -59,17 +63,33 @@ export class GroupService {
     this.pdfService = pdfService;
     this.groupSignatureRepository = groupSignatureRepository;
     this.io = io;
+    this.userService = userService;
+  }
+
+  async _isPremium(userId) {
+    return await this.userService.isUserPremium(userId);
   }
 
   /**
    * Creates a new group and assigns the creator as the admin.
-   * * @param {string} adminId - The ID of the user creating the group.
+   * @param {string} adminId - The ID of the user creating the group.
    * @param {string} name - The name of the group.
    * @returns {Promise<Object>} The newly created group object.
    * @throws {GroupError} If the name is empty or validation fails.
    */
   async createGroup(adminId, name) {
     if (!name || name.trim() === "") throw GroupError.BadRequest("Nama grup tidak boleh kosong.");
+
+    const isPremium = await this._isPremium(adminId);
+    const limitGroup = isPremium ? 10 : 1;
+    const ownedGroupsCount = await this.groupRepository.countByAdminId(adminId);
+
+    if (ownedGroupsCount >= limitGroup) {
+      throw CommonError.Forbidden(
+          `Anda telah mencapai batas pembuatan grup (${limitGroup} grup). ${!isPremium ? "Upgrade ke Premium untuk membuat hingga 10 grup." : ""}`
+      );
+    }
+
     try {
       return await this.groupRepository.createWithAdmin(adminId, name);
     } catch (error) {
@@ -104,9 +124,23 @@ export class GroupService {
    */
   async createInvitation(groupId, inviterId, role) {
     const inviter = await this.groupMemberRepository.findByGroupAndUser(groupId, inviterId);
-
     if (!inviter || inviter.role !== "admin_group") {
       throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat membuat undangan.");
+    }
+
+    const group = await this.groupRepository.findById(groupId);
+    const ownerId = group.adminId;
+    const isOwnerPremium = await this._isPremium(ownerId);
+
+    if (!isOwnerPremium) {
+      const MAX_MEMBERS_FREE = 5;
+      const currentMembersCount = await this.groupMemberRepository.countByGroupId(groupId);
+
+      if (currentMembersCount >= MAX_MEMBERS_FREE) {
+        throw CommonError.Forbidden(
+            `Grup Basic (Free) maksimal hanya boleh memiliki ${MAX_MEMBERS_FREE} anggota. Upgrade akun Pemilik Grup ke Premium untuk anggota tak terbatas.`
+        );
+      }
     }
 
     const token = crypto.randomBytes(20).toString("hex");
@@ -122,7 +156,6 @@ export class GroupService {
       usageLimit: null,
     });
   }
-
   /**
    * Processes a group invitation using a token and adds the user to the group.
    * Emits a 'new_member' socket event upon success.
@@ -137,6 +170,16 @@ export class GroupService {
 
     const existing = await this.groupMemberRepository.findByGroupAndUser(invitation.groupId, userId);
     if (existing) throw GroupError.AlreadyMember();
+
+    // [TAMBAHAN] Double Check Limit saat Accept (Mencegah Race Condition undangan massal)
+    const group = await this.groupRepository.findById(invitation.groupId);
+    const isOwnerPremium = await this._isPremium(group.adminId);
+    if (!isOwnerPremium) {
+      const currentCount = await this.groupMemberRepository.countByGroupId(invitation.groupId);
+      if (currentCount >= 5) {
+        throw CommonError.Forbidden("Grup ini sudah penuh (Maksimal 5 anggota untuk grup Free).");
+      }
+    }
 
     if (invitation.status !== "active" || invitation.expiresAt < new Date()) {
       throw GroupError.InvalidInvitation("Undangan tidak valid atau telah kedaluwarsa.");
@@ -181,13 +224,24 @@ export class GroupService {
 
     if (document.status === "completed" || document.status === "archived") {
       throw GroupError.BadRequest(
-          "Dokumen yang sudah selesai (Completed) atau diarsipkan tidak dapat dipindahkan ke grup. Silakan upload ulang file asli atau duplikat dokumen tersebut."
+          "Dokumen yang sudah selesai (Completed) atau diarsipkan tidak dapat dipindahkan ke grup."
       );
     }
 
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
     if (!member) {
       throw GroupError.UnauthorizedAccess("Anda harus menjadi anggota grup untuk melakukan ini.");
+    }
+
+    const group = await this.groupRepository.findById(groupId);
+    const isAdminPremium = await this._isPremium(group.adminId);
+    const maxFiles = isAdminPremium ? 100 : 10;
+    const currentDocCount = await this.documentRepository.countByGroupId(groupId);
+
+    if (currentDocCount >= maxFiles) {
+      throw CommonError.Forbidden(
+          `Gagal memindahkan dokumen. Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`
+      );
     }
 
     const dataToUpdate = { groupId };
@@ -197,7 +251,6 @@ export class GroupService {
 
       dataToUpdate.status = "pending";
 
-      const group = await this.groupRepository.findById(groupId);
       const groupName = group ? group.name : "Grup Dokumen";
       this._notifySigners(signerUserIds, document.title, groupName).catch((err) =>
           console.error("[Notification Error] Gagal kirim email assign:", err)
@@ -355,7 +408,11 @@ export class GroupService {
    */
   async getAllUserGroups(userId) {
     const memberships = await this.groupMemberRepository.findAllByUserId(userId, {
-      include: { group: { include: { _count: { select: { members: true, documents: true } } } } },
+      include: { group: { include: { _count: { select: { members: true, documents: true } },
+            admin: { select: { userStatus: true } }
+      }
+      }
+      },
     });
     return memberships
         .map(
@@ -365,6 +422,7 @@ export class GroupService {
                   name: m.group.name,
                   docs_count: m.group._count ? m.group._count.documents : 0,
                   members_count: m.group._count ? m.group._count.members : 0,
+                  adminStatus: m.group.admin ? m.group.admin.userStatus : "FREE"
                 }
         )
         .filter(Boolean);
@@ -529,6 +587,27 @@ export class GroupService {
 
     if (file.mimetype !== "application/pdf") throw CommonError.BadRequest("Hanya file PDF yang diizinkan.");
 
+    // 1. [LIMIT] Cek Size File (Berdasarkan User Pengupload)
+    const isUploaderPremium = await this._isPremium(userId);
+    const maxSize = isUploaderPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB vs 10MB
+
+    if (file.size > maxSize) {
+      throw CommonError.BadRequest(`Ukuran file terlalu besar. Maksimal ${isUploaderPremium ? '50MB' : '10MB'}.`);
+    }
+
+    // 2. [LIMIT] Cek Kapasitas Grup (Berdasarkan Admin Grup)
+    const group = await this.groupRepository.findById(groupId);
+    const isAdminPremium = await this._isPremium(group.adminId);
+    const maxFiles = isAdminPremium ? 100 : 10;
+
+    const currentDocCount = await this.documentRepository.countByGroupId(groupId);
+
+    if (currentDocCount >= maxFiles) {
+      throw CommonError.Forbidden(
+          `Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`
+      );
+    }
+
     const filePath = await this.fileStorage.uploadDocument(file, userId);
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
@@ -549,21 +628,9 @@ export class GroupService {
     if (this.io) {
       const roomName = `group_${groupId}`;
       let uploaderName = "Anggota Grup";
-
       try {
-        if (member.user && member.user.name) {
-          uploaderName = member.user.name;
-        }
-        else if (this.groupRepository.prisma) {
-          const user = await this.groupRepository.prisma.user.findUnique({
-            where: { id: userId },
-            select: { name: true }
-          });
-          if (user) uploaderName = user.name;
-        }
-      } catch (err) {
-        console.warn("Socket uploader name fetch failed", err.message);
-      }
+        if (member.user && member.user.name) uploaderName = member.user.name;
+      } catch (err) {}
 
       this.io.to(roomName).emit("group_document_update", {
         action: "new_document",

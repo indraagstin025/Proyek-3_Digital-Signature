@@ -328,19 +328,20 @@ export const createGroupController = (groupService) => {
           });
       }),
 
-      updateDocumentSigners: async (req, res) => {
+      /**
+       * @description Mengupdate list penanda tangan (tambah/hapus) di tengah jalan.
+       * [FIX] Bungkus dengan asyncHandler agar error handling berjalan.
+       */
+      updateDocumentSigners: asyncHandler(async (req, res, next) => {
           const { groupId, documentId } = req.params;
           const { signerUserIds } = req.body;
-
-          // [UBAH NAMA VARIABEL] dari 'adminId' menjadi 'requestorId' atau 'userId'
           const requestorId = req.user.id;
-
-          const groupIdInt = parseInt(groupId);
+          const groupIdInt = parseInt(groupId); // Pastikan parse int
 
           const updatedDocument = await groupService.updateGroupDocumentSigners(
               groupIdInt,
               documentId,
-              requestorId, // Kirim ID user (bisa admin, bisa owner)
+              requestorId,
               signerUserIds
           );
 
@@ -349,7 +350,7 @@ export const createGroupController = (groupService) => {
               message: "Daftar penanda tangan diperbarui.",
               data: updatedDocument,
           });
-      },
+      }),
 
       /**
        * @description Menghapus dokumen grup secara permanen.
