@@ -59,6 +59,8 @@ enum AuditAction {
   SIGN_DOCUMENT_PERSONAL
   SIGN_DOCUMENT_GROUP
   SIGN_PACKAGE
+  TRANSACTION_SUCCESS
+  TRANSACTION_CANCELLED
 
   @@map("audit_action")
 }
@@ -72,6 +74,8 @@ model User {
   company            String?
   address            String?
   isSuperAdmin       Boolean               @default(false) @map("is_super_admin")
+  userStatus         String                @default("FREE") @map("user_status")
+  premiumUntil       DateTime?             @map("premium_until")
   profilePictureUrl  String?               @map("profile_picture_url")
   createdAt          DateTime              @default(now()) @map("created_at")
   updatedAt          DateTime              @updatedAt @map("updated_at")
@@ -88,6 +92,7 @@ model User {
   packageSignatures  PackageSignature[]
   groupSigningTasks  GroupDocumentSigner[]
   apiRequestLogs     ApiRequestLog[]
+  transactions       Transaction[]
 
   @@map("users")
 }
@@ -319,6 +324,22 @@ model GroupDocumentSigner {
 
   @@unique([documentId, userId], name: "unique_signer_per_document")
   @@map("group_document_signers")
+}
+
+model Transaction {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @unique @map("order_id")
+  amount    Float
+  status    String   @default("PENDING")
+  planType  String   @map("plan_type")
+  snapToken String?  @map("snap_token")
+  snapUrl   String?  @map("snap_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
 }
 
 model AuditLog {
