@@ -12,8 +12,41 @@ export class UserService {
   }
 
   /**
+   * [BARU] Helper Centralized untuk cek status Premium.
+   * Method ini akan dipanggil oleh service lain (Document/Group/Package)
+   * untuk menentukan limitasi fitur.
+   * * @param {string} userId
+   * @returns {Promise<boolean>} true jika PREMIUM dan BELUM EXPIRED.
+   */
+  async isUserPremium(userId) {
+    // 1. Ambil data user dari Repo (Repo sudah diupdate untuk select status & tanggal)
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) return false;
+
+    // 2. Cek apakah status di DB adalah PREMIUM
+    if (user.userStatus !== 'PREMIUM') return false;
+
+    // 3. Cek Tanggal Expired
+    if (!user.premiumUntil) return false;
+
+    const now = new Date();
+    const premiumUntil = new Date(user.premiumUntil);
+
+    // Jika waktu sekarang sudah melewati batas premium -> Return False
+    if (now > premiumUntil) {
+      return false;
+    }
+
+    // Lolos semua cek
+    return true;
+  }
+
+  /**
    * Mengambil profil user login.
    * Mengubah path file menjadi Public URL bersih.
+   * [NOTE] Data 'userStatus' dan 'premiumUntil' otomatis terbawa karena
+   * update pada PrismaUserRepository.
    */
   async getMyProfile(userId) {
     const user = await this.userRepository.findById(userId);
@@ -22,7 +55,7 @@ export class UserService {
     }
 
     if (user.profilePictureUrl) {
-      // [UBAH] Menggunakan getPublicUrl (Sync) - Link Bersih
+      // Menggunakan getPublicUrl (Sync) - Link Bersih
       user.profilePictureUrl = this.fileStorage.getPublicUrl(user.profilePictureUrl);
     }
 
@@ -65,8 +98,7 @@ export class UserService {
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingPicture = await this.userRepository.findProfilePictureByHash(userId, hash);
 
-    // Opsional: Jika ingin mengizinkan upload ulang foto yang sama (misal user tidak sengaja hapus),
-    // Anda bisa melonggarkan validasi ini atau langsung me-return foto lama.
+    // Opsional: Jika ingin mengizinkan upload ulang foto yang sama
     if (existingPicture) {
       throw UserError.DuplicateProfilePicture();
     }
@@ -125,11 +157,10 @@ export class UserService {
       return [];
     }
 
-    // [UBAH] Mapping ke Public URL (Sync)
+    // Mapping ke Public URL (Sync)
     const picturesWithPublicUrls = picturesFromDb.map((picture) => {
       return {
         ...picture,
-        // Konversi path database (userId/file.jpg) menjadi Full Public URL
         url: this.fileStorage.getPublicUrl(picture.url),
       };
     });

@@ -56,6 +56,8 @@ class PrismaUserRepository extends UserRepository {
         address: true,
         profilePictureUrl: true,
         isSuperAdmin: true,
+        userStatus: true,
+        premiumUntil: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -101,6 +103,8 @@ class PrismaUserRepository extends UserRepository {
           title: true,
           address: true,
           profilePictureUrl: true,
+          userStatus: true,
+          premiumUntil: true,
           updatedAt: true,
         },
       });
