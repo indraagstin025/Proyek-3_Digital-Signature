@@ -25,31 +25,8 @@ export class GroupService {
    * @param {object} userService for user
    * @throws {Error} Throws if mandatory repositories or services are missing.
    */
-  constructor(
-      groupRepository,
-      groupMemberRepository,
-      groupInvitationRepository,
-      documentRepository,
-      fileStorage,
-      groupDocumentSignerRepository,
-      versionRepository,
-      pdfService,
-      groupSignatureRepository,
-      io,
-      userService
-  ) {
-    if (
-        !groupRepository ||
-        !groupMemberRepository ||
-        !groupInvitationRepository ||
-        !documentRepository ||
-        !fileStorage ||
-        !versionRepository ||
-        !pdfService ||
-        !groupSignatureRepository ||
-        !userService
-
-    ) {
+  constructor(groupRepository, groupMemberRepository, groupInvitationRepository, documentRepository, fileStorage, groupDocumentSignerRepository, versionRepository, pdfService, groupSignatureRepository, io, userService) {
+    if (!groupRepository || !groupMemberRepository || !groupInvitationRepository || !documentRepository || !fileStorage || !versionRepository || !pdfService || !groupSignatureRepository || !userService) {
       throw new Error("Repository utama dan FileStorage harus disediakan.");
     }
 
@@ -85,9 +62,7 @@ export class GroupService {
     const ownedGroupsCount = await this.groupRepository.countByAdminId(adminId);
 
     if (ownedGroupsCount >= limitGroup) {
-      throw CommonError.Forbidden(
-          `Anda telah mencapai batas pembuatan grup (${limitGroup} grup). ${!isPremium ? "Upgrade ke Premium untuk membuat hingga 10 grup." : ""}`
-      );
+      throw CommonError.Forbidden(`Anda telah mencapai batas pembuatan grup (${limitGroup} grup). ${!isPremium ? "Upgrade ke Premium untuk membuat hingga 10 grup." : ""}`);
     }
 
     try {
@@ -137,9 +112,7 @@ export class GroupService {
       const currentMembersCount = await this.groupMemberRepository.countByGroupId(groupId);
 
       if (currentMembersCount >= MAX_MEMBERS_FREE) {
-        throw CommonError.Forbidden(
-            `Grup Basic (Free) maksimal hanya boleh memiliki ${MAX_MEMBERS_FREE} anggota. Upgrade akun Pemilik Grup ke Premium untuk anggota tak terbatas.`
-        );
+        throw CommonError.Forbidden(`Grup Basic (Free) maksimal hanya boleh memiliki ${MAX_MEMBERS_FREE} anggota. Upgrade akun Pemilik Grup ke Premium untuk anggota tak terbatas.`);
       }
     }
 
@@ -195,7 +168,7 @@ export class GroupService {
         this.io.to(roomName).emit("group_member_update", {
           action: "new_member",
           member: fullMemberData || newMember,
-          message: `${fullMemberData?.user?.name || "Member baru"} bergabung ke grup!`
+          message: `${fullMemberData?.user?.name || "Member baru"} bergabung ke grup!`,
         });
       }
 
@@ -223,9 +196,7 @@ export class GroupService {
     }
 
     if (document.status === "completed" || document.status === "archived") {
-      throw GroupError.BadRequest(
-          "Dokumen yang sudah selesai (Completed) atau diarsipkan tidak dapat dipindahkan ke grup."
-      );
+      throw GroupError.BadRequest("Dokumen yang sudah selesai (Completed) atau diarsipkan tidak dapat dipindahkan ke grup.");
     }
 
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
@@ -239,9 +210,7 @@ export class GroupService {
     const currentDocCount = await this.documentRepository.countByGroupId(groupId);
 
     if (currentDocCount >= maxFiles) {
-      throw CommonError.Forbidden(
-          `Gagal memindahkan dokumen. Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`
-      );
+      throw CommonError.Forbidden(`Gagal memindahkan dokumen. Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`);
     }
 
     const dataToUpdate = { groupId };
@@ -252,9 +221,7 @@ export class GroupService {
       dataToUpdate.status = "pending";
 
       const groupName = group ? group.name : "Grup Dokumen";
-      this._notifySigners(signerUserIds, document.title, groupName).catch((err) =>
-          console.error("[Notification Error] Gagal kirim email assign:", err)
-      );
+      this._notifySigners(signerUserIds, document.title, groupName).catch((err) => console.error("[Notification Error] Gagal kirim email assign:", err));
     } else {
       dataToUpdate.status = "draft";
     }
@@ -268,7 +235,7 @@ export class GroupService {
         action: "new_document",
         document: fullDoc,
         uploaderName: member.user?.name || "Admin",
-        message: `Dokumen "${fullDoc.title}" ditambahkan ke grup.`
+        message: `Dokumen "${fullDoc.title}" ditambahkan ke grup.`,
       });
     }
 
@@ -292,8 +259,7 @@ export class GroupService {
   async removeMember(groupId, adminId, userIdToRemove) {
     // 1. Validasi: Pastikan requester adalah Admin Grup
     const admin = await this.groupMemberRepository.findByGroupAndUser(groupId, adminId);
-    if (!admin || admin.role !== "admin_group")
-      throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
+    if (!admin || admin.role !== "admin_group") throw GroupError.UnauthorizedAccess("Hanya admin grup yang dapat mengeluarkan anggota.");
 
     // 2. Validasi: Pastikan target yang mau di-kick memang ada di grup
     const target = await this.groupMemberRepository.findByGroupAndUser(groupId, userIdToRemove);
@@ -317,9 +283,7 @@ export class GroupService {
     if (this.groupSignatureRepository && group.documents && group.documents.length > 0) {
       try {
         // Jalankan penghapusan draft secara paralel untuk semua dokumen di grup ini
-        const cleanupPromises = group.documents.map(doc =>
-            this.groupSignatureRepository.deleteDrafts(doc.id, userIdToRemove)
-        );
+        const cleanupPromises = group.documents.map((doc) => this.groupSignatureRepository.deleteDrafts(doc.id, userIdToRemove));
         await Promise.all(cleanupPromises);
       } catch (err) {
         console.warn("[Cleanup Warning] Gagal membersihkan draft signature:", err.message);
@@ -347,13 +311,13 @@ export class GroupService {
         action: "kicked",
         userId: userIdToRemove,
         memberName: memberName,
-        message: `${memberName} dikeluarkan dari grup.`
+        message: `${memberName} dikeluarkan dari grup.`,
       });
 
       // Update Tab Dokumen (Refetch data agar status signer berubah)
       this.io.to(roomName).emit("group_document_update", {
         action: "signer_update",
-        message: "Daftar penanda tangan disesuaikan otomatis."
+        message: "Daftar penanda tangan disesuaikan otomatis.",
       });
     }
   }
@@ -369,8 +333,7 @@ export class GroupService {
    */
   async updateGroup(groupId, userId, name) {
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
-    if (!member || member.role !== "admin_group")
-      throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");
+    if (!member || member.role !== "admin_group") throw GroupError.UnauthorizedAccess("Hanya admin yang bisa mengubah nama grup.");
 
     const updatedGroup = await this.groupRepository.update(groupId, { name });
 
@@ -379,7 +342,7 @@ export class GroupService {
       this.io.to(roomName).emit("group_info_update", {
         action: "update_info",
         group: updatedGroup,
-        message: `Nama grup diubah menjadi "${name}".`
+        message: `Nama grup diubah menjadi "${name}".`,
       });
     }
 
@@ -396,8 +359,7 @@ export class GroupService {
   async deleteGroup(groupId, userId) {
     const group = await this.groupRepository.findById(groupId);
     if (!group) throw GroupError.NotFound();
-    if (group.adminId !== userId)
-      throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");
+    if (group.adminId !== userId) throw GroupError.UnauthorizedAccess("Hanya pemilik utama grup yang bisa menghapus grup.");
     await this.groupRepository.deleteById(groupId);
   }
 
@@ -408,24 +370,20 @@ export class GroupService {
    */
   async getAllUserGroups(userId) {
     const memberships = await this.groupMemberRepository.findAllByUserId(userId, {
-      include: { group: { include: { _count: { select: { members: true, documents: true } },
-            admin: { select: { userStatus: true } }
-      }
-      }
-      },
+      include: { group: { include: { _count: { select: { members: true, documents: true } }, admin: { select: { userStatus: true } } } } },
     });
     return memberships
-        .map(
-            (m) =>
-                m.group && {
-                  id: m.group.id,
-                  name: m.group.name,
-                  docs_count: m.group._count ? m.group._count.documents : 0,
-                  members_count: m.group._count ? m.group._count.members : 0,
-                  adminStatus: m.group.admin ? m.group.admin.userStatus : "FREE"
-                }
-        )
-        .filter(Boolean);
+      .map(
+        (m) =>
+          m.group && {
+            id: m.group.id,
+            name: m.group.name,
+            docs_count: m.group._count ? m.group._count.documents : 0,
+            members_count: m.group._count ? m.group._count.members : 0,
+            adminStatus: m.group.admin ? m.group.admin.userStatus : "FREE",
+          }
+      )
+      .filter(Boolean);
   }
 
   /**
@@ -473,7 +431,7 @@ export class GroupService {
 
     // Validasi: Jangan hapus user yang sudah 'SIGNED'
     for (const userId of toRemove) {
-      const signerData = currentSigners.find(s => s.userId === userId);
+      const signerData = currentSigners.find((s) => s.userId === userId);
       if (signerData && signerData.status === "SIGNED") {
         throw CommonError.BadRequest(`User ${signerData.user?.name} sudah tanda tangan, tidak bisa dihapus.`);
       }
@@ -506,7 +464,7 @@ export class GroupService {
       this.io.to(roomName).emit("group_document_update", {
         action: "signer_update",
         documentId: documentId,
-        message: "Daftar penanda tangan diperbarui."
+        message: "Daftar penanda tangan diperbarui.",
       });
     }
 
@@ -554,7 +512,7 @@ export class GroupService {
     // Set groupId jadi NULL (kembali ke privat)
     const result = await this.documentRepository.update(documentId, {
       groupId: null,
-      status: 'draft' // Reset status ke draft karena signer dihapus
+      status: "draft", // Reset status ke draft karena signer dihapus
     });
 
     if (this.io) {
@@ -562,7 +520,7 @@ export class GroupService {
       this.io.to(roomName).emit("group_document_update", {
         action: "removed_document",
         documentId: documentId,
-        message: `Dokumen "${docTitle}" dihapus dari grup.`
+        message: `Dokumen "${docTitle}" dihapus dari grup.`,
       });
     }
 
@@ -592,7 +550,7 @@ export class GroupService {
     const maxSize = isUploaderPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024; // 50MB vs 10MB
 
     if (file.size > maxSize) {
-      throw CommonError.BadRequest(`Ukuran file terlalu besar. Maksimal ${isUploaderPremium ? '50MB' : '10MB'}.`);
+      throw CommonError.BadRequest(`Ukuran file terlalu besar. Maksimal ${isUploaderPremium ? "50MB" : "10MB"}.`);
     }
 
     // 2. [LIMIT] Cek Kapasitas Grup (Berdasarkan Admin Grup)
@@ -603,22 +561,13 @@ export class GroupService {
     const currentDocCount = await this.documentRepository.countByGroupId(groupId);
 
     if (currentDocCount >= maxFiles) {
-      throw CommonError.Forbidden(
-          `Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`
-      );
+      throw CommonError.Forbidden(`Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`);
     }
 
     const filePath = await this.fileStorage.uploadDocument(file, userId);
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
-    const newDoc = await this.documentRepository.createGroupDocument(
-        userId,
-        groupId,
-        title,
-        filePath,
-        hash,
-        signerUserIds
-    );
+    const newDoc = await this.documentRepository.createGroupDocument(userId, groupId, title, filePath, hash, signerUserIds);
 
     if (signerUserIds && signerUserIds.length > 0) {
       const groupName = member.group ? member.group.name : "Grup Dokumen";
@@ -637,7 +586,7 @@ export class GroupService {
         actorId: userId,
         document: newDoc,
         uploaderName: uploaderName,
-        message: `Dokumen baru "${title}" ditambahkan.`
+        message: `Dokumen baru "${title}" ditambahkan.`,
       });
     }
 
@@ -663,7 +612,7 @@ export class GroupService {
 
     const document = await this.documentRepository.findFirst({
       where: { id: documentId, groupId: groupId },
-      include: { currentVersion: true }
+      include: { currentVersion: true },
     });
 
     if (!document || !document.currentVersion) throw CommonError.NotFound("Dokumen tidak valid.");
@@ -677,6 +626,16 @@ export class GroupService {
     if (pendingCount > 0) throw CommonError.BadRequest(`Masih ada ${pendingCount} orang yang belum tanda tangan.`);
 
     if (document.status === "completed") throw CommonError.BadRequest("Dokumen sudah difinalisasi.");
+
+    // [LIMIT CHECK] Cek apakah sudah mencapai batas versi
+    const group = await this.groupRepository.findById(groupId);
+    const isOwnerPremium = await this._isPremium(group.adminId);
+    const versionLimit = isOwnerPremium ? 20 : 5;
+    const currentVersionCount = await this.versionRepository.countByDocumentId(documentId);
+
+    if (currentVersionCount >= versionLimit) {
+      throw CommonError.Forbidden(`Batas revisi dokumen grup tercapai (${versionLimit} versi). ${!isOwnerPremium ? "Upgrade Admin Grup ke Premium untuk batas 20 versi." : ""}`);
+    }
 
     const currentVersion = document.currentVersion;
     // pastikan findAllByVersionId melakukan include: { signer: true }
@@ -704,14 +663,10 @@ export class GroupService {
       signerName: sig.signer ? sig.signer.name : "Unknown",
       signerEmail: sig.signer ? sig.signer.email : "-",
       ipAddress: sig.ipAddress || "-",
-      signedAt: sig.signedAt || sig.createdAt
+      signedAt: sig.signedAt || sig.createdAt,
     }));
 
-    const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(
-        currentVersion.id,
-        signaturesPayload,
-        { displayQrCode: true, verificationUrl }
-    );
+    const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(currentVersion.id, signaturesPayload, { displayQrCode: true, verificationUrl });
 
     // Simpan PIN
     if (accessCode) {
@@ -740,7 +695,7 @@ export class GroupService {
         action: "finalized",
         documentId,
         status: "completed",
-        signedFileUrl: publicUrl
+        signedFileUrl: publicUrl,
       });
     }
 
@@ -750,7 +705,7 @@ export class GroupService {
     return {
       document: updatedDoc,
       url: publicUrl,
-      accessCode: accessCode
+      accessCode: accessCode,
     };
   }
 
@@ -820,7 +775,7 @@ export class GroupService {
 
     // 2. Ambil Dokumen
     const document = await this.documentRepository.findFirst({
-      where: { id: documentId, groupId: groupId }
+      where: { id: documentId, groupId: groupId },
     });
 
     if (!document) {
@@ -838,7 +793,7 @@ export class GroupService {
     const docTitle = document.title;
 
     // ... Lanjutkan proses delete ...
-    if (typeof this.documentRepository.deleteById === 'function') {
+    if (typeof this.documentRepository.deleteById === "function") {
       await this.documentRepository.deleteById(documentId);
     } else {
       // Fallback jika method deleteById belum ada/berbeda nama
@@ -858,7 +813,7 @@ export class GroupService {
         actorId: requestorId,
         uploaderName: actorName,
         document: { id: documentId, title: docTitle },
-        message: `Dokumen "${docTitle}" telah dihapus.`
+        message: `Dokumen "${docTitle}" telah dihapus.`,
       });
     }
   }

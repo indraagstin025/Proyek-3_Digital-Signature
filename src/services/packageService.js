@@ -37,9 +37,7 @@ export class PackageService {
     const limit = isPremium ? LIMIT_PREMIUM : LIMIT_FREE;
 
     if (documentIds.length > limit) {
-      throw PaymentError.PremiumRequired(
-          `Maksimal ${limit} dokumen per paket. ${!isPremium ? "Upgrade ke Premium untuk kapasitas lebih besar (hingga 20 dokumen)." : ""}`
-      );
+      throw PaymentError.PremiumRequired(`Maksimal ${limit} dokumen per paket. ${!isPremium ? "Upgrade ke Premium untuk kapasitas lebih besar (hingga 20 dokumen)." : ""}`);
     }
     // ----------------------------------------------------
 
@@ -85,7 +83,10 @@ export class PackageService {
     // Cek apakah repository punya akses ke prisma client user
     if (this.packageRepository.prisma) {
       const user = await this.packageRepository.prisma.user.findUnique({ where: { id: userId } });
-      if(user) { signerName = user.name; signerEmail = user.email; }
+      if (user) {
+        signerName = user.name;
+        signerEmail = user.email;
+      }
     }
 
     const results = { success: [], failed: [] };
@@ -101,6 +102,15 @@ export class PackageService {
 
       try {
         console.log(`[PackageService] 🔄 Processing: ${docTitle}...`);
+
+        // [LIMIT CHECK] Cek apakah sudah mencapai batas versi
+        const isPremium = await this.userService.isUserPremium(userId);
+        const versionLimit = isPremium ? 20 : 5;
+        const currentVersionCount = await this.versionRepository.countByDocumentId(originalDocId);
+
+        if (currentVersionCount >= versionLimit) {
+          throw CommonError.Forbidden(`Dokumen "${docTitle}" sudah mencapai batas revisi (${versionLimit} versi). ${!isPremium ? "Upgrade ke Premium untuk batas 20 versi." : ""}`);
+        }
 
         // 1. Filter Config Signature
         const signaturesForThisDoc = signaturesPayload.filter((sig) => sig.packageDocId === packageDoc.id);
@@ -140,15 +150,11 @@ export class PackageService {
           signerName: signerName,
           signerEmail: signerEmail,
           ipAddress: userIpAddress,
-          signedAt: new Date()
+          signedAt: new Date(),
         }));
 
         // 6. Generate PDF (Burning)
-        const pdfResult = await this.pdfService.generateSignedPdf(
-            originalVersionId,
-            signaturesForPdf,
-            { displayQrCode, verificationUrl }
-        );
+        const pdfResult = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForPdf, { displayQrCode, verificationUrl });
 
         signedFileBuffer = pdfResult.signedFileBuffer;
         const publicUrl = pdfResult.publicUrl;
@@ -180,7 +186,6 @@ export class PackageService {
 
         console.log(`[PackageService] ✅ Success: ${docTitle}`);
         results.success.push(originalDocId);
-
       } catch (error) {
         console.error(`[PackageService] ❌ Failed doc ${originalDocId}:`, error.message);
         // Rollback signature di DB jika gagal generate PDF
@@ -221,7 +226,7 @@ export class PackageService {
         signatureId: sig.id,
         documentTitle: sig.packageDocument?.docVersion?.document?.title || "Dokumen Terkunci",
         type: "PACKAGE",
-        message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen."
+        message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen.",
       };
     }
 
@@ -267,7 +272,7 @@ export class PackageService {
         const lockTime = new Date(Date.now() + 30 * 60 * 1000);
         await this.packageRepository.updateSignature(sig.id, {
           retryCount: newRetryCount,
-          lockedUntil: lockTime
+          lockedUntil: lockTime,
         });
         throw CommonError.Forbidden("Terlalu banyak percobaan salah. Dokumen dikunci selama 30 menit.");
       } else {
@@ -299,7 +304,7 @@ export class PackageService {
       originalDocumentUrl: docVersion.url,
       type: "PACKAGE",
       isLocked: false,
-      requireUpload: true
+      requireUpload: true,
     };
   }
 

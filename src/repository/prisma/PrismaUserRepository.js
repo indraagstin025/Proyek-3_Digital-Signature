@@ -192,6 +192,32 @@ class PrismaUserRepository extends UserRepository {
   async deleteProfilePicture(userId, pictureId) {
     return this.prisma.userProfilePicture.deleteMany({ where: { id: pictureId, userId } });
   }
+
+  /**
+   * @description Mengambil statistik penggunaan user untuk quota display.
+   * @param {string} userId
+   * @returns {Promise<Object>} Stats object dengan count owned groups dan personal docs
+   */
+  async getUserUsageStats(userId) {
+    const [ownedGroupsCount, personalDocsCount] = await Promise.all([
+      // Hitung grup yang dimiliki user (sebagai admin)
+      this.prisma.group.count({
+        where: { adminId: userId },
+      }),
+      // Hitung dokumen personal (bukan di grup)
+      this.prisma.document.count({
+        where: {
+          userId: userId,
+          groupId: null, // Dokumen personal saja
+        },
+      }),
+    ]);
+
+    return {
+      ownedGroupsCount,
+      personalDocsCount,
+    };
+  }
 }
 
 export default PrismaUserRepository;

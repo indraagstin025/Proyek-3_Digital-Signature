@@ -3,12 +3,29 @@ import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
 export class SignatureService {
-  constructor(signatureRepository, documentRepository, versionRepository, pdfService, auditService) {
+  constructor(signatureRepository, documentRepository, versionRepository, pdfService, auditService, userService) {
     this.signatureRepository = signatureRepository;
     this.documentRepository = documentRepository;
     this.versionRepository = versionRepository;
     this.pdfService = pdfService;
     this.auditService = auditService;
+    this.userService = userService;
+  }
+
+  /**
+   * [LIMIT CHECK] Validasi limit versi sebelum membuat versi baru.
+   * Free: Max 5 versi, Premium: Max 20 versi.
+   */
+  async _checkVersionLimit(documentId, userId) {
+    if (!this.userService) return; // Skip jika userService tidak tersedia
+
+    const isPremium = await this.userService.isUserPremium(userId);
+    const limit = isPremium ? 20 : 5;
+    const currentCount = await this.versionRepository.countByDocumentId(documentId);
+
+    if (currentCount >= limit) {
+      throw CommonError.Forbidden(`Batas revisi dokumen tercapai (${limit} versi). ${!isPremium ? "Upgrade ke Premium untuk batas 20 versi." : ""}`);
+    }
   }
 
   /**
@@ -28,6 +45,9 @@ export class SignatureService {
     const document = await this.documentRepository.findById(originalVersion.documentId, userId);
     if (!document) throw CommonError.NotFound(`Dokumen tidak ditemukan atau akses ditolak.`);
     if (document.status === "completed") throw CommonError.BadRequest("Dokumen sudah selesai (Completed).");
+
+    // [LIMIT CHECK] Cek apakah sudah mencapai batas versi
+    await this._checkVersionLimit(originalVersion.documentId, userId);
 
     // [FIX] Ambil data User untuk Audit Trail (Nama & Email)
     let signerName = "User";
@@ -86,15 +106,11 @@ export class SignatureService {
         signerName: signerName,
         signerEmail: signerEmail,
         ipAddress: auditData.ipAddress,
-        signedAt: new Date()
+        signedAt: new Date(),
       }));
 
       // [FIX] Panggil dengan 3 argumen saja
-      const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(
-          originalVersionId,
-          signaturesForPdf,
-          { displayQrCode: options.displayQrCode, verificationUrl }
-      );
+      const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForPdf, { displayQrCode: options.displayQrCode, verificationUrl });
 
       // [BARU] Simpan Access Code (PIN)
       if (accessCode && firstSignatureId) {
@@ -120,7 +136,6 @@ export class SignatureService {
       }
 
       return result;
-
     } catch (processError) {
       console.error("[SignatureService] Gagal memproses tanda tangan:", processError);
       if (newVersionId) {
@@ -129,7 +144,6 @@ export class SignatureService {
       throw CommonError.InternalServerError(`Proses penandatanganan gagal: ${processError.message}`);
     }
   }
-
 
   // =========================================================================
   // 👇 BAGIAN VERIFIKASI (UPDATED WITH PIN) 👇
@@ -153,7 +167,7 @@ export class SignatureService {
         signatureId: signature.id,
         documentTitle: signature.documentVersion?.document?.title || "Dokumen Terkunci",
         type: "PERSONAL",
-        message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen."
+        message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen.",
       };
     }
 
@@ -199,14 +213,14 @@ export class SignatureService {
 
         await this.signatureRepository.update(signature.id, {
           retryCount: newRetryCount,
-          lockedUntil: lockTime
+          lockedUntil: lockTime,
         });
 
         throw CommonError.Forbidden("Terlalu banyak percobaan salah. Dokumen dikunci selama 30 menit.");
       } else {
         // Update counter saja
         await this.signatureRepository.update(signature.id, {
-          retryCount: newRetryCount
+          retryCount: newRetryCount,
         });
 
         const sisa = MAX_ATTEMPTS - newRetryCount;
@@ -218,7 +232,7 @@ export class SignatureService {
     if (signature.retryCount > 0 || signature.lockedUntil) {
       await this.signatureRepository.update(signature.id, {
         retryCount: 0,
-        lockedUntil: null // Reset lock
+        lockedUntil: null, // Reset lock
       });
     }
 
@@ -235,7 +249,7 @@ export class SignatureService {
       originalDocumentUrl: signature.documentVersion.url,
       type: "PERSONAL",
       isLocked: false,
-      requireUpload: true
+      requireUpload: true,
     };
   }
 
@@ -267,7 +281,7 @@ export class SignatureService {
 
       verificationStatus: isHashMatch ? "VALID" : "INVALID",
       isHashMatch: isHashMatch,
-      type: "PERSONAL"
+      type: "PERSONAL",
     };
   }
 }

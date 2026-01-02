@@ -25,7 +25,7 @@ export class UserService {
     if (!user) return false;
 
     // 2. Cek apakah status di DB adalah PREMIUM
-    if (user.userStatus !== 'PREMIUM') return false;
+    if (user.userStatus !== "PREMIUM") return false;
 
     // 3. Cek Tanggal Expired
     if (!user.premiumUntil) return false;
@@ -92,7 +92,7 @@ export class UserService {
     if (profileData.address !== undefined) allowedUpdates.address = profileData.address;
 
     if (!file || !file.buffer) {
-      throw CommonError.InvalidInput("File untuk diunggah tidak valid atau tidak ada.");
+      throw CommonError.BadRequest("File untuk diunggah tidak valid atau tidak ada.");
     }
 
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
@@ -199,6 +199,48 @@ export class UserService {
     return {
       user: userProfile,
       profilePictures: pictureHistory,
+    };
+  }
+
+  /**
+   * [QUOTA] Mengambil informasi quota dan usage untuk user.
+   * Digunakan oleh Frontend untuk menampilkan limit & progress bar.
+   * @param {string} userId
+   * @returns {Promise<Object>} Quota info dengan limits dan current usage
+   */
+  async getUserQuota(userId) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw UserError.NotFound();
+
+    const isPremium = await this.isUserPremium(userId);
+
+    // Definisi Limit berdasarkan tier
+    const limits = {
+      maxFileSize: isPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024, // 50MB vs 10MB
+      maxFileSizeLabel: isPremium ? "50 MB" : "10 MB",
+      maxVersionsPerDocument: isPremium ? 20 : 5,
+      maxOwnedGroups: isPremium ? 10 : 1,
+      maxMembersPerGroup: isPremium ? 999 : 5, // 999 = unlimited
+      maxDocsPerGroup: isPremium ? 100 : 10,
+      maxDocsPerPackage: isPremium ? 20 : 3,
+    };
+
+    // Ambil usage data
+    const usage = await this.userRepository.getUserUsageStats(userId);
+
+    return {
+      userStatus: user.userStatus,
+      premiumUntil: user.premiumUntil,
+      isPremiumActive: isPremium,
+      limits,
+      usage: {
+        ownedGroups: usage.ownedGroupsCount || 0,
+        totalPersonalDocuments: usage.personalDocsCount || 0,
+      },
+      // Helper untuk Frontend
+      quotaPercentages: {
+        ownedGroups: Math.round(((usage.ownedGroupsCount || 0) / limits.maxOwnedGroups) * 100),
+      },
     };
   }
 }
