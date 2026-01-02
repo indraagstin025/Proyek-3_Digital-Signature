@@ -129,6 +129,10 @@ model Document {
   currentVersionId String?               @unique @map("current_version_id") @db.Uuid
   signerRequests   GroupDocumentSigner[]
 
+  @@index([userId])
+  @@index([groupId])
+  @@index([status])
+  @@index([userId, status])
   @@map("documents")
 }
 
@@ -152,6 +156,7 @@ model DocumentVersion {
   packages           PackageDocument[]
 
   @@unique([documentId, hash], name: "document_version_hash_unique")
+  @@index([documentId])
   @@map("document_versions")
 }
 
@@ -182,6 +187,9 @@ model SignaturePersonal {
   signer            User            @relation(fields: [signerId], references: [id], onDelete: Cascade)
   signingBatchId    String?         @map("signing_batch_id") @db.Uuid
 
+  @@index([signerId])
+  @@index([documentVersionId])
+  @@index([signerId, status])
   @@map("signatures_personal")
 }
 
@@ -210,6 +218,9 @@ model SignatureGroup {
   signer            User                 @relation("UserSignaturesGroup", fields: [signerId], references: [id], onDelete: Cascade)
   requestData       GroupDocumentSigner?
 
+  @@index([signerId])
+  @@index([documentVersionId])
+  @@index([signerId, status])
   @@map("signatures_group")
 }
 
@@ -222,6 +233,7 @@ model SigningPackage {
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   documents PackageDocument[]
 
+  @@index([userId])
   @@map("signing_packages")
 }
 
@@ -234,6 +246,8 @@ model PackageDocument {
   order        Int
   signatures   PackageSignature[]
 
+  @@index([packageId])
+  @@index([docVersionId])
   @@map("package_documents")
 }
 
@@ -259,6 +273,8 @@ model PackageSignature {
   retryCount  Int       @default(0) @map("retry_count")
   lockedUntil DateTime? @map("locked_until")
 
+  @@index([signerId])
+  @@index([packageDocumentId])
   @@map("package_signatures")
 }
 
@@ -274,6 +290,7 @@ model Group {
   documents   Document[]
   invitations GroupInvitation[]
 
+  @@index([adminId])
   @@map("groups")
 }
 
@@ -288,6 +305,9 @@ model GroupMember {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @map("user_id") @db.Uuid
 
+  @@index([groupId])
+  @@index([userId])
+  @@index([groupId, userId])
   @@map("group_members")
 }
 
@@ -306,6 +326,8 @@ model GroupInvitation {
   group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId    Int              @map("group_id")
 
+  @@index([groupId])
+  @@index([inviterId])
   @@map("group_invitations")
 }
 
@@ -323,6 +345,10 @@ model GroupDocumentSigner {
   updatedAt        DateTime        @updatedAt @map("updated_at")
 
   @@unique([documentId, userId], name: "unique_signer_per_document")
+  @@index([userId])
+  @@index([documentId])
+  @@index([status])
+  @@index([userId, status])
   @@map("group_document_signers")
 }
 
@@ -339,6 +365,8 @@ model Transaction {
   userId    String   @map("user_id") @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+  @@index([status])
   @@map("transactions")
 }
 
