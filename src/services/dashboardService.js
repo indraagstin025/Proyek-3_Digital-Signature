@@ -17,7 +17,7 @@ export class DashboardService {
     if (!dashboardRepository) {
       throw CommonError.InternalServerError("DashboardRepository harus disediakan.");
     }
-    // groupDocumentSignerRepository opsional secara teknis, tapi sangat disarankan untuk fitur lengkap
+
     this.dashboardRepository = dashboardRepository;
     this.groupDocumentSignerRepository = groupDocumentSignerRepository;
   }
@@ -31,16 +31,10 @@ export class DashboardService {
   async getDashboardSummary(userId) {
     this._validateUserId(userId);
 
-    // Menggunakan allSettled agar jika satu query gagal, dashboard tidak mati total
-    const results = await Promise.allSettled([
-      this._getDocumentCounts(userId),
-      this._getActionItems(userId),
-      this._getRecentActivities(userId),
-    ]);
+    const results = await Promise.allSettled([this._getDocumentCounts(userId), this._getActionItems(userId), this._getRecentActivities(userId)]);
 
     const getValue = (result, defaultValue) => (result.status === "fulfilled" ? result.value : defaultValue);
 
-    // Opsional: Log error untuk debugging server jika ada yang rejected
     results.forEach((res, index) => {
       if (res.status === "rejected") {
         console.error(`[DashboardService] Query index ${index} failed:`, res.reason);
@@ -86,19 +80,15 @@ export class DashboardService {
    */
   async _getActionItems(userId) {
     const [incomingRequests, myDrafts, groupPending] = await Promise.all([
-      // 1. Permintaan Tanda Tangan Personal
       this.dashboardRepository.findPendingSignatures(userId, DASHBOARD_LIMIT),
 
-      // 2. Draft Dokumen Sendiri
       this.dashboardRepository.findActionRequiredDocuments(userId, DASHBOARD_LIMIT),
 
-      // 3. Permintaan Tanda Tangan Grup (Cek ketersediaan repository)
       this.groupDocumentSignerRepository ? this.groupDocumentSignerRepository.findPendingByUser(userId) : Promise.resolve([]),
     ]);
 
     const actionMap = new Map();
 
-    // A. Prioritas: Personal Request
     incomingRequests.forEach((sig) => {
       const doc = sig.documentVersion.document;
       actionMap.set(doc.id, {
@@ -111,7 +101,6 @@ export class DashboardService {
       });
     });
 
-    // B. Group Request (Cek Duplikasi)
     groupPending.forEach((task) => {
       if (!actionMap.has(task.document.id)) {
         actionMap.set(task.document.id, {
@@ -121,12 +110,11 @@ export class DashboardService {
           status: "NEED_YOUR_SIGNATURE",
           type: "group",
           updatedAt: task.document.updatedAt,
-          groupId: task.document.groupId
+          groupId: task.document.groupId,
         });
       }
     });
 
-    // C. My Drafts (Cek Duplikasi)
     myDrafts.forEach((doc) => {
       if (!actionMap.has(doc.id)) {
         actionMap.set(doc.id, {
@@ -141,8 +129,8 @@ export class DashboardService {
     });
 
     return Array.from(actionMap.values())
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-        .slice(0, DASHBOARD_LIMIT);
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+      .slice(0, DASHBOARD_LIMIT);
   }
 
   /**
@@ -158,28 +146,23 @@ export class DashboardService {
       this.dashboardRepository.findRecentPackageSignatures(userId, 5),
     ]);
 
-    // [PERBAIKAN 1] Cek doc.groupId untuk menentukan tipe
     const formattedDocs = recentDocs.map((doc) => ({
       id: doc.id,
       title: doc.title,
       status: doc.status,
       updatedAt: doc.updatedAt,
-      type: doc.groupId ? "group" : "personal", // <-- Logika deteksi otomatis
+      type: doc.groupId ? "group" : "personal",
       activityType: "edit",
-      groupId: doc.groupId // Opsional: bawa groupId jika butuh routing
+      groupId: doc.groupId,
     }));
 
-    // [PERBAIKAN 2] Hapus parameter kedua ("personal") agar helper bisa mendeteksi otomatis
-    // Sebelumnya: this._normalizeSignatures(recentSignatures, "personal");
     const formattedPersonalSigs = this._normalizeSignatures(recentSignatures);
 
     const formattedGroupSigs = this._normalizeSignatures(recentGroupSignatures, "group");
 
     const formattedPackageSignatures = this._normalizePackageSignatures(recentPackageSignatures);
 
-    return [...formattedDocs, ...formattedPersonalSigs, ...formattedGroupSigs, ...formattedPackageSignatures]
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-        .slice(0, 5);
+    return [...formattedDocs, ...formattedPersonalSigs, ...formattedGroupSigs, ...formattedPackageSignatures].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
   }
 
   /**
@@ -193,7 +176,6 @@ export class DashboardService {
 
       let type = forcedType || "personal";
 
-      // Jika tidak dipaksa tipe tertentu, cek apakah dokumen punya grup
       if (!forcedType && doc.groupId) {
         type = "group";
       }
@@ -205,7 +187,7 @@ export class DashboardService {
         updatedAt: sig.signedAt,
         activityType: "signature",
         type: type,
-        groupId: doc.groupId // Tambahan info groupId
+        groupId: doc.groupId,
       };
     });
   }

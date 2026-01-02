@@ -244,24 +244,28 @@ export class PaymentService {
     /**
      * Membatalkan transaksi.
      */
+/**
+     * Membatalkan transaksi.
+     */
     async cancelTransaction(orderId, userId) {
         console.log(`[PaymentService] Request to cancel Order ID: ${orderId} by User: ${userId}`);
 
-        // 1. Cek transaksi di database lokal
-        const transaction = await prisma.transaction.findUnique({
-            where: { orderId: orderId }
-        });
-
-        if (!transaction) throw CommonError.NotFound('Transaksi tidak ditemukan.');
-        if (transaction.userId !== userId) throw CommonError.Forbidden('Anda tidak memiliki akses ke transaksi ini.');
-
-        // Hanya batalkan jika status PENDING
-        if (transaction.status !== 'PENDING') {
-            console.warn(`[PaymentService] Cannot cancel transaction. Current status: ${transaction.status}`);
-            throw PaymentError.BadRequest('Hanya transaksi PENDING yang bisa dibatalkan.');
-        }
-
         try {
+            // [PINDAH KE DALAM TRY]
+            // 1. Cek transaksi di database lokal
+            const transaction = await prisma.transaction.findUnique({
+                where: { orderId: orderId }
+            });
+
+            if (!transaction) throw CommonError.NotFound('Transaksi tidak ditemukan.');
+            if (transaction.userId !== userId) throw CommonError.Forbidden('Anda tidak memiliki akses ke transaksi ini.');
+
+            // Hanya batalkan jika status PENDING
+            if (transaction.status !== 'PENDING') {
+                console.warn(`[PaymentService] Cannot cancel transaction. Current status: ${transaction.status}`);
+                throw new PaymentError('Hanya transaksi PENDING yang bisa dibatalkan.', 400);
+            }
+
             // 2. Panggil API Cancel Midtrans
             try {
                 await this.snap.transaction.cancel(orderId);
@@ -272,6 +276,7 @@ export class PaymentService {
                     console.warn(`[PaymentService] Midtrans transaction not found (404), proceeding to local cancel.`);
                 } else {
                     console.error('[PaymentService] Midtrans Cancel Error:', midtransError.message);
+                    // Kita log saja, jangan throw, agar proses cancel di DB lokal tetap jalan (opsional, tergantung bisnis logic)
                 }
             }
 
@@ -297,6 +302,13 @@ export class PaymentService {
             return { success: true, message: 'Transaksi berhasil dibatalkan.' };
 
         } catch (error) {
+            // [UPDATE CATCH BLOCK]
+            // Jika error sudah merupakan instance Custom Error (Common/Payment), lempar ulang (Rethrow)
+            if (error instanceof CommonError || error instanceof PaymentError) {
+                throw error;
+            }
+
+            // Jika error sistem lain (misal: DB mati), bungkus jadi PaymentError 500
             console.error('[PaymentService] Cancel Transaction General Error:', error);
             throw new PaymentError('Gagal membatalkan transaksi.', 500);
         }

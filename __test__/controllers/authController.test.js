@@ -202,4 +202,164 @@ describe("AuthController", () => {
       message: "Password berhasil diperbarui.",
     });
   });
+
+  /**
+   * Test: Login production mode + token size logging
+   * - Harus skip console.log jika NODE_ENV = production
+   */
+  it("Login: Harus skip token size logging jika production mode", async () => {
+    const oldEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    req = {
+      body: {
+        email: "user@example.com",
+        password: "Password123!",
+      },
+    };
+
+    const mockSession = {
+      access_token: "token-123",
+      refresh_token: "refresh-456",
+      expires_in: 3600,
+    };
+
+    mockAuthService.loginUser.mockResolvedValue({
+      session: mockSession,
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    await authController.login(req, res, next);
+
+    // Jangan log jika production
+    expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining("[AUTH] Login Token Size"));
+
+    consoleSpy.mockRestore();
+    process.env.NODE_ENV = oldEnv;
+  });
+
+  /**
+   * Test: Login dengan token size logging (development)
+   */
+  it("Login: Harus log token size jika development mode", async () => {
+    const oldEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    req = {
+      body: {
+        email: "user@example.com",
+        password: "Password123!",
+      },
+    };
+
+    const mockSession = {
+      access_token: "token-with-content-123",
+      refresh_token: "refresh-456",
+      expires_in: 3600,
+    };
+
+    mockAuthService.loginUser.mockResolvedValue({
+      session: mockSession,
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    await authController.login(req, res, next);
+
+    // Harus log size di development
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("[AUTH] Login Token Size"));
+
+    consoleSpy.mockRestore();
+    process.env.NODE_ENV = oldEnv;
+  });
+
+  /**
+   * Test: Login dengan cookie domain konfigurasi
+   */
+  it("Login: Harus include domain jika production dan COOKIE_DOMAIN set", async () => {
+    const oldEnv = process.env.NODE_ENV;
+    const oldDomain = process.env.COOKIE_DOMAIN;
+    process.env.NODE_ENV = "production";
+    process.env.COOKIE_DOMAIN = "example.com";
+
+    req = {
+      body: {
+        email: "user@example.com",
+        password: "Password123!",
+      },
+    };
+
+    const mockSession = {
+      access_token: "token-123",
+      refresh_token: "refresh-456",
+      expires_in: 3600,
+    };
+
+    mockAuthService.loginUser.mockResolvedValue({
+      session: mockSession,
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    await authController.login(req, res, next);
+
+    const cookieArgs = res.setHeader.mock.calls[0][1];
+    // Check bahwa domain included dalam cookie
+    expect(JSON.stringify(cookieArgs)).toContain("Domain=example.com");
+
+    process.env.NODE_ENV = oldEnv;
+    process.env.COOKIE_DOMAIN = oldDomain;
+  });
+
+  /**
+   * Test: Login tanpa cookie domain di development
+   */
+  it("Login: Harus tidak include domain jika development", async () => {
+    const oldEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    req = {
+      body: {
+        email: "user@example.com",
+        password: "Password123!",
+      },
+    };
+
+    const mockSession = {
+      access_token: "token-123",
+      refresh_token: "refresh-456",
+      expires_in: 3600,
+    };
+
+    mockAuthService.loginUser.mockResolvedValue({
+      session: mockSession,
+      user: { id: "user-1", email: "user@example.com" },
+    });
+
+    await authController.login(req, res, next);
+
+    const cookieArgs = res.setHeader.mock.calls[0][1];
+    // Check bahwa domain TIDAK included
+    expect(JSON.stringify(cookieArgs)).not.toContain("Domain=");
+
+    process.env.NODE_ENV = oldEnv;
+  });
+
+  /**
+   * Test: Logout dengan cookie options
+   */
+  it("Logout: Harus clear cookies dengan maxAge -1", async () => {
+    req = {};
+
+    mockAuthService.logoutUser.mockResolvedValue();
+
+    await authController.logout(req, res, next);
+
+    const cookieArgs = res.setHeader.mock.calls[0][1];
+
+    // Verify maxAge = -1 untuk clear cookies
+    expect(JSON.stringify(cookieArgs)).toContain("Max-Age=-1");
+  });
 });

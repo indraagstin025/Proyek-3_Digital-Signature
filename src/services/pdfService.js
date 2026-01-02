@@ -14,9 +14,6 @@ import DocumentError from "../errors/DocumentError.js";
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // ... (Helper createLockedStampAnnotation TETAP SAMA) ...
 function createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, width, height) {
   const bbox = pdfDoc.context.obj([PDFNumber.of(0), PDFNumber.of(0), PDFNumber.of(width), PDFNumber.of(height)]);
@@ -74,7 +71,7 @@ export class PDFService {
     try {
       pdfDoc = await PDFDocument.load(pdfBuffer);
     } catch (error) {
-      if (error.message?.includes("is encrypted")) throw DocumentError.Encrypted();
+      if (error.message?.includes("is encrypted")) throw DocumentError.EncryptedFileNotAllowed("Dokumen terenkripsi");
       throw CommonError.InternalServerError(`Gagal memproses PDF: ${error.message}`);
     }
 
@@ -166,7 +163,7 @@ export class PDFService {
         textY -= 30;
         auditPage.drawText(`ACCESS CODE (PIN):  ${accessCode}`, { x: textX, y: textY, size: 14, font: fontBold, color: rgb(0, 0, 0) });
 
-        yPos -= (qrSize + 40); // Geser cursor ke bawah QR
+        yPos -= qrSize + 40; // Geser cursor ke bawah QR
       } catch (err) {
         console.error("Gagal render QR Audit:", err);
       }
@@ -186,7 +183,7 @@ export class PDFService {
         const email = sig.signerEmail || "-";
         const ip = sig.ipAddress || "IP tidak tercatat";
         const dateStr = sig.signedAt ? new Date(sig.signedAt).toLocaleString("id-ID") : "Waktu tidak tercatat";
-        const sigId = sig.id ? `ID: ${sig.id.substring(0,8)}...` : "";
+        const sigId = sig.id ? `ID: ${sig.id.substring(0, 8)}...` : "";
 
         // Cek overflow halaman
         if (yPos < 50) {

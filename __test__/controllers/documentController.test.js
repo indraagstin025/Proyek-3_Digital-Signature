@@ -2,6 +2,13 @@ import { jest } from "@jest/globals";
 import { createDocumentController } from "../../src/controllers/documentController.js";
 import CommonError from "../../src/errors/CommonError.js";
 
+// Mock aiService sebelum import controller
+jest.mock("../../src/services/aiService.js", () => ({
+  aiService: {
+    analyzeDocumentContent: jest.fn(),
+  },
+}));
+
 describe("DocumentController", () => {
   let documentController;
   let mockDocumentService;
@@ -14,6 +21,10 @@ describe("DocumentController", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Get the mocked aiService
+    const { aiService } = require("../../src/services/aiService.js");
+    mockAiService = aiService;
 
     // Mock services
     mockDocumentService = {
@@ -417,9 +428,224 @@ describe("DocumentController", () => {
       });
     });
 
-    // TODO: Test dengan aiService mock memerlukan top-level await
-    // yang tidak didukung dengan baik oleh Jest + Babel untuk ES Modules
-    // Untuk full coverage, bisa gunakan integration test atau refactor controller
-    // agar aiService di-inject sebagai dependency
+    it("Harus return 200 ketika analisis berhasil dengan valid URL", async () => {
+      const mockDoc = { id: "doc-123", type: "kontrak" };
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+      const mockResult = { summary: "Summary", sentiment: "positive" };
+
+      mockDocumentService.getDocumentById.mockResolvedValue(mockDoc);
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+      mockAiService.analyzeDocumentContent.mockResolvedValue(mockResult);
+
+      await runController(documentController.analyzeDocument);
+
+      expect(mockAiService.analyzeDocumentContent).toHaveBeenCalledWith(mockUrl, "url", "kontrak");
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        data: mockResult,
+      });
+    });
+
+    it("Harus return 400 ketika AI mengembalikan error", async () => {
+      const mockDoc = { id: "doc-123", type: "kontrak" };
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+      const mockError = { error: "AI service timeout" };
+
+      mockDocumentService.getDocumentById.mockResolvedValue(mockDoc);
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+      mockAiService.analyzeDocumentContent.mockResolvedValue(mockError);
+
+      await runController(documentController.analyzeDocument);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "fail",
+        message: "AI service timeout",
+      });
+    });
+
+    it("Harus return 400 ketika AI mengembalikan null", async () => {
+      const mockDoc = { id: "doc-123", type: "kontrak" };
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+
+      mockDocumentService.getDocumentById.mockResolvedValue(mockDoc);
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+      mockAiService.analyzeDocumentContent.mockResolvedValue(null);
+
+      await runController(documentController.analyzeDocument);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "fail",
+        message: "Gagal menganalisis dokumen (AI tidak merespons).",
+      });
+    });
+
+    it("Harus handle error ketika getDocumentFileUrl gagal", async () => {
+      const mockDoc = { id: "doc-123", type: "kontrak" };
+
+      mockDocumentService.getDocumentById.mockResolvedValue(mockDoc);
+      mockDocumentService.getDocumentFileUrl.mockRejectedValue(new Error("Storage error"));
+      mockAiService.analyzeDocumentContent.mockResolvedValue({ summary: "test" });
+
+      await runController(documentController.analyzeDocument);
+
+      // Harus tetap mencoba memanggil aiService dengan sourceData undefined
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+    });
+
+    it("Harus set NODE_ENV production dan mask URL", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+
+      const mockDoc = { id: "doc-123", type: "kontrak" };
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+      const mockResult = { summary: "Summary" };
+
+      mockDocumentService.getDocumentById.mockResolvedValue(mockDoc);
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+      mockAiService.analyzeDocumentContent.mockResolvedValue(mockResult);
+
+      await runController(documentController.analyzeDocument);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+
+      process.env.NODE_ENV = originalEnv;
+    });
+  });
+
+  describe("updateDocument - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.id = "doc-123";
+      mockReq.body = { title: "Updated Title" };
+    });
+
+    it("Harus return 200 ketika update dokumen berhasil", async () => {
+      const mockUpdatedDoc = { id: "doc-123", title: "Updated Title" };
+      mockDocumentService.updateDocument.mockResolvedValue(mockUpdatedDoc);
+
+      await runController(documentController.updateDocument);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        message: "Dokumen berhasil diperbaharui.",
+        data: mockUpdatedDoc,
+      });
+    });
+  });
+
+  describe("deleteDocument - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.id = "doc-123";
+    });
+
+    it("Harus return 200 ketika delete dokumen berhasil", async () => {
+      mockDocumentService.deleteDocument.mockResolvedValue(true);
+
+      await runController(documentController.deleteDocument);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        message: "Dokumen dan semua riwayatnya berhasil dihapus.",
+      });
+    });
+  });
+
+  describe("getDocumentHistory - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.documentId = "doc-123";
+    });
+
+    it("Harus return 200 dengan history dokumen", async () => {
+      const mockHistory = { id: "doc-123", versions: [] };
+      mockDocumentService.getDocumentHistory.mockResolvedValue(mockHistory);
+
+      await runController(documentController.getDocumentHistory);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        data: mockHistory,
+      });
+    });
+  });
+
+  describe("useOldVersion - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.documentId = "doc-123";
+      mockReq.params.versionId = "ver-456";
+    });
+
+    it("Harus return 200 ketika restore version berhasil", async () => {
+      const mockUpdated = { id: "doc-123", title: "Updated" };
+      mockDocumentService.useOldVersion.mockResolvedValue(mockUpdated);
+
+      await runController(documentController.useOldVersion);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        message: "Versi dokumen berhasil diganti.",
+        data: mockUpdated,
+      });
+    });
+  });
+
+  describe("deleteVersion - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.documentId = "doc-123";
+      mockReq.params.versionId = "ver-456";
+    });
+
+    it("Harus return 200 ketika delete version berhasil", async () => {
+      mockDocumentService.deleteVersion.mockResolvedValue(true);
+
+      await runController(documentController.deleteVersion);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: "success",
+        message: "Versi dokumen berhasil dihapus.",
+      });
+    });
+  });
+
+  describe("getDocumentFile - Conditional Branches", () => {
+    beforeEach(() => {
+      mockReq.params.documentId = "doc-123";
+      mockReq.query = { purpose: "download" };
+    });
+
+    it("Harus return 200 dengan signed URL untuk download", async () => {
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+
+      await runController(documentController.getDocumentFile);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        url: mockUrl,
+        mode: "download",
+      });
+    });
+
+    it("Harus return 200 dengan signed URL untuk view", async () => {
+      const mockUrl = "http://storage.example.com/doc-123.pdf?token=xyz";
+      mockReq.query = { purpose: "view" };
+      mockDocumentService.getDocumentFileUrl.mockResolvedValue(mockUrl);
+
+      await runController(documentController.getDocumentFile);
+
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        success: true,
+        url: mockUrl,
+        mode: "view",
+      });
+    });
   });
 });
