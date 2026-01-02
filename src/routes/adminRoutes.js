@@ -5,55 +5,44 @@ import { validate } from "../middleware/validate.js";
 import { adminValidation } from "../validators/adminValidator.js";
 
 export default (adminController) => {
-    const router = express.Router();
+  const router = express.Router();
 
-    // 1. Middleware Global: Wajib Login & Wajib Admin
-    router.use(authMiddleware);
-    router.use(adminMiddleware);
+  // 1. Middleware Global: Wajib Login & Wajib Admin
+  router.use(authMiddleware);
+  router.use(adminMiddleware);
 
-    // --- User Management ---
-    router.get("/users", adminController.getAllUsers);
+  // --- User Management ---
+  router.get("/users", adminController.getAllUsers);
 
-    router.post(
-        "/users",
-        ...adminValidation.createUser,
-        validate,
-        adminController.createUser
-    );
+  router.post("/users", ...adminValidation.createUser, validate, adminController.createUser);
 
-    // Note: Menggunakan PATCH sesuai kode asli Anda (Partial Update)
-    router.patch(
-        "/users/:userId",
-        ...adminValidation.updateUser,
-        validate,
-        adminController.updateUser
-    );
+  // Note: Menggunakan PATCH sesuai kode asli Anda (Partial Update)
+  router.patch("/users/:userId", ...adminValidation.updateUser, validate, adminController.updateUser);
 
-    router.delete(
-        "/users/:userId",
-        ...adminValidation.deleteUser,
-        validate,
-        adminController.deleteUser
-    );
+  router.delete("/users/:userId", ...adminValidation.deleteUser, validate, adminController.deleteUser);
 
-    // --- [BARU] Dashboard Statistics ---
-    // Mengambil total user, dokumen, grup, dll
-    router.get("/dashboard", adminController.getDashboardSummary);
+  // --- [BARU] Dashboard Statistics ---
+  // Mengambil total user, dokumen, grup, dll
+  router.get("/dashboard", adminController.getDashboardSummary);
 
-    // --- [BARU] Audit Logs ---
-    // Melihat riwayat aktivitas admin
-    router.get("/audit-logs", adminController.getAuditLogs);
+  // --- [BARU] Audit Logs ---
+  // Melihat riwayat aktivitas admin
+  router.get("/audit-logs", adminController.getAuditLogs);
 
-    router.get("/documents", adminController.getAllDocuments);
+  router.get("/documents", adminController.getAllDocuments);
 
-    // --- [BARU] Content Moderation ---
-    // Menghapus dokumen secara paksa (Force Delete)
-    router.delete(
-        "/documents/:documentId",
-        // Anda bisa menambahkan validator khusus di sini nanti jika perlu
-        // misal: check('reason').notEmpty()
-        adminController.forceDeleteDocument
-    );
+  // --- [BARU] Content Moderation ---
+  // Menghapus dokumen secara paksa (Force Delete)
+  router.delete(
+    "/documents/:documentId",
+    // Anda bisa menambahkan validator khusus di sini nanti jika perlu
+    // misal: check('reason').notEmpty()
+    adminController.forceDeleteDocument
+  );
 
-    return router;
+  // --- [BARU] Manual Cron Job Trigger ---
+  // Endpoint untuk testing cron job tanpa menunggu jadwal
+  router.post("/cron/premium-expiry", adminController.triggerPremiumExpiryCheck);
+
+  return router;
 };

@@ -21,6 +21,12 @@ export default (userController, adminController) => {
   router.put("/me", authMiddleware, uploadImage.single("profilePicture"), userValidation.updateProfile, validate, userController.updateMyProfile);
 
   /**
+   * @route   GET /api/users/me/quota
+   * @desc    Ambil informasi quota/limit user (untuk Soft Lock UI di Frontend)
+   */
+  router.get("/me/quota", authMiddleware, userController.getMyQuota);
+
+  /**
    * @route   GET /api/users/me/pictures
    * @desc    Ambil semua history foto profil user (dengan Signed URL segar)
    */

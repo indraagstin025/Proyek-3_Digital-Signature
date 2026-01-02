@@ -57,6 +57,16 @@ class DocumentError extends BaseError {
     const defaultMessage = "File PDF terproteksi password dan tidak dapat diunggah.";
     return new DocumentError("ENCRYPTED_FILE_NOT_ALLOWED", 400, message || defaultMessage);
   }
+
+  /**
+   * @description Dilempar saat pengguna tidak memiliki izin untuk melakukan aksi tertentu pada dokumen.
+   * @param {string} [message] - Pesan error opsional.
+   * @returns {DocumentError}
+   */
+  static Forbidden(message) {
+    const defaultMessage = "Anda tidak memiliki izin untuk melakukan aksi ini pada dokumen.";
+    return new DocumentError("DOCUMENT_FORBIDDEN", 403, message || defaultMessage);
+  }
 }
 
 export default DocumentError;

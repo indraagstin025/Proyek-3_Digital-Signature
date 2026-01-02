@@ -127,5 +127,21 @@ export const createUserController = (userService) => {
         data: result,
       });
     }),
+
+    /**
+     * @description Mengambil informasi quota/limit user berdasarkan tier (FREE/PREMIUM).
+     * @route   GET /api/users/me/quota
+     * @access  Private
+     */
+    getMyQuota: asyncHandler(async (req, res, next) => {
+      const userId = req.user.id;
+
+      const quotaData = await userService.getUserQuota(userId);
+
+      res.status(200).json({
+        status: "success",
+        data: quotaData,
+      });
+    }),
   };
 };

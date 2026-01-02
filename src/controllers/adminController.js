@@ -1,4 +1,5 @@
 import asyncHandler from "../utils/asyncHandler.js";
+import { runPremiumExpiryCheck } from "../cron/premiumExpiryJob.js";
 
 /**
  * Membuat instance AdminController dengan dependency injection.
@@ -134,6 +135,22 @@ export const createAdminController = (adminService) => {
       res.status(200).json({
         success: true,
         message: "Dokumen berhasil dihapus secara paksa demi keamanan/moderasi.",
+      });
+    }),
+
+    /**
+     * @description Manual trigger Premium Expiry Cron Job (untuk testing).
+     * @route POST /api/admin/cron/premium-expiry
+     */
+    triggerPremiumExpiryCheck: asyncHandler(async (req, res) => {
+      console.log(`🔧 [Admin] Manual trigger Premium Expiry by Admin ID: ${req.user.id}`);
+
+      const result = await runPremiumExpiryCheck();
+
+      res.status(200).json({
+        success: true,
+        message: "Premium expiry check executed successfully.",
+        data: result,
       });
     }),
   };
