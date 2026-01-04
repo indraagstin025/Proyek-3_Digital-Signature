@@ -1,6 +1,6 @@
 import path from "path";
 // Pastikan path ini benar mengarah ke file config Anda
-import supabaseAdmin, {supabaseBucket} from "../../config/supabaseAdmin.js";
+import supabaseAdmin from "../../config/supabaseAdmin.js";
 
 /**
  * @description Abstraksi untuk operasi penyimpanan file PROFIL PENGGUNA.
@@ -14,7 +14,7 @@ class FileStorage {
     // [PERBAIKAN] Gunakan 'supabaseAdmin' (sesuai nama import di atas)
     this.supabase = supabaseAdmin;
 
-    this.bucketName = supabaseBucket;
+    this.bucketName = "avatar";
   }
 
   /**
