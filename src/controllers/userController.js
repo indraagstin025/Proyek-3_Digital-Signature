@@ -1,27 +1,27 @@
 import asyncHandler from "../utils/asyncHandler.js";
+// ✅ IMPORT HELPER URL YANG BARU DIBUAT
+import { formatAvatarUrl } from "../utils/urlHelper.js";
 
 /**
  * Membuat instance UserController dengan Dependency Injection.
- * @param {import('../services/userService.js').UserService} userService - Service yang menangani logika bisnis pengguna.
+ * @param {import('../services/userService.js').UserService} userService
  * @returns {Object} Kumpulan method controller untuk manajemen user.
  */
 export const createUserController = (userService) => {
   return {
     /**
      * @description Mengambil data profil lengkap dari pengguna yang sedang login.
-     * * **Proses Kode:**
-     * 1. Mengambil `userId` dari token autentikasi (`req.user`).
-     * 2. Memanggil `userService.getMyProfile` untuk mendapatkan data user.
-     * - Service ini otomatis men-generate **Signed URL** baru untuk foto profil agar bisa diakses frontend.
-     * 3. Mengembalikan response JSON berisi objek user.
-     * * @route   GET /api/users/me
+     * @route   GET /api/users/me
      * @access  Private
-     * @param {import("express").Request} req - Request object (User ID dari token).
-     * @param {import("express").Response} res - Response object.
      */
     getMyProfile: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
       const user = await userService.getMyProfile(userId);
+
+      // 🔥 [MODIFIKASI] Format URL Foto sebelum dikirim ke frontend
+      if (user) {
+        user.profilePictureUrl = formatAvatarUrl(user.profilePictureUrl);
+      }
 
       res.status(200).json({
         status: "success",
@@ -30,18 +30,9 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Memperbarui profil pengguna (Nama, Password, dll) serta Foto Profil (Upload Baru atau Pilih dari Riwayat).
-     * * **Proses Kode:**
-     * 1. Mengekstrak `file` (jika upload baru), `profilePictureId` (jika pilih lama), dan sisa data (`updateData`) dari body.
-     * 2. **Skenario 1 (Tanpa Perubahan):** Jika body kosong dan tidak ada file, kembalikan data user saat ini.
-     * 3. **Skenario 2 (Upload Foto Baru):** Jika ada `req.file`, panggil `updateUserProfileWithNewPicture`. Service mengembalikan user + list foto terbaru.
-     * 4. **Skenario 3 (Gunakan Foto Lama):** Jika ada `profilePictureId`, panggil `updateUserProfileWithOldPicture`.
-     * 5. **Skenario 4 (Hanya Data Teks):** Jika hanya update nama/info lain, update user biasa, lalu fetch manual list foto agar response tetap konsisten formatnya (`{ user, profilePictures }`).
-     * 6. Mengembalikan response seragam berisi data user dan array riwayat foto profil.
-     * * @route   PUT /api/users/me
+     * @description Memperbarui profil pengguna & Foto Profil.
+     * @route   PUT /api/users/me
      * @access  Private
-     * @param {import("express").Request} req - Body: updates, profilePictureId. File: req.file.
-     * @param {import("express").Response} res - Response object.
      */
     updateMyProfile: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -50,8 +41,14 @@ export const createUserController = (userService) => {
 
       let updatedData;
 
+      // Skenario 1: Tidak ada perubahan
       if (Object.keys(updateData).length === 0 && !file && !profilePictureId) {
         updatedData = await userService.getFullUserProfileData(userId);
+
+        // Format URL jika updatedData adalah object user langsung
+        if (updatedData && updatedData.profilePictureUrl) {
+          updatedData.profilePictureUrl = formatAvatarUrl(updatedData.profilePictureUrl);
+        }
 
         return res.status(200).json({
           status: "success",
@@ -60,16 +57,31 @@ export const createUserController = (userService) => {
         });
       }
 
+      // Skenario 2, 3, 4: Update dengan Foto Baru / Lama / Teks saja
       if (file) {
         updatedData = await userService.updateUserProfileWithNewPicture(userId, updateData, file);
       } else if (profilePictureId) {
         updatedData = await userService.updateUserProfileWithOldPicture(userId, updateData, profilePictureId);
       } else {
         const user = await userService.updateUserProfile(userId, updateData);
-
         const pictures = await userService.getUserProfilePictures(userId);
-
         updatedData = { user, profilePictures: pictures };
+      }
+
+      // 🔥 [MODIFIKASI] Normalisasi URL di dalam object updatedData
+      // 1. Format User Utama
+      if (updatedData.user) {
+        updatedData.user.profilePictureUrl = formatAvatarUrl(updatedData.user.profilePictureUrl);
+      }
+
+      // 2. Format List History Foto (jika ada)
+      if (updatedData.profilePictures && Array.isArray(updatedData.profilePictures)) {
+        updatedData.profilePictures = updatedData.profilePictures.map((pic) => ({
+          ...pic,
+          // Asumsi nama kolom di table history adalah 'url' atau 'storagePath' atau 'profilePictureUrl'
+          // Kita coba format kolom yang relevan
+          url: formatAvatarUrl(pic.url || pic.path || pic.profilePictureUrl),
+        }));
       }
 
       res.status(200).json({
@@ -80,46 +92,50 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Mengambil riwayat semua foto profil yang pernah digunakan user.
-     * * **Proses Kode:**
-     * 1. Mengambil `userId`.
-     * 2. Memanggil service untuk mengambil daftar foto dari database.
-     * 3. Service otomatis memperbarui Signed URL untuk setiap foto agar bisa ditampilkan di frontend.
-     * 4. Mengembalikan array objek foto.
-     * * @route   GET /api/users/me/pictures
+     * @description Mengambil riwayat semua foto profil.
+     * @route   GET /api/users/me/pictures
      * @access  Private
-     * @param {import("express").Request} req - Request object.
-     * @param {import("express").Response} res - Response object.
      */
     getProfilePictures: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
 
       const pictures = await userService.getUserProfilePictures(userId);
 
+      // 🔥 [MODIFIKASI] Format setiap item dalam array
+      const formattedPictures = pictures.map((pic) => ({
+        ...pic,
+        url: formatAvatarUrl(pic.url || pic.path || pic.profilePictureUrl),
+      }));
+
       res.status(200).json({
         status: "success",
         message: "Daftar foto profil berhasil diambil",
-        data: pictures,
+        data: formattedPictures,
       });
     }),
 
     /**
-     * @description Menghapus salah satu foto dari riwayat foto profil.
-     * * **Proses Kode:**
-     * 1. Mengambil `pictureId` target dari parameter URL.
-     * 2. Memanggil `userService.deleteUserProfilePicture`.
-     * 3. Service akan menghapus file dari Storage (Supabase/S3) dan record dari Database.
-     * 4. Mengembalikan data user terbaru dan sisa daftar foto profil.
-     * * @route   DELETE /api/users/me/pictures/:pictureId
+     * @description Menghapus salah satu foto dari riwayat.
+     * @route   DELETE /api/users/me/pictures/:pictureId
      * @access  Private
-     * @param {import("express").Request} req - Params: pictureId.
-     * @param {import("express").Response} res - Response object.
      */
     deleteProfilePicture: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
       const { pictureId } = req.params;
 
+      // result biasanya berisi { user, profilePictures }
       const result = await userService.deleteUserProfilePicture(userId, pictureId);
+
+      // 🔥 [MODIFIKASI] Format hasil return
+      if (result.user) {
+        result.user.profilePictureUrl = formatAvatarUrl(result.user.profilePictureUrl);
+      }
+      if (result.profilePictures && Array.isArray(result.profilePictures)) {
+        result.profilePictures = result.profilePictures.map((pic) => ({
+          ...pic,
+          url: formatAvatarUrl(pic.url || pic.path || pic.profilePictureUrl),
+        }));
+      }
 
       res.status(200).json({
         status: "success",
@@ -129,15 +145,14 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Mengambil informasi quota/limit user berdasarkan tier (FREE/PREMIUM).
+     * @description Mengambil informasi quota/limit user.
      * @route   GET /api/users/me/quota
      * @access  Private
      */
     getMyQuota: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
-
       const quotaData = await userService.getUserQuota(userId);
-
+      // Quota tidak ada hubungannya dengan foto, return langsung
       res.status(200).json({
         status: "success",
         data: quotaData,
