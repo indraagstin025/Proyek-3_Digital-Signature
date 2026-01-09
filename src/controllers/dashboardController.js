@@ -11,9 +11,21 @@ export const createDashboardController = (dashboardService) => {
 
   return {
     /**
-     * @description Mengambil ringkasan data dashboard user.
+     * @description Mengambil ringkasan data dashboard user
+     * Proses:
+     * 1. Validasi user terautentikasi dari middleware
+     * 2. Ambil userId dari request context
+     * 3. Query dashboard service untuk mengagregat data:
+     *    - Recent documents: Dokumen terbaru user
+     *    - Pending signatures: Tanda tangan yang menunggu action
+     *    - Statistics: Total dokumen, signature, completion rate, dll
+     * 4. Return dashboard summary dalam format terstruktur
      * @route GET /api/dashboard
-     * @access Private
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @returns {200} Dashboard summary dengan recentDocuments, pendingSignatures, statistics
+     * @error {401} User tidak terautentikasi
+     * @error {500} Server error
      */
     getSummary: asyncHandler(async (req, res) => {
       // Pastikan user terautentikasi (biasanya dihandle middleware, tapi double check aman)

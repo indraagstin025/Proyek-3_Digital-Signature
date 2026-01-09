@@ -4,12 +4,10 @@ export class HistoryService {
   /**
    * Inisialisasi HistoryService dengan repository data histori.
    * Repository wajib diberikan untuk memastikan service dapat melakukan query.
-   *
    * @class
    * @constructor
    * @param {import('../repository/interface/HistoryRepository.js').HistoryRepository} historyRepository
    * Repository yang menangani penyimpanan & pengambilan riwayat penandatanganan dokumen.
-   *
    * @throws {CommonError} Jika repository tidak di-pass saat inisialisasi.
    */
   constructor(historyRepository) {
@@ -37,12 +35,6 @@ export class HistoryService {
    *
    * @example
    * const history = await historyService.getUserSigningHistory("USER123");
-   * // Output:
-   * // [
-   * //   { id: "xyz", type: "PERSONAL", documentTitle: "Dokumen A", signedAt: "2025-01-10", ipAddress: "192.168.1.2" },
-   * //   { id: "abc", type: "GROUP", documentTitle: "Surat Kontrak", signedAt: "2025-01-08", ipAddress: "10.10.0.22" },
-   * //   { id: "abc", type: "PACKAGE", documentTitle: "Dokumen B", signetAt: "2025-01-08", ipAddress: "192.168.1.31"},
-   * // ]
    */
   async getUserSigningHistory(userId) {
     const [personalSigs, groupSigs, packageSigs] = await Promise.all([this.historyRepository.findPersonalSignatures(userId), this.historyRepository.findGroupSignatures(userId), this.historyRepository.findPackageSignatures(userId)]);

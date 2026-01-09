@@ -235,33 +235,28 @@ export const createGroupController = (groupService) => {
      * 1. Validasi `groupId` dan `documentId`.
      * 2. Memanggil service untuk memperbarui metadata dokumen agar terkait dengan grup.
      * 3. Dokumen kini dapat diakses oleh anggota grup sesuai policy.
+     * 4. Menambahkan penanda tangan untuk dokumen yang dibagikan ke grup.
      * * @route   PUT /groups/:groupId/documents
-     * @param {import("express").Request} req - Params: groupId, Body: documentId.
+     * @param {import("express").Request} req - Params: groupId, Body: documentId, signerUserIds.
      * @param {import("express").Response} res - Response object.
      */
-      assignDocumentToGroup: asyncHandler(async (req, res, next) => {
+    assignDocumentToGroup: asyncHandler(async (req, res, next) => {
+      const groupId = validateAndParseGroupId(req.params.groupId);
+      const userId = req.user?.id;
+      const { documentId, signerUserIds } = req.body;
 
-          const groupId = validateAndParseGroupId(req.params.groupId);
-          const userId = req.user?.id;
-          const { documentId, signerUserIds } = req.body;
+      if (!documentId) {
+        throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
+      }
 
-          if (!documentId) {
-              throw GroupError.BadRequest("Properti 'documentId' wajib diisi.");
-          }
+      const updatedDocument = await groupService.assignDocumentToGroup(documentId, groupId, userId, signerUserIds);
 
-          const updatedDocument = await groupService.assignDocumentToGroup(
-              documentId,
-              groupId,
-              userId,
-              signerUserIds
-          );
-
-          return res.status(200).json({
-              status: "success",
-              message: "Dokumen berhasil dimasukkan ke grup.",
-              data: updatedDocument,
-          });
-      }),
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen berhasil dimasukkan ke grup.",
+        data: updatedDocument,
+      });
+    }),
 
     /**
      * @description Melepaskan dokumen dari grup (Mengembalikan menjadi privat).
@@ -286,109 +281,130 @@ export const createGroupController = (groupService) => {
       });
     }),
 
-      /**
-       * @description Upload dokumen baru ke grup dan menentukan siapa yang harus tanda tangan.
-       * * **Proses Kode:**
-       * 1. Menerima file PDF dan list `signerUserIds` dari form-data.
-       * 2. Memanggil service `uploadGroupDocument`.
-       * * @route   POST /groups/:groupId/documents/upload
-       */
-      uploadGroupDocument: asyncHandler(async (req, res, next) => {
-          const groupId = validateAndParseGroupId(req.params.groupId);
-          const userId = req.user?.id;
-          const file = req.file; // Dari Middleware Multer
-          const { title, signerUserIds } = req.body;
+    /**
+     * @description Upload dokumen baru ke grup dan menentukan siapa yang harus tanda tangan.
+     * * **Proses Kode:**
+     * 1. Menerima file PDF dan list `signerUserIds` dari form-data.
+     * 2. Memanggil service `uploadGroupDocument`.
+     * * @route   POST /groups/:groupId/documents/upload
+     */
+    uploadGroupDocument: asyncHandler(async (req, res, next) => {
+      const groupId = validateAndParseGroupId(req.params.groupId);
+      const userId = req.user?.id;
+      const file = req.file; // Dari Middleware Multer
+      const { title, signerUserIds } = req.body;
 
-          if (!file) throw GroupError.BadRequest("File dokumen wajib diunggah.");
+      if (!file) throw GroupError.BadRequest("File dokumen wajib diunggah.");
 
-          // Handling parsing jika dikirim sebagai JSON string via Form-Data
-          let parsedSigners = [];
-          if (signerUserIds) {
-              if (typeof signerUserIds === 'string') {
-                  try {
-                      parsedSigners = JSON.parse(signerUserIds);
-                  } catch (e) {
-                      throw GroupError.BadRequest("Format signerUserIds tidak valid (harus JSON Array).");
-                  }
-              } else if (Array.isArray(signerUserIds)) {
-                  parsedSigners = signerUserIds;
-              }
+      // Handling parsing jika dikirim sebagai JSON string via Form-Data
+      let parsedSigners = [];
+      if (signerUserIds) {
+        if (typeof signerUserIds === "string") {
+          try {
+            parsedSigners = JSON.parse(signerUserIds);
+          } catch (e) {
+            throw GroupError.BadRequest("Format signerUserIds tidak valid (harus JSON Array).");
           }
+        } else if (Array.isArray(signerUserIds)) {
+          parsedSigners = signerUserIds;
+        }
+      }
 
-          if (parsedSigners.length === 0) {
-              throw GroupError.BadRequest("Minimal harus ada 1 anggota yang dipilih untuk tanda tangan.");
-          }
+      if (parsedSigners.length === 0) {
+        throw GroupError.BadRequest("Minimal harus ada 1 anggota yang dipilih untuk tanda tangan.");
+      }
 
-          const newDoc = await groupService.uploadGroupDocument(userId, groupId, file, title, parsedSigners);
+      const newDoc = await groupService.uploadGroupDocument(userId, groupId, file, title, parsedSigners);
 
-          return res.status(201).json({
-              status: "success",
-              message: "Dokumen grup berhasil dibuat dan permintaan tanda tangan telah dikirim.",
-              data: newDoc,
-          });
-      }),
+      return res.status(201).json({
+        status: "success",
+        message: "Dokumen grup berhasil dibuat dan permintaan tanda tangan telah dikirim.",
+        data: newDoc,
+      });
+    }),
 
-      /**
-       * @description Mengupdate list penanda tangan (tambah/hapus) di tengah jalan.
-       * [FIX] Bungkus dengan asyncHandler agar error handling berjalan.
-       */
-      updateDocumentSigners: asyncHandler(async (req, res, next) => {
-          const { groupId, documentId } = req.params;
-          const { signerUserIds } = req.body;
-          const requestorId = req.user.id;
-          const groupIdInt = parseInt(groupId); // Pastikan parse int
+    /**
+     * @description Mengupdate list penanda tangan (tambah/hapus) di tengah proses signing.
+     * * **Proses Kode:**
+     * 1. Validasi `groupId` dan `documentId` dari parameter URL.
+     * 2. Mengambil daftar `signerUserIds` baru dari request body.
+     * 3. Memanggil service untuk memperbarui list penanda tangan dokumen.
+     * 4. Service akan memverifikasi bahwa requestor adalah admin/owner grup.
+     * 5. Mengembalikan dokumen yang sudah diupdate dengan list penanda tangan baru.
+     * * @route   PATCH /groups/:groupId/documents/:documentId/signers
+     * @param {import("express").Request} req - Params: groupId, documentId, Body: signerUserIds.
+     * @param {import("express").Response} res - Response object.
+     */
+    updateDocumentSigners: asyncHandler(async (req, res, next) => {
+      const { groupId, documentId } = req.params;
+      const { signerUserIds } = req.body;
+      const requestorId = req.user.id;
+      const groupIdInt = parseInt(groupId);
 
-          const updatedDocument = await groupService.updateGroupDocumentSigners(
-              groupIdInt,
-              documentId,
-              requestorId,
-              signerUserIds
-          );
+      if (!signerUserIds || (Array.isArray(signerUserIds) && signerUserIds.length === 0)) {
+        throw GroupError.BadRequest("Properti 'signerUserIds' wajib diisi dan minimal 1 anggota.");
+      }
 
-          return res.status(200).json({
-              status: "success",
-              message: "Daftar penanda tangan diperbarui.",
-              data: updatedDocument,
-          });
-      }),
+      const updatedDocument = await groupService.updateGroupDocumentSigners(groupIdInt, documentId, requestorId, signerUserIds);
 
-      /**
-       * @description Menghapus dokumen grup secara permanen.
-       * @route DELETE /groups/:groupId/documents/:documentId/delete
-       */
-      deleteGroupDocument: asyncHandler(async (req, res, next) => {
-          const groupId = validateAndParseGroupId(req.params.groupId);
-          const { documentId } = req.params;
-          const userId = req.user?.id;
+      return res.status(200).json({
+        status: "success",
+        message: "Daftar penanda tangan diperbarui.",
+        data: updatedDocument,
+      });
+    }),
 
-          await groupService.deleteGroupDocument(groupId, documentId, userId);
+    /**
+     * @description Menghapus dokumen grup secara permanen.
+     * * **Proses Kode:**
+     * 1. Validasi `groupId` dan `documentId` dari parameter URL.
+     * 2. Memanggil service untuk menghapus dokumen dari database dan file storage.
+     * 3. Service akan memastikan requestor adalah admin/owner grup.
+     * 4. Mengembalikan pesan sukses setelah penghapusan selesai.
+     * * @route   DELETE /groups/:groupId/documents/:documentId
+     * @param {import("express").Request} req - Params: groupId, documentId.
+     * @param {import("express").Response} res - Response object.
+     */
+    deleteGroupDocument: asyncHandler(async (req, res, next) => {
+      const groupId = validateAndParseGroupId(req.params.groupId);
+      const { documentId } = req.params;
+      const userId = req.user?.id;
 
-          return res.status(200).json({
-              status: "success",
-              message: "Dokumen berhasil dihapus permanen.",
-          });
-      }),
+      await groupService.deleteGroupDocument(groupId, documentId, userId);
 
-      finalizeDocument: asyncHandler(async (req, res) => {
-          const {groupId, documentId} = req.params;
-          const requestorId = req.user.id;
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen berhasil dihapus permanen.",
+      });
+    }),
 
-          // Panggil Service
-          const result = await groupService.finalizeGroupDocument(
-              parseInt(groupId),
-              documentId,
-              requestorId
-          );
+    /**
+     * @description Menyelesaikan proses signing dokumen grup dan menghasilkan final PDF.
+     * * **Proses Kode:**
+     * 1. Validasi `groupId` dan `documentId` dari parameter URL.
+     * 2. Memanggil service untuk finalize dokumen (combine semua signature, generate access code).
+     * 3. Service akan memverifikasi semua penanda tangan telah menyelesaikan signing.
+     * 4. Menghasilkan file PDF final dan access code untuk berbagi dokumen.
+     * 5. Mengembalikan URL dokumen final dan access code (PIN) untuk frontend.
+     * * @route   POST /groups/:groupId/documents/:documentId/finalize
+     * @param {import("express").Request} req - Params: groupId, documentId.
+     * @param {import("express").Response} res - Response object.
+     */
+    finalizeDocument: asyncHandler(async (req, res) => {
+      const { groupId, documentId } = req.params;
+      const requestorId = req.user.id;
 
-          return res.status(200).json({
-              status: "success",
-              message: "Dokumen berhasil difinalisasi.",
-              data: {
-                  url: result.url,
-                  accessCode: result.accessCode, // [PENTING] Kirim PIN ke frontend
-                  document: result.document
-              }
-          });
-      }),
+      const result = await groupService.finalizeGroupDocument(parseInt(groupId), documentId, requestorId);
+
+      return res.status(200).json({
+        status: "success",
+        message: "Dokumen berhasil difinalisasi.",
+        data: {
+          url: result.url,
+          accessCode: result.accessCode,
+          document: result.document,
+        },
+      });
+    }),
   };
 };

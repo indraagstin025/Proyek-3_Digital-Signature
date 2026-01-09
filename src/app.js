@@ -12,6 +12,8 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { PrismaClient } from "@prisma/client";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
 import { initSocket } from "./socket/socketHandler.js";
 import { trafficLogger } from "./middleware/trafficLogger.js";
 import logger from "./utils/logger.js";
@@ -20,6 +22,7 @@ import FileStorage from "./repository/interface/FileStorage.js";
 import errorHandler from "./middleware/errorHandler.js";
 import AuthError from "./errors/AuthError.js";
 import CommonError from "./errors/CommonError.js";
+import swaggerConfig from "./config/swaggerConfig.js";
 
 import { PrismaAdminRepository } from "./repository/prisma/PrismaAdminRepository.js";
 import PrismaUserRepository from "./repository/prisma/PrismaUserRepository.js";
@@ -95,7 +98,15 @@ const prisma = new PrismaClient();
 /**
  * Konfigurasi CORS
  */
-const allowedOrigins = ["https://www.moodvis.my.id", "https://moodvis.my.id", "http://localhost:5173", "http://localhost:5174", "http://localhost:5175"];
+const allowedOrigins = [
+  "https://www.moodvis.my.id",
+  "https://moodvis.my.id",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -109,10 +120,24 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept", "Cache-Control"],
-  optionsSuccessStatus: 204,
+  credentials: true, // ✅ PENTING: Allow credentials (cookies, auth headers)
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Cache-Control",
+    "Set-Cookie", // ✅ PENTING: Allow Set-Cookie header
+    "Cookie", // ✅ PENTING: Allow Cookie header
+  ],
+  exposedHeaders: [
+    "Set-Cookie", // ✅ PENTING: Expose Set-Cookie header ke frontend
+    "X-Total-Count", // Pagination metadata
+    "X-Page-Count",
+  ],
+  optionsSuccessStatus: 200, // ✅ Changed dari 204 ke 200 untuk better compatibility
+  maxAge: 86400, // Cache preflight 24 jam
 };
 
 const io = new Server(httpServer, {
@@ -239,6 +264,26 @@ const packageController = createPackageController(packageService);
 const dashboardController = createDashboardController(dashboardService);
 const historyController = createHistoryController(historyService);
 const paymentController = createPaymentController(paymentService);
+
+/**
+ * ======================================================
+ * 📚 Swagger API Documentation Setup
+ * ======================================================
+ */
+const specs = swaggerJsdoc(swaggerConfig);
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayOperationId: true,
+    },
+    customCss: `.swagger-ui .topbar { display: none }
+              .swagger-ui .model-box { box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); }`,
+    customSiteTitle: "DigiSign API Documentation",
+  })
+);
 
 /**
  * Routes

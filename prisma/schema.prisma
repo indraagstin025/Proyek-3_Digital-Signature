@@ -88,6 +88,7 @@ model User {
   sentInvitations    GroupInvitation[]     @relation("SentByInviter")
   uploadedVersions   DocumentVersion[]     @relation("UploadedBy")
   auditLogs          AuditLog[]            @relation("ActorAudit")
+  tourProgress       Json?                 @default("{}") @map("tour_progress")
   signingPackages    SigningPackage[]
   packageSignatures  PackageSignature[]
   groupSigningTasks  GroupDocumentSigner[]

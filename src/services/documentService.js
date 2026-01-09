@@ -18,7 +18,7 @@ export class DocumentService {
    * @throws {Error} Jika ada dependency yang tidak diberikan
    */
   constructor(documentRepository, versionRepository, signatureRepository, fileStorage, pdfService, groupMemberRepository, groupDocumentSignerRepository, aiService, groupSignatureRepository, userService) {
-    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService || !groupSignatureRepository || !userService ) {
+    if (!documentRepository || !versionRepository || !signatureRepository || !fileStorage || !pdfService || !groupMemberRepository || !groupDocumentSignerRepository || !aiService || !groupSignatureRepository || !userService) {
       throw new Error("Semua repository dan service harus disediakan.");
     }
 
@@ -80,31 +80,21 @@ export class DocumentService {
 
     if (file.size > maxSize) {
       const limitLabel = isPremium ? "50MB" : "10MB";
-      throw CommonError.BadRequest(
-          `Ukuran file melebihi batas paket Anda (${limitLabel}). ${!isPremium ? "Upgrade ke Premium untuk upload hingga 50MB." : ""}`
-      );
+      throw CommonError.BadRequest(`Ukuran file melebihi batas paket Anda (${limitLabel}). ${!isPremium ? "Upgrade ke Premium untuk upload hingga 50MB." : ""}`);
     }
 
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingVersion = await this.versionRepository.findByUserAndHash(userId, hash);
 
     if (existingVersion) {
-      throw CommonError.BadRequest(
-          `File ini sudah pernah diunggah pada dokumen: "${existingVersion.document.title}". Tidak diizinkan mengupload file duplikat.`
-      );
+      throw CommonError.BadRequest(`File ini sudah pernah diunggah pada dokumen: "${existingVersion.document.title}". Tidak diizinkan mengupload file duplikat.`);
     }
 
     const finalType = manualType || "General";
 
     console.log(`📂 Uploading Document: "${title}" | Type: "${finalType}" | Premium: ${isPremium}`);
     const filePath = await this.fileStorage.uploadDocument(file, userId);
-    return this.documentRepository.createWithFirstVersion(
-        userId,
-        title,
-        filePath,
-        hash,
-        finalType
-    );
+    return this.documentRepository.createWithFirstVersion(userId, title, filePath, hash, finalType);
   }
 
   /**
@@ -118,10 +108,8 @@ export class DocumentService {
     const currentCount = await this.versionRepository.countByDocumentId(documentId);
 
     if (currentCount >= limit) {
-      await this.documentRepository.update(documentId, { status: 'completed' });
-      throw CommonError.Forbidden(
-          `Batas revisi dokumen tercapai (${limit} versi). Dokumen otomatis dikunci menjadi 'Completed'. ${!isPremium ? "Upgrade ke Premium untuk batas 20 versi." : ""}`
-      );
+      await this.documentRepository.update(documentId, { status: "completed" });
+      throw CommonError.Forbidden(`Batas revisi dokumen tercapai (${limit} versi). Dokumen otomatis dikunci menjadi 'Completed'. ${!isPremium ? "Upgrade ke Premium untuk batas 20 versi." : ""}`);
     }
   }
 
@@ -168,6 +156,9 @@ export class DocumentService {
     const dataToUpdate = {};
 
     if (updates?.title) dataToUpdate.title = updates.title;
+
+    if (updates?.type) dataToUpdate.type = updates.type;
+
     if (!Object.keys(dataToUpdate).length) return document;
 
     return this.documentRepository.update(documentId, dataToUpdate);
@@ -255,9 +246,7 @@ export class DocumentService {
       if (!isUploader) {
         const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
         if (!member || member.role !== "admin_group") {
-          throw DocumentError.Forbidden(
-              "Akses Ditolak: Hanya Admin Grup yang dapat mengembalikan versi dokumen. Signer hanya diizinkan menandatangani."
-          );
+          throw DocumentError.Forbidden("Akses Ditolak: Hanya Admin Grup yang dapat mengembalikan versi dokumen. Signer hanya diizinkan menandatangani.");
         }
       }
     } else {
@@ -301,7 +290,6 @@ export class DocumentService {
       }
     }
 
-    // 4. Update Database
     return this.documentRepository.update(documentId, {
       currentVersionId: versionId,
       status: newStatus,
@@ -316,13 +304,10 @@ export class DocumentService {
    * @param {boolean} isDownload
    * @returns {Promise<string>} Signed URL file
    */
-// File: services/documentService.js
 
   async getDocumentFileUrl(documentId, userId, isDownload = false) {
-    // 1. Ambil dokumen & validasi kepemilikan
     const document = await this.getDocumentById(documentId, userId);
 
-    // 2. Validasi Versi Aktif
     if (!document.currentVersionId || !document.currentVersion) {
       throw new Error("Dokumen tidak memiliki versi aktif.");
     }
@@ -330,14 +315,11 @@ export class DocumentService {
     const currentVersion = document.currentVersion;
     let customFilename = null;
 
-    // 3. Jika Download, bersihkan nama file agar aman di URL
     if (isDownload) {
-      // Regex membersihkan karakter aneh
       const sanitizedTitle = document.title.replace(/\.pdf$/i, "").replace(/[\s/\\?%*:|"<>]/g, "_");
       customFilename = `${sanitizedTitle}.pdf`;
     }
 
-    // 4. Generate URL menggunakan Storage Private (SupabaseFileStorage)
     return this.fileStorage.getSignedUrl(currentVersion.url, 60, customFilename);
   }
 
@@ -397,29 +379,23 @@ export class DocumentService {
     return version.url;
   }
 
-  // File: services/documentService.js
-
   /**
    * [BARU] Menghapus satu versi spesifik dari riwayat dokumen.
    * Method ini menangani validasi hak akses dan pembersihan file fisik.
    */
   async deleteVersion(documentId, versionId, userId) {
-    // 1. Cek keberadaan dokumen (Gunakan findByIdSimple agar tidak berat load relasinya)
     const document = await this.documentRepository.findByIdSimple(documentId);
 
     if (!document) {
       throw DocumentError.NotFound("Dokumen tidak ditemukan.");
     }
 
-    // 2. Validasi Hak Akses (Hanya Pemilik atau Admin Grup yang boleh hapus)
     let canDelete = false;
 
-    // A. Cek Pemilik Personal
     if (document.userId === userId) {
       canDelete = true;
     }
 
-    // B. Cek Admin Grup (Jika dokumen milik grup)
     if (!canDelete && document.groupId) {
       const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
       if (member && member.role === "admin_group") {
@@ -431,7 +407,6 @@ export class DocumentService {
       throw DocumentError.Forbidden("Anda tidak memiliki izin untuk menghapus versi dokumen ini.");
     }
 
-    // 3. Ambil data versi (untuk mendapatkan URL file fisik sebelum record DB dihapus)
     let versionToDelete;
     try {
       versionToDelete = await this.versionRepository.findById(versionId);
@@ -439,16 +414,12 @@ export class DocumentService {
       throw DocumentError.NotFound("Versi dokumen tidak ditemukan.");
     }
 
-    // 4. Hapus Record Database
-    // (Repository akan melempar error jika user mencoba menghapus Versi Aktif / Current Version)
     await this.versionRepository.deleteById(versionId);
 
-    // 5. Hapus File Fisik di Storage (Cleanup)
     if (versionToDelete.url) {
       try {
         await this.fileStorage.deleteFile(versionToDelete.url);
       } catch (err) {
-        // Log warning saja agar flow tidak error total jika file di S3 sudah hilang duluan
         console.warn(`[Warning] Gagal menghapus file fisik versi ${versionId}:`, err.message);
       }
     }
@@ -456,5 +427,3 @@ export class DocumentService {
     return { message: "Versi dokumen berhasil dihapus." };
   }
 }
-
-

@@ -1,7 +1,6 @@
 import axios from "axios";
 import FormData from "form-data";
 
-// Sesuaikan URL Flask Anda
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://127.0.0.1:5000";
 
 export const aiService = {
@@ -13,7 +12,6 @@ export const aiService = {
    * @param {string} docType - Tipe dokumen dari input user (Wajib dikirim)
    */
   async analyzeDocumentContent(sourceData, mode, docType) {
-    // 1. Pastikan docType memiliki nilai default jika kosong
     const finalDocType = docType || "General";
 
     console.log(`📡 [AI Service] Mengirim request ke Python...`);
@@ -23,54 +21,48 @@ export const aiService = {
     try {
       let response;
 
-      // SKENARIO 1: MODE URL (Production / S3 / Supabase)
-      if (mode === 'url') {
-        if (typeof sourceData !== 'string') {
+      if (mode === "url") {
+        if (typeof sourceData !== "string") {
           throw new Error("Mode URL dipilih, tapi data bukan string.");
         }
 
-        response = await axios.post(`${AI_SERVICE_URL}/analyze-content`, {
-          file_url: sourceData,
-          document_type: finalDocType // <--- KIRIM TIPE KE PYTHON
-        }, {
-          headers: { "Content-Type": "application/json" },
-          timeout: 120000 // 2 menit timeout
-        });
-      }
-
-      // SKENARIO 2: MODE BUFFER (Local Upload)
-      else if (mode === 'buffer') {
+        response = await axios.post(
+          `${AI_SERVICE_URL}/analyze-content`,
+          {
+            file_url: sourceData,
+            document_type: finalDocType,
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+            timeout: 120000,
+          }
+        );
+      } else if (mode === "buffer") {
         const form = new FormData();
         form.append("file", sourceData, "document.pdf");
-        form.append("document_type", finalDocType); // <--- KIRIM TIPE KE PYTHON
+        form.append("document_type", finalDocType);
 
         response = await axios.post(`${AI_SERVICE_URL}/analyze-content`, form, {
           headers: { ...form.getHeaders() },
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
-          timeout: 120000
+          timeout: 120000,
         });
-      }
-
-      else {
+      } else {
         throw new Error("Mode tidak valid (harus 'url' atau 'buffer').");
       }
 
-      // Handle Response dari Python
       const result = response.data;
 
-      // Jika Python membungkus data di dalam properti "data"
       if (result.status === "success" && result.data) {
         return result.data;
       }
 
       return result;
-
     } catch (error) {
       console.error("❌ AI Service Error:", error.message);
 
-      // Deteksi error koneksi
-      if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
+      if (error.code === "ECONNREFUSED" || error.message.includes("ECONNREFUSED")) {
         return { error: "Layanan AI sedang offline. Mohon periksa koneksi server." };
       }
 

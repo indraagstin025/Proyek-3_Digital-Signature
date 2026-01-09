@@ -36,42 +36,33 @@ export class AdminService {
   }
 
   async getDashboardStats() {
-    // 1. Ambil Stats Counter (User, Dokumen, dll)
     const realCounts = await this.adminRepository.getSystemStats();
 
-    // 2. Ambil Traffic Logs (Raw Data dari DB)
     const trafficLogs = await this.adminRepository.getTrafficStats();
 
-    // 3. Olah Traffic: Grouping per Jam (00:00 - 23:00)
-    // Buat map kosong untuk 24 jam terakhir
     const trafficMap = {};
 
-    // Inisialisasi map dengan 0
     for (let i = 0; i < 24; i++) {
-      const hourLabel = `${i.toString().padStart(2, '0')}:00`;
+      const hourLabel = `${i.toString().padStart(2, "0")}:00`;
       trafficMap[hourLabel] = 0;
     }
 
-    // Isi map berdasarkan data log
-    trafficLogs.forEach(log => {
+    trafficLogs.forEach((log) => {
       const date = new Date(log.createdAt);
-      // Sesuaikan dengan jam server/lokal
+
       const hour = date.getHours();
-      const label = `${hour.toString().padStart(2, '0')}:00`;
+      const label = `${hour.toString().padStart(2, "0")}:00`;
 
       if (trafficMap[label] !== undefined) {
         trafficMap[label]++;
       }
     });
 
-    // Konversi ke Array format Recharts [{name: "10:00", requests: 12}, ...]
-    const realTrafficData = Object.keys(trafficMap).map(key => ({
+    const realTrafficData = Object.keys(trafficMap).map((key) => ({
       name: key,
-      requests: trafficMap[key]
+      requests: trafficMap[key],
     }));
 
-    // (Opsional) Data Trends: Bisa dibuat logika hitung diff dengan bulan lalu nanti.
-    // Untuk sekarang hardcode atau hitung sederhana.
     const dummyTrends = {
       users: 12.5,
       documents: 5.4,
@@ -86,7 +77,7 @@ export class AdminService {
         groups: realCounts.totalGroups,
         verifications: realCounts.totalSignatures,
       },
-      traffic: realTrafficData, // <-- DATA ASLI DIKIRIM KE SINI
+      traffic: realTrafficData,
       trends: dummyTrends,
     };
   }

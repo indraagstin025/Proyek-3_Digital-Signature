@@ -11,8 +11,15 @@ export const createUserController = (userService) => {
   return {
     /**
      * @description Mengambil data profil lengkap dari pengguna yang sedang login.
-     * @route   GET /api/users/me
-     * @access  Private
+     * * **Proses Kode:**
+     * 1. Mengambil `userId` dari request user context (dari authentication middleware).
+     * 2. Memanggil `userService.getMyProfile` untuk ambil data user dari database.
+     * 3. Format URL avatar menggunakan `formatAvatarUrl` helper untuk normalisasi (signed URL jika dari storage).
+     * 4. Mengembalikan data profil dengan avatar URL yang sudah diformat.
+     * * @route   GET /api/users/me
+     * @param {import("express").Request} req - Authenticated request.
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
      */
     getMyProfile: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -30,9 +37,20 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Memperbarui profil pengguna & Foto Profil.
-     * @route   PUT /api/users/me
-     * @access  Private
+     * @description Memperbarui profil pengguna dan/atau foto profil dengan 3 skenario berbeda.
+     * * **Proses Kode:**
+     * 1. Menerima updateData (fullName, phoneNumber), file (foto baru), atau profilePictureId (foto lama).
+     * 2. **Skenario 1:** Tidak ada perubahan → Return profil current tanpa update.
+     * 3. **Skenario 2:** Ada file foto baru → Call `updateUserProfileWithNewPicture`.
+     * 4. **Skenario 3:** Gunakan foto lama dari history (profilePictureId) → Call `updateUserProfileWithOldPicture`.
+     * 5. **Skenario 4:** Update teks saja → Call `updateUserProfile` + ambil history foto.
+     * 6. Normalisasi URL di semua object (user utama & profile pictures array).
+     * 7. Return updated data dengan formatted avatar URLs.
+     * * @route   PUT /api/users/me
+     * @param {import("express").Request} req - FormData: fullName, phoneNumber, profilePicture file, atau profilePictureId.
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
+     * @note Mendukung multipart/form-data untuk upload file foto.
      */
     updateMyProfile: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -92,9 +110,16 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Mengambil riwayat semua foto profil.
-     * @route   GET /api/users/me/pictures
-     * @access  Private
+     * @description Mengambil riwayat semua foto profil yang pernah diupload user.
+     * * **Proses Kode:**
+     * 1. Mengambil `userId` dari request user context.
+     * 2. Memanggil `userService.getUserProfilePictures` untuk ambil array history foto.
+     * 3. Format setiap item dalam array menggunakan `formatAvatarUrl` untuk normalisasi URL.
+     * 4. Mengembalikan list foto dengan URLs yang sudah diformat dan siap untuk ditampilkan.
+     * * @route   GET /api/users/me/pictures
+     * @param {import("express").Request} req - Authenticated request.
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
      */
     getProfilePictures: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -115,9 +140,18 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Menghapus salah satu foto dari riwayat.
-     * @route   DELETE /api/users/me/pictures/:pictureId
-     * @access  Private
+     * @description Menghapus salah satu foto dari riwayat profil.
+     * * **Proses Kode:**
+     * 1. Mengambil `userId` dari request user context dan `pictureId` dari parameter URL.
+     * 2. Memanggil `userService.deleteUserProfilePicture` untuk:
+     * - Hapus file foto dari storage.
+     * - Update record di database (history foto & profil utama jika perlu).
+     * 3. Format URL avatar di result (user utama & profilePictures array).
+     * 4. Mengembalikan data user yang diupdate beserta history foto terbaru.
+     * * @route   DELETE /api/users/me/pictures/:pictureId
+     * @param {import("express").Request} req - Params: pictureId (ID foto dari history).
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
      */
     deleteProfilePicture: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -145,9 +179,18 @@ export const createUserController = (userService) => {
     }),
 
     /**
-     * @description Mengambil informasi quota/limit user.
-     * @route   GET /api/users/me/quota
-     * @access  Private
+     * @description Mengambil informasi quota/limit penggunaan user.
+     * * **Proses Kode:**
+     * 1. Mengambil `userId` dari request user context.
+     * 2. Memanggil `userService.getUserQuota` untuk ambil data quota dari database.
+     * 3. Mengembalikan object dengan max/used limits untuk:
+     * - Documents (maxDocuments, usedDocuments)
+     * - Signatures (maxSignatures, usedSignatures)
+     * - Storage (storageQuota, usedStorage dalam bytes)
+     * * @route   GET /api/users/me/quota
+     * @param {import("express").Request} req - Authenticated request.
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
      */
     getMyQuota: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
@@ -156,6 +199,40 @@ export const createUserController = (userService) => {
       res.status(200).json({
         status: "success",
         data: quotaData,
+      });
+    }),
+
+    /**
+     * @description Menandai bahwa user telah menyelesaikan tour/panduan tertentu.
+     * * **Proses Kode:**
+     * 1. Mengambil `userId` dari request user context.
+     * 2. Menerima `tourKey` dari body (identifier unik untuk tour yang diselesaikan).
+     * 3. Validasi bahwa tourKey tidak kosong, jika kosong throw 400 error.
+     * 4. Memanggil `userService.updateTourProgress` untuk update status tour di database.
+     * 5. Mengembalikan updated progress data untuk tracking onboarding di frontend.
+     * * @route   PATCH /api/users/me/tour-progress
+     * @param {import("express").Request} req - Body: tourKey (string identifier).
+     * @param {import("express").Response} res - Response object.
+     * @access Private (authenticated users only)
+     * @throws {CommonError.BadRequest} Jika tourKey tidak diisi.
+     */
+    updateTourProgress: asyncHandler(async (req, res, next) => {
+      const userId = req.user.id;
+      const { tourKey } = req.body;
+
+      if (!tourKey) {
+        return res.status(400).json({
+          status: "fail",
+          message: "tourKey wajib diisi.",
+        });
+      }
+
+      const updatedProgress = await userService.updateTourProgress(userId, tourKey);
+
+      res.status(200).json({
+        status: "success",
+        message: `Tour '${tourKey}' berhasil disimpan.`,
+        data: updatedProgress,
       });
     }),
   };

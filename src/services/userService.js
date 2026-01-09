@@ -19,26 +19,21 @@ export class UserService {
    * @returns {Promise<boolean>} true jika PREMIUM dan BELUM EXPIRED.
    */
   async isUserPremium(userId) {
-    // 1. Ambil data user dari Repo (Repo sudah diupdate untuk select status & tanggal)
     const user = await this.userRepository.findById(userId);
 
     if (!user) return false;
 
-    // 2. Cek apakah status di DB adalah PREMIUM
     if (user.userStatus !== "PREMIUM") return false;
 
-    // 3. Cek Tanggal Expired
     if (!user.premiumUntil) return false;
 
     const now = new Date();
     const premiumUntil = new Date(user.premiumUntil);
 
-    // Jika waktu sekarang sudah melewati batas premium -> Return False
     if (now > premiumUntil) {
       return false;
     }
 
-    // Lolos semua cek
     return true;
   }
 
@@ -55,7 +50,6 @@ export class UserService {
     }
 
     if (user.profilePictureUrl) {
-      // Menggunakan getPublicUrl (Sync) - Link Bersih
       user.profilePictureUrl = this.fileStorage.getPublicUrl(user.profilePictureUrl);
     }
 
@@ -98,28 +92,23 @@ export class UserService {
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
     const existingPicture = await this.userRepository.findProfilePictureByHash(userId, hash);
 
-    // Opsional: Jika ingin mengizinkan upload ulang foto yang sama
     if (existingPicture) {
       throw UserError.DuplicateProfilePicture();
     }
 
-    // 1. Upload ke FileStorage (Bucket 'avatar')
     const filePath = await this.fileStorage.uploadProfilePicture(file, userId);
     if (!filePath) {
       throw CommonError.ServiceUnavailable("Layanan penyimpanan file gagal.");
     }
 
-    // 2. Simpan Path ke Database (Tabel ProfilePictures)
     const newPicture = await this.userRepository.createProfilePicture(userId, {
       url: filePath,
       hash,
       isActive: true,
     });
 
-    // 3. Set foto lain jadi tidak aktif
     await this.userRepository.deactivateOtherProfilePictures(userId, newPicture.id);
 
-    // 4. Update URL aktif di tabel User
     allowedUpdates.profilePictureUrl = newPicture.url;
 
     await this.userRepository.update(userId, allowedUpdates);
@@ -157,7 +146,6 @@ export class UserService {
       return [];
     }
 
-    // Mapping ke Public URL (Sync)
     const picturesWithPublicUrls = picturesFromDb.map((picture) => {
       return {
         ...picture,
@@ -180,10 +168,8 @@ export class UserService {
       throw UserError.CannotDeleteActivePicture();
     }
 
-    // Hapus file fisik di Supabase
     await this.fileStorage.deleteFile(picture.url);
 
-    // Hapus record di Database
     await this.userRepository.deleteProfilePicture(userId, pictureId);
 
     return this.getFullUserProfileData(userId);
@@ -214,18 +200,16 @@ export class UserService {
 
     const isPremium = await this.isUserPremium(userId);
 
-    // Definisi Limit berdasarkan tier
     const limits = {
-      maxFileSize: isPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024, // 50MB vs 10MB
+      maxFileSize: isPremium ? 50 * 1024 * 1024 : 10 * 1024 * 1024,
       maxFileSizeLabel: isPremium ? "50 MB" : "10 MB",
       maxVersionsPerDocument: isPremium ? 20 : 5,
       maxOwnedGroups: isPremium ? 10 : 1,
-      maxMembersPerGroup: isPremium ? 999 : 5, // 999 = unlimited
+      maxMembersPerGroup: isPremium ? 999 : 5,
       maxDocsPerGroup: isPremium ? 100 : 10,
       maxDocsPerPackage: isPremium ? 20 : 3,
     };
 
-    // Ambil usage data
     const usage = await this.userRepository.getUserUsageStats(userId);
 
     return {
@@ -237,10 +221,33 @@ export class UserService {
         ownedGroups: usage.ownedGroupsCount || 0,
         totalPersonalDocuments: usage.personalDocsCount || 0,
       },
-      // Helper untuk Frontend
+
       quotaPercentages: {
         ownedGroups: Math.round(((usage.ownedGroupsCount || 0) / limits.maxOwnedGroups) * 100),
       },
     };
+  }
+
+  /**
+   * [BARU] Update status Tour Progress user.
+   * @param {string} userId
+   * @param {string} tourKey - ID unik untuk tour (misal: 'dashboard_intro')
+   */
+  async updateTourProgress(userId, tourKey) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw UserError.NotFound();
+
+    const currentProgress = user.tourProgress || {};
+
+    const newProgress = {
+      ...currentProgress,
+      [tourKey]: true,
+    };
+
+    await this.userRepository.update(userId, {
+      tourProgress: newProgress,
+    });
+
+    return newProgress;
   }
 }

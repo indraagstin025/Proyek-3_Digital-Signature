@@ -17,7 +17,7 @@ export class SignatureService {
    * Free: Max 5 versi, Premium: Max 20 versi.
    */
   async _checkVersionLimit(documentId, userId) {
-    if (!this.userService) return; // Skip jika userService tidak tersedia
+    if (!this.userService) return;
 
     const isPremium = await this.userService.isUserPremium(userId);
     const limit = isPremium ? 20 : 5;
@@ -46,10 +46,8 @@ export class SignatureService {
     if (!document) throw CommonError.NotFound(`Dokumen tidak ditemukan atau akses ditolak.`);
     if (document.status === "completed") throw CommonError.BadRequest("Dokumen sudah selesai (Completed).");
 
-    // [LIMIT CHECK] Cek apakah sudah mencapai batas versi
     await this._checkVersionLimit(originalVersion.documentId, userId);
 
-    // [FIX] Ambil data User untuk Audit Trail (Nama & Email)
     let signerName = "User";
     let signerEmail = "user@email.com";
     if (this.signatureRepository.prisma) {
@@ -63,7 +61,6 @@ export class SignatureService {
     let newVersionId = null;
 
     try {
-      // 1. Buat Versi Baru
       const newVersion = await this.versionRepository.create({
         documentId: originalVersion.documentId,
         userId: userId,
@@ -71,7 +68,6 @@ export class SignatureService {
       });
       newVersionId = newVersion.id;
 
-      // 2. Simpan Signature ke DB
       const payloadArray = Array.isArray(signaturesData) ? signaturesData : [signaturesData];
       const savedSignatures = [];
 
@@ -92,16 +88,13 @@ export class SignatureService {
         savedSignatures.push(savedSig);
       }
 
-      // 3. Generate PDF (Burning)
       const firstSignatureId = savedSignatures[0]?.id;
       const BASE_VERIFY_URL = process.env.VERIFICATION_URL || "http://localhost:5173";
       const verificationUrl = `${BASE_VERIFY_URL.replace(/\/$/, "")}/verify/${firstSignatureId}`;
 
-      // [FIX] Gabungkan Data Visual + Audit menjadi satu payload
       const signaturesForPdf = payloadArray.map((sig, index) => ({
-        ...sig, // Data Visual (x, y, image)
+        ...sig,
 
-        // Data Audit (Wajib untuk halaman belakang)
         id: savedSignatures[index].id,
         signerName: signerName,
         signerEmail: signerEmail,
@@ -109,15 +102,12 @@ export class SignatureService {
         signedAt: new Date(),
       }));
 
-      // [FIX] Panggil dengan 3 argumen saja
       const { signedFileBuffer, publicUrl, accessCode } = await this.pdfService.generateSignedPdf(originalVersionId, signaturesForPdf, { displayQrCode: options.displayQrCode, verificationUrl });
 
-      // [BARU] Simpan Access Code (PIN)
       if (accessCode && firstSignatureId) {
         await this.signatureRepository.update(firstSignatureId, { accessCode });
       }
 
-      // 4. Update Versi & Dokumen
       const signedHash = crypto.createHash("sha256").update(signedFileBuffer).digest("hex");
 
       await this.versionRepository.update(newVersion.id, {
@@ -145,10 +135,6 @@ export class SignatureService {
     }
   }
 
-  // =========================================================================
-  // 👇 BAGIAN VERIFIKASI (UPDATED WITH PIN) 👇
-  // =========================================================================
-
   /**
    * [PUBLIC] Mengambil detail untuk Scan QR Code
    * [UPDATED] Mengembalikan status locked jika ada accessCode.
@@ -160,14 +146,21 @@ export class SignatureService {
       throw SignatureError.NotFound(signatureId);
     }
 
-    // [LOGIC BARU] Jika ada accessCode, kunci data!
     if (signature.accessCode) {
+      let isTimeLocked = false;
+      if (signature.lockedUntil && new Date() < new Date(signature.lockedUntil)) {
+        isTimeLocked = true;
+      }
+
       return {
         isLocked: true,
         signatureId: signature.id,
         documentTitle: signature.documentVersion?.document?.title || "Dokumen Terkunci",
         type: "PERSONAL",
-        message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen.",
+
+        message: isTimeLocked ? "Akses dibekukan sementara karena terlalu banyak percobaan gagal." : "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN yang tertera di dokumen.",
+
+        lockedUntil: signature.lockedUntil,
       };
     }
 
@@ -196,19 +189,16 @@ export class SignatureService {
     const signature = await this.signatureRepository.findById(signatureId);
     if (!signature) return null;
 
-    // 1. CEK APAKAH SEDANG TERKUNCI?
     if (signature.lockedUntil && new Date() < new Date(signature.lockedUntil)) {
       const waitTime = Math.ceil((new Date(signature.lockedUntil) - new Date()) / 60000);
       throw CommonError.Forbidden(`Dokumen terkunci sementara. Coba lagi dalam ${waitTime} menit.`);
     }
 
-    // 2. JIKA PIN SALAH
     if (!signature.accessCode || signature.accessCode !== inputCode) {
       const newRetryCount = (signature.retryCount || 0) + 1;
       const MAX_ATTEMPTS = 3;
 
       if (newRetryCount >= MAX_ATTEMPTS) {
-        // Kunci selama 30 menit
         const lockTime = new Date(Date.now() + 30 * 60 * 1000);
 
         await this.signatureRepository.update(signature.id, {
@@ -218,7 +208,6 @@ export class SignatureService {
 
         throw CommonError.Forbidden("Terlalu banyak percobaan salah. Dokumen dikunci selama 30 menit.");
       } else {
-        // Update counter saja
         await this.signatureRepository.update(signature.id, {
           retryCount: newRetryCount,
         });
@@ -228,26 +217,28 @@ export class SignatureService {
       }
     }
 
-    // 3. JIKA PIN BENAR (Reset Counter)
     if (signature.retryCount > 0 || signature.lockedUntil) {
       await this.signatureRepository.update(signature.id, {
         retryCount: 0,
-        lockedUntil: null, // Reset lock
+        lockedUntil: null,
       });
     }
 
-    // Return Data Lengkap
     return {
-      signerName: signature.signer.name,
-      signerEmail: signature.signer.email,
-      signerIpAddress: signature.ipAddress || "-",
+      signerName: null,
+      signerEmail: null,
+
+      signerIpAddress: null,
+      ipAddress: null,
+      signedAt: null,
+
       documentTitle: signature.documentVersion.document.title,
-      signedAt: signature.signedAt,
       storedFileHash: signature.documentVersion.signedFileHash,
+
       verificationStatus: "REGISTERED",
-      verificationMessage: "Tanda tangan terdaftar dan valid.",
-      originalDocumentUrl: signature.documentVersion.url,
+      verificationMessage: "PIN Diterima. Unggah file untuk membuka seluruh metadata.",
       type: "PERSONAL",
+
       isLocked: false,
       requireUpload: true,
     };
@@ -256,15 +247,27 @@ export class SignatureService {
   /**
    * [PUBLIC] Verifikasi Manual Upload PDF
    */
-  async verifyUploadedFile(signatureId, uploadedFileBuffer) {
+
+  async verifyUploadedFile(signatureId, uploadedFileBuffer, inputAccessCode = null) {
     const signature = await this.signatureRepository.findById(signatureId);
 
     if (!signature) throw SignatureError.NotFound(signatureId);
 
+    if (signature.accessCode) {
+      if (!inputAccessCode || signature.accessCode !== inputAccessCode) {
+        return {
+          isLocked: true,
+          signatureId: signature.id,
+          documentTitle: "Dokumen Terkunci",
+          message: "Dokumen dilindungi kode akses (PIN). Silakan masukkan PIN.",
+          type: "PERSONAL",
+        };
+      }
+    }
+
     const storedHash = signature.documentVersion.signedFileHash;
     if (!storedHash) throw CommonError.InternalServerError("Data Hash dokumen asli tidak ditemukan.");
 
-    // Hitung Hash file upload
     const recalculateHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
     const isHashMatch = recalculateHash === storedHash;
 
@@ -282,6 +285,7 @@ export class SignatureService {
       verificationStatus: isHashMatch ? "VALID" : "INVALID",
       isHashMatch: isHashMatch,
       type: "PERSONAL",
+      isLocked: false,
     };
   }
 }

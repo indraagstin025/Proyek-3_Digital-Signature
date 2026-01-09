@@ -12,15 +12,24 @@ import { PDFDocument } from "pdf-lib";
 export const createDocumentController = (documentService, signatureRepository, fileStorage) => {
   return {
     /**
-     * @description Mengunggah dokumen baru ke sistem.
-     * * **Proses Kode:**
-     * 1. Menerima data `title` dari body dan file fisik dari `req.file` (Multer).
-     * 2. Mengambil `userId` dari token autentikasi.
-     * 3. Memanggil `documentService.createDocument` untuk mengunggah file ke storage dan menyimpan metadata ke database.
-     * 4. Mengembalikan response HTTP 201 dengan data dokumen yang baru dibuat.
-     * * @route   POST /api/documents
-     * @param {import("express").Request} req - Body: title, File: req.file.
-     * @param {import("express").Response} res - Response object.
+     * @description Mengunggah dokumen baru ke sistem
+     * Proses:
+     * 1. Validasi file dari req.file (Multer)
+     * 2. Ambil userId dari middleware authentication
+     * 3. Ambil title dan type dari request body
+     * 4. Upload file ke cloud storage (Supabase)
+     * 5. Simpan metadata dokumen ke database
+     * 6. Return dokumen yang baru dibuat dengan status 201
+     * @route POST /api/documents
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} title - Judul dokumen
+     * @param {string} type - Tipe MIME dokumen
+     * @param {file} file - File dokumen (multipart form data)
+     * @returns {201} Dokumen berhasil dibuat
+     * @error {400} File tidak valid atau validasi gagal
+     * @error {401} User tidak authenticated
+     * @error {500} Server error atau upload gagal
      */
     createDocument: asyncHandler(async (req, res, next) => {
       const { title, type } = req.body;
@@ -36,16 +45,20 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-
     /**
-     * @description Mengambil daftar semua dokumen milik pengguna yang sedang login.
-     * * **Proses Kode:**
-     * 1. Mengidentifikasi user berdasarkan `userId`.
-     * 2. Memanggil `documentService.getAllDocuments` untuk query database.
-     * 3. Mengembalikan array dokumen dalam format JSON.
-     * * @route   GET /api/documents
-     * @param {import("express").Request} req - User ID dari token.
-     * @param {import("express").Response} res - Response object.
+     * @description Mengambil daftar semua dokumen milik user yang login
+     * Proses:
+     * 1. Ambil userId dari middleware authentication
+     * 2. Ambil search query parameter (opsional)
+     * 3. Query database untuk semua dokumen user dengan search filter
+     * 4. Return array dokumen dalam format JSON
+     * @route GET /api/documents
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} [search] - Filter search berdasarkan title (optional)
+     * @returns {200} Array dokumen user
+     * @error {401} User tidak authenticated
+     * @error {500} Server error
      */
     getAllDocuments: asyncHandler(async (req, res, next) => {
       const userId = req.user?.id;
@@ -60,14 +73,21 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Mendapatkan detail lengkap satu dokumen berdasarkan ID.
-     * * **Proses Kode:**
-     * 1. Mengambil `documentId` dari URL parameter.
-     * 2. Memastikan dokumen tersebut milik `userId` yang sedang login (validasi kepemilikan di service).
-     * 3. Mengembalikan objek detail dokumen.
-     * * @route   GET /api/documents/:id
-     * @param {import("express").Request} req - Params: id.
-     * @param {import("express").Response} res - Response object.
+     * @description Mendapatkan detail lengkap satu dokumen berdasarkan ID
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Query database dengan ownership validation (dokumen harus milik user)
+     * 4. Return detail dokumen lengkap dengan metadata
+     * @route GET /api/documents/:id
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} id - Document ID (path parameter)
+     * @returns {200} Detail dokumen lengkap
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak (dokumen bukan milik user)
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error
      */
     getDocumentById: asyncHandler(async (req, res, next) => {
       const documentId = req.params.id;
@@ -89,14 +109,25 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Memperbarui metadata dokumen (misal: judul).
-     * * **Proses Kode:**
-     * 1. Menerima data perubahan dari `req.body`.
-     * 2. Memanggil `documentService.updateDocument` untuk melakukan update di database.
-     * 3. Mengembalikan data dokumen yang telah diperbarui.
-     * * @route   PUT /api/documents/:id
-     * @param {import("express").Request} req - Params: id, Body: updates.
-     * @param {import("express").Response} res - Response object.
+     * @description Memperbarui metadata dokumen
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership (dokumen harus milik user)
+     * 4. Update field yang dikirim dari req.body (title, type, dll)
+     * 5. Simpan perubahan ke database
+     * 6. Return dokumen yang sudah diupdate
+     * @route PUT /api/documents/:id
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} id - Document ID (path parameter)
+     * @param {object} body - Fields yang akan diupdate (title, type, etc)
+     * @returns {200} Dokumen berhasil diupdate
+     * @error {400} Validasi gagal
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error
      */
     updateDocument: asyncHandler(async (req, res, next) => {
       const { id: documentId } = req.params;
@@ -113,14 +144,24 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Menghapus dokumen beserta file fisik dan riwayatnya.
-     * * **Proses Kode:**
-     * 1. Memanggil `documentService.deleteDocument` dengan ID dokumen.
-     * 2. Service akan menghapus record database dan file di object storage.
-     * 3. Mengembalikan pesan sukses.
-     * * @route   DELETE /api/documents/:id
-     * @param {import("express").Request} req - Params: id.
-     * @param {import("express").Response} res - Response object.
+     * @description Menghapus dokumen beserta file dan riwayatnya
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership (dokumen harus milik user)
+     * 4. Delete file dari cloud storage
+     * 5. Delete dokumen record dari database
+     * 6. Delete semua versi/riwayat dokumen
+     * 7. Return success message
+     * @route DELETE /api/documents/:id
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} id - Document ID (path parameter)
+     * @returns {200} Dokumen berhasil dihapus
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error atau delete file gagal
      */
     deleteDocument: asyncHandler(async (req, res, next) => {
       const { id: documentId } = req.params;
@@ -135,10 +176,23 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Melihat riwayat versi (version control) dari sebuah dokumen.
-     * * @route   GET /api/documents/:documentId/history
-     * @param {import("express").Request} req - Params: documentId.
-     * @param {import("express").Response} res - Response object.
+     * @description Mengambil riwayat/history versi dokumen
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership
+     * 4. Query semua versi/revisi dokumen dari database
+     * 5. Sort berdasarkan tanggal (terbaru first)
+     * 6. Return array history dengan metadata
+     * @route GET /api/documents/:documentId/history
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID (path parameter)
+     * @returns {200} Array riwayat versi dokumen
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error
      */
     getDocumentHistory: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
@@ -153,14 +207,24 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Mengembalikan dokumen ke versi sebelumnya (Rollback).
-     * * **Proses Kode:**
-     * 1. Menerima `versionId` target yang ingin digunakan kembali.
-     * 2. Service akan menyalin file dari versi lama menjadi `currentVersion` baru.
-     * 3. Database diperbarui untuk menunjuk versi baru tersebut sebagai versi aktif.
-     * * @route   POST /api/documents/:documentId/versions/:versionId/restore
-     * @param {import("express").Request} req - Params: documentId, versionId.
-     * @param {import("express").Response} res - Response object.
+     * @description Mengembalikan dokumen ke versi sebelumnya (Rollback/Restore)
+     * Proses:
+     * 1. Ambil documentId dan versionId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership dan version exists
+     * 4. Copy file dari old version ke current version di storage
+     * 5. Update database untuk menunjuk old version sebagai current
+     * 6. Return updated dokumen dengan new version info
+     * @route POST /api/documents/:documentId/versions/:versionId/restore
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID (path parameter)
+     * @param {string} versionId - Version ID yang akan di-restore (path parameter)
+     * @returns {200} Versi dokumen berhasil diganti
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen atau versi tidak ditemukan
+     * @error {500} Server error
      */
     useOldVersion: asyncHandler(async (req, res, next) => {
       const { documentId, versionId } = req.params;
@@ -179,10 +243,26 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Menghapus satu versi spesifik dari riwayat dokumen.
-     * * @route   DELETE /api/documents/:documentId/versions/:versionId
-     * @param {import("express").Request} req - Params: documentId, versionId.
-     * @param {import("express").Response} res - Response object.
+     * @description Menghapus satu versi spesifik dari riwayat dokumen
+     * Proses:
+     * 1. Ambil documentId dan versionId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership dan version exists
+     * 4. Prevent deleting current active version
+     * 5. Delete version file dari cloud storage
+     * 6. Delete version record dari database
+     * 7. Return success message
+     * @route DELETE /api/documents/:documentId/versions/:versionId
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID (path parameter)
+     * @param {string} versionId - Version ID yang akan dihapus (path parameter)
+     * @returns {200} Versi dokumen berhasil dihapus
+     * @error {400} Tidak bisa menghapus current active version
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen atau versi tidak ditemukan
+     * @error {500} Server error
      */
     deleteVersion: asyncHandler(async (req, res, next) => {
       const { documentId, versionId } = req.params;
@@ -197,14 +277,25 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Mendapatkan Signed URL untuk melihat atau mengunduh dokumen aktif.
-     * * **Proses Kode:**
-     * 1. Mengecek query param `purpose` (apakah 'download' atau 'view').
-     * 2. Meminta `documentService` membuat Signed URL sementara dari storage provider (misal: Supabase/S3).
-     * 3. Mengembalikan URL tersebut beserta waktu kedaluwarsa (expiresIn).
-     * * @route   GET /api/documents/:documentId/file
-     * @param {import("express").Request} req - Params: documentId, Query: purpose.
-     * @param {import("express").Response} res - Response object.
+     * @description Mendapatkan Signed URL untuk melihat atau mengunduh dokumen aktif
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Ambil purpose dari query param (view/download)
+     * 4. Validasi ownership
+     * 5. Generate Signed URL dari cloud storage (Supabase)
+     * 6. URL berlaku limited time (biasanya 1 jam)
+     * 7. Return URL dengan mode info
+     * @route GET /api/documents/:documentId/file
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID (path parameter)
+     * @param {string} [purpose] - Tujuan akses: 'view' atau 'download', default: 'view' (query param)
+     * @returns {200} Signed URL untuk akses file
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error atau generate URL gagal
      */
     getDocumentFile: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
@@ -220,10 +311,24 @@ export const createDocumentController = (documentService, signatureRepository, f
     }),
 
     /**
-     * @description Mendapatkan Signed URL untuk mengunduh versi lama dokumen.
-     * * @route   GET /api/documents/:documentId/versions/:versionId/file
-     * @param {import("express").Request} req - Params: documentId, versionId.
-     * @param {import("express").Response} res - Response object.
+     * @description Mendapatkan Signed URL untuk mengunduh versi lama dokumen
+     * Proses:
+     * 1. Ambil documentId dan versionId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership dan version exists
+     * 4. Generate Signed URL dari cloud storage untuk old version
+     * 5. Set purpose ke 'download' (always download mode untuk old versions)
+     * 6. Return URL dengan expiry info
+     * @route GET /api/documents/:documentId/versions/:versionId/file
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID (path parameter)
+     * @param {string} versionId - Version ID yang akan didownload (path parameter)
+     * @returns {200} Signed URL untuk download versi lama
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen atau versi tidak ditemukan
+     * @error {500} Server error atau generate URL gagal
      */
     getVersionFile: asyncHandler(async (req, res, next) => {
       const { documentId, versionId } = req.params;
@@ -240,21 +345,26 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-
     /**
-     * @description Menganalisis konten dokumen menggunakan AI (Ringkasan/Insight).
-     * * **Proses Kode:**
-     * 1. Mendapatkan path file dokumen.
-     * 2. Mengunduh file sebagai Buffer.
-     * 3. Mengirim Buffer ke `aiService.analyzeDocumentContent` (misal: menggunakan LLM/OpenAI).
-     * 4. Mengembalikan hasil analisis (teks ringkasan, sentimen, dll) ke frontend.
-     * * @route   POST /api/documents/:documentId/analyze
-     * @param {import("express").Request} req - Params: documentId.
-     * @param {import("express").Response} res - Response object.
-     */
-    /**
-     * @description Menganalisis konten dokumen menggunakan AI (Ringkasan/Insight).
-     * [PERBAIKAN] Mengirim URL File ke Python, bukan Buffer.
+     * @description Menganalisis konten dokumen menggunakan AI
+     * Proses:
+     * 1. Ambil documentId dari URL parameter
+     * 2. Ambil userId dari middleware authentication
+     * 3. Validasi ownership
+     * 4. Generate Signed URL untuk akses file
+     * 5. Send URL ke AI Service (Python/LLM) untuk analisis
+     * 6. AI extract summary, insights, key points dari dokumen
+     * 7. Return hasil analisis
+     * @route POST /api/documents/:documentId/analyze
+     * @access Private - Require cookie authentication
+     * @security cookieAuth: []
+     * @param {string} documentId - Document ID untuk dianalisis (path parameter)
+     * @returns {200} Hasil analisis AI (summary, insights, key points)
+     * @error {400} Dokumen tidak valid atau analisis gagal
+     * @error {401} User tidak authenticated
+     * @error {403} Akses ditolak
+     * @error {404} Dokumen tidak ditemukan
+     * @error {500} Server error atau AI service error
      */
     analyzeDocument: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
@@ -271,30 +381,24 @@ export const createDocumentController = (documentService, signatureRepository, f
       } catch (e) {
         console.warn("⚠️ Gagal generate URL, mencoba fallback ke Buffer.");
       }
-      const isUrlValid = fileUrl && typeof fileUrl === 'string' && fileUrl.startsWith("http");
+      const isUrlValid = fileUrl && typeof fileUrl === "string" && fileUrl.startsWith("http");
 
       let sourceData;
       let mode;
 
       if (isUrlValid) {
-        if (process.env.NODE_ENV === 'production') {
-          const maskedUrl = fileUrl.split('?')[0] + '?token=HIDDEN';
+        if (process.env.NODE_ENV === "production") {
+          const maskedUrl = fileUrl.split("?")[0] + "?token=HIDDEN";
         } else {
-
         }
 
-        mode = 'url';
+        mode = "url";
         sourceData = fileUrl;
       }
 
-      const analysisResult = await aiService.analyzeDocumentContent(
-          sourceData,
-          mode,
-          documentData.type
-      );
+      const analysisResult = await aiService.analyzeDocumentContent(sourceData, mode, documentData.type);
 
       if (!analysisResult || analysisResult.error) {
-
         return res.status(400).json({
           status: "fail",
           message: analysisResult?.error || "Gagal menganalisis dokumen (AI tidak merespons).",

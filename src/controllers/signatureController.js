@@ -16,8 +16,20 @@ const getRealIpAddress = (req) => {
 export const createSignatureController = (documentService, signatureService, packageService, groupSignatureService) => {
   return {
     /**
-     * @description [PERSONAL] Menambahkan tanda tangan mandiri.
-     * @route   POST /api/signatures/personal
+     * @description [PERSONAL] Menambahkan tanda tangan digital ke dokumen secara mandiri.
+     * * **Proses Kode:**
+     * 1. Menerima body dengan data signature (single atau batch array).
+     * 2. Mendukung dua format input:
+     * - Single signature: documentVersionId, method, signatureImageUrl, positionX, positionY, pageNumber, displayQrCode
+     * - Batch signatures: array signatures dengan format sama.
+     * 3. Mendeteksi IP Address pengguna untuk audit trail.
+     * 4. Memanggil `signatureService.addPersonalSignature` untuk bubuhkan tanda tangan ke PDF.
+     * 5. Mengembalikan dokumen yang sudah ditandatangani dengan signature metadata.
+     * * @route   POST /api/signatures/personal
+     * @param {import("express").Request} req - Body: signatures (array atau single), documentVersionId, signatureImageUrl, dll.
+     * @param {import("express").Response} res - Response object.
+     * @throws {CommonError.Unauthorized} Jika user tidak authenticated.
+     * @throws {CommonError.BadRequest} Jika data signature tidak lengkap.
      */
     addPersonalSignature: asyncHandler(async (req, res, next) => {
       const userId = req.user?.id;
@@ -68,9 +80,21 @@ export const createSignatureController = (documentService, signatureService, pac
     }),
 
     /**
-     * @description [PUBLIC] Verifikasi tanda tangan by ID (Scan QR).
-     * [UPDATED] Menangani status LOCKED (PIN).
-     * @route   GET /api/signatures/verify/:signatureId
+     * @description [PUBLIC] Verifikasi tanda tangan dengan QR Code scanning.
+     * * **Proses Kode:**
+     * 1. Menerima `signatureId` dari parameter URL (hasil scanning QR).
+     * 2. Melakukan pencarian di 3 service secara berurutan:
+     * - signatureService (personal signatures)
+     * - packageService (package signatures)
+     * - groupSignatureService (group signatures)
+     * 3. Jika ditemukan dan dokumen TERKUNCI (isLocked: true), return status kunci dengan message.
+     * 4. Jika tidak terkunci, return requireUpload: true untuk meminta user upload file fisik.
+     * 5. Return documentTitle, verificationStatus, dan metadata untuk frontend.
+     * * @route   GET /api/signatures/verify/:signatureId
+     * @param {import("express").Request} req - Params: signatureId (dari QR Code).
+     * @param {import("express").Response} res - Response object.
+     * @throws {SignatureError.NotFound} Jika signature tidak ditemukan di semua service.
+     * @note PUBLIC endpoint - tidak perlu authentication.
      */
     getSignatureVerification: asyncHandler(async (req, res, next) => {
       const { signatureId } = req.params;
@@ -110,7 +134,8 @@ export const createSignatureController = (documentService, signatureService, pac
             signatureId: signatureId,
             message: verificationDetails.message || "Dokumen dilindungi kode akses.",
             documentTitle: verificationDetails.documentTitle, // Hanya judul
-            type: verificationDetails.type
+            type: verificationDetails.type,
+            lockedUntil: verificationDetails.lockedUntil,
           },
         });
       }
@@ -124,14 +149,26 @@ export const createSignatureController = (documentService, signatureService, pac
           signatureId: signatureId,
           documentTitle: verificationDetails.documentTitle,
           message: "QR Code terdaftar. Silakan unggah dokumen fisik untuk verifikasi.",
-          verificationStatus: verificationDetails.verificationStatus
+          verificationStatus: verificationDetails.verificationStatus,
         },
       });
     }),
 
     /**
-     * @description [PUBLIC] Membuka Kunci Dokumen dengan PIN.
-     * @route   POST /api/signatures/verify/:signatureId/unlock
+     * @description [PUBLIC] Membuka kunci dokumen dengan PIN/Access Code.
+     * * **Proses Kode:**
+     * 1. Menerima `signatureId` dan `accessCode` (PIN) dari request.
+     * 2. Validasi bahwa accessCode tidak kosong.
+     * 3. Melakukan pencarian dan verifikasi di 3 service secara berurutan:
+     * - signatureService (personal), packageService, groupSignatureService.
+     * 4. Fail-fast logic: Jika error 400 (PIN salah) atau 403 (forbidden), langsung throw error.
+     * 5. Jika verifikasi sukses, return data dengan isLocked: false, requireUpload: true.
+     * 6. Jika tidak ditemukan di semua service, return 401 dengan message "Kode Akses salah".
+     * * @route   POST /api/signatures/verify/:signatureId/unlock
+     * @param {import("express").Request} req - Params: signatureId, Body: accessCode (string PIN).
+     * @param {import("express").Response} res - Response object.
+     * @throws {SignatureError} Jika PIN salah atau akses ditolak.
+     * @note PUBLIC endpoint - tidak perlu authentication.
      */
     unlockSignatureVerification: asyncHandler(async (req, res, next) => {
       const { signatureId } = req.params;
@@ -196,7 +233,7 @@ export const createSignatureController = (documentService, signatureService, pac
         console.log("❌ [DEBUG] Dokumen tidak ditemukan di semua service (404/401).");
         return res.status(401).json({
           status: "fail",
-          message: "Kode Akses salah atau Dokumen tidak ditemukan."
+          message: "Kode Akses salah atau Dokumen tidak ditemukan.",
         });
       }
 
@@ -207,51 +244,65 @@ export const createSignatureController = (documentService, signatureService, pac
         data: {
           ...verificationResult,
           isLocked: false,
-          requireUpload: true
-        }
+          requireUpload: true,
+        },
       });
     }),
 
     /**
-     * @description [PUBLIC] Verifikasi upload file manual.
-     * @route   POST /api/signatures/verify-file
+     * @description [PUBLIC] Verifikasi file PDF manual dengan hash comparison.
+     * * **Proses Kode:**
+     * 1. Menerima `signatureId`, `accessCode` (optional), dan file PDF dari FormData.
+     * 2. Validasi bahwa signatureId dan uploadedFileBuffer (file) tidak kosong.
+     * 3. Melakukan pencarian dan verifikasi di 3 service secara berurutan:
+     * - signatureService.verifyUploadedFile(signatureId, buffer, accessCode)
+     * - packageService.verifyUploadedPackageFile(...)
+     * - groupSignatureService.verifyUploadedFile(...)
+     * 4. Jika service return isLocked: true (PIN salah/belum input), return data dengan isLocked flag.
+     * 5. Jika tidak terkunci, bandingkan hash dokumen uploaded dengan arsip:
+     * - isValid/isHashMatch: true -> return success
+     * - isValid/isHashMatch: false -> return INVALID (Hash Mismatch)
+     * 6. Jika tidak ditemukan di semua service, throw NotFound error.
+     * * @route   POST /api/signatures/verify-file
+     * @param {import("express").Request} req - FormData: signatureId, accessCode, file (Buffer).
+     * @param {import("express").Response} res - Response object.
+     * @throws {SignatureError.NotFound} Jika signature tidak ditemukan.
+     * @throws {LastError} Jika ada error specific dari service (misal: group belum finalized).
+     * @note PUBLIC endpoint - tidak perlu authentication. Support multipart/form-data.
      */
     verifyUploadedSignature: asyncHandler(async (req, res, next) => {
-      const { signatureId } = req.body;
+      // 1. Ambil accessCode juga dari body (dikirim frontend via FormData)
+      const { signatureId, accessCode } = req.body;
       const uploadedFileBuffer = req.file?.buffer;
 
       if (!signatureId) return res.status(400).json({ status: "fail", message: "ID tanda tangan wajib diberikan." });
       if (!uploadedFileBuffer) return res.status(400).json({ status: "fail", message: "File PDF wajib diunggah." });
 
-      // [DEBUG LOG]
-      console.log("🔍 Checking Services:");
-      console.log("- Personal Service:", !!signatureService);
-      console.log("- Package Service:", !!packageService);
-      console.log("- Group Service:", !!groupSignatureService);
-
       let verificationDetails = null;
       let lastError = null;
 
-      // 1. Cek Personal
-      try {
-        verificationDetails = await signatureService.verifyUploadedFile(signatureId, uploadedFileBuffer);
-      } catch (error) { lastError = error; }
+      // 2. Teruskan 'accessCode' ke parameter ketiga di setiap service
 
-      // 2. Cek Package
+      // A. Cek Personal
+      try {
+        verificationDetails = await signatureService.verifyUploadedFile(signatureId, uploadedFileBuffer, accessCode);
+      } catch (error) {
+        lastError = error;
+      }
+
+      // B. Cek Package
       if (!verificationDetails && packageService) {
         try {
-          verificationDetails = await packageService.verifyUploadedPackageFile(signatureId, uploadedFileBuffer);
+          verificationDetails = await packageService.verifyUploadedPackageFile(signatureId, uploadedFileBuffer, accessCode);
         } catch (pkgError) {}
       }
 
-      // 3. Cek Group
+      // C. Cek Group
       if (!verificationDetails && groupSignatureService) {
         try {
-          console.log("➡️ Trying Group Service...");
-          verificationDetails = await groupSignatureService.verifyUploadedFile(signatureId, uploadedFileBuffer);
+          verificationDetails = await groupSignatureService.verifyUploadedFile(signatureId, uploadedFileBuffer, accessCode);
         } catch (e) {
-          console.log("❌ Group Service Error:", e.message);
-          if(e.message && e.message.includes("belum difinalisasi")) lastError = e;
+          if (e.message && e.message.includes("belum difinalisasi")) lastError = e;
         }
       }
 
@@ -260,7 +311,18 @@ export const createSignatureController = (documentService, signatureService, pac
         throw SignatureError.NotFound(signatureId);
       }
 
-      const isValid = verificationDetails.isValid || verificationDetails.isHashMatch; // Support format lama/baru
+      // [LOGIC PENTING] 3. Cek Status Locked dari Service
+      if (verificationDetails.isLocked) {
+        // Jika service bilang terkunci (karena PIN salah atau belum diinput),
+        // Beritahu frontend agar memunculkan form PIN.
+        return res.status(200).json({
+          status: "success",
+          data: verificationDetails, // Frontend baca: isLocked: true
+        });
+      }
+
+      // 4. Jika Tidak Terkunci (PIN Benar), Validasi Hash
+      const isValid = verificationDetails.isValid || verificationDetails.isHashMatch;
 
       if (!isValid) {
         return res.status(200).json({
@@ -270,7 +332,7 @@ export const createSignatureController = (documentService, signatureService, pac
             verificationStatus: "INVALID (Hash Mismatch)",
             message: "Dokumen berbeda dengan arsip sistem.",
             documentTitle: verificationDetails.documentTitle,
-          }
+          },
         });
       }
 

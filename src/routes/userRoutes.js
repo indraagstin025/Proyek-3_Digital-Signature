@@ -44,5 +44,15 @@ export default (userController, adminController) => {
    */
   router.get("/all-users", authMiddleware, checkAdminRole, adminController.getAllUsers);
 
+  /**
+   * @route   PATCH /api/users/me/tour-progress
+   * @desc    Simpan status panduan pengguna (selesai)
+   */
+  router.patch(
+      "/me/tour-progress",
+      authMiddleware,
+      userController.updateTourProgress
+  );
+
   return router;
 };

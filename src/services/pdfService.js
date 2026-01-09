@@ -14,7 +14,7 @@ import DocumentError from "../errors/DocumentError.js";
 import SignatureError from "../errors/SignatureError.js";
 import CommonError from "../errors/CommonError.js";
 
-// ... (Helper createLockedStampAnnotation TETAP SAMA) ...
+
 function createLockedStampAnnotation(pdfDoc, page, embeddedImage, x, y, width, height) {
   const bbox = pdfDoc.context.obj([PDFNumber.of(0), PDFNumber.of(0), PDFNumber.of(width), PDFNumber.of(height)]);
   const xObjectMap = pdfDoc.context.obj({ Im0: embeddedImage.ref });
