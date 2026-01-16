@@ -48,14 +48,6 @@ export class PrismaDocumentRepository {
   /**
    * @description Mengambil semua dokumen milik user, beserta detail versi terkininya DAN tanda tangannya.
    */
-
-  /**
-   * [FIXED] Mengambil semua dokumen user + Status Signer Group
-   */
-
-  /**
-   * [UPDATE] Mengambil dokumen dengan Filter Pencarian (Title ATAU Type).
-   */
   async findAllByUserId(userId, search = "") {
     const searchFilter = search
         ? {
@@ -84,7 +76,6 @@ export class PrismaDocumentRepository {
             packages: { include: { signatures: true, package: true } },
           },
         },
-        // [FIX DI SINI] Ambil info Admin & Members agar Frontend bisa cek hak akses
         group: {
           select: {
             id: true,

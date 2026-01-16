@@ -594,7 +594,7 @@ describe("SignatureController", () => {
 
       await controller.verifyUploadedSignature(mockReq, mockRes, mockNext);
 
-      expect(mockSignatureService.verifyUploadedFile).toHaveBeenCalledWith("sig-123", expect.any(Buffer));
+      expect(mockSignatureService.verifyUploadedFile).toHaveBeenCalledWith("sig-123", expect.any(Buffer), undefined);
 
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith({

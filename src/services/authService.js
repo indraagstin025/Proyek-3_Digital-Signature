@@ -108,4 +108,17 @@ export class AuthService {
 
     return { message: "Password berhasil diubah." };
   }
+
+  /**
+   * [GOOGLE OAUTH] Handle Google OAuth callback.
+   * @param {string} accessToken - Access token dari Supabase OAuth
+   * @param {string} refreshToken - Refresh token dari Supabase OAuth
+   * @returns {Object} Session dan user data
+   */
+  async handleGoogleCallback(accessToken, refreshToken) {
+    if (!accessToken || !refreshToken) {
+      throw AuthError.InvalidCredentials("Access token dan refresh token diperlukan.");
+    }
+    return this.authRepository.handleOAuthCallback(accessToken, refreshToken);
+  }
 }

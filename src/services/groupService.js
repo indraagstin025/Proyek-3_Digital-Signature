@@ -74,7 +74,7 @@ export class GroupService {
 
   /**
    * Retrieves group details by ID, validating user membership.
-   * * @param {number|string} groupId - The ID of the group.
+   * @param {number|string} groupId - The ID of the group.
    * @param {string} userId - The ID of the requesting user.
    * @returns {Promise<Object>} The group details.
    * @throws {GroupError} If the user is not a member or the group is not found.
@@ -381,6 +381,7 @@ export class GroupService {
             docs_count: m.group._count ? m.group._count.documents : 0,
             members_count: m.group._count ? m.group._count.members : 0,
             adminStatus: m.group.admin ? m.group.admin.userStatus : "FREE",
+            ownerId: m.group.adminId,
           }
       )
       .filter(Boolean);

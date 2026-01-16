@@ -56,6 +56,7 @@ export class PrismaPackageRepository extends PackageRepository {
           documents: {
             orderBy: {order: "asc"},
             include: {
+              signatures: true,
               docVersion: {
                 include: {
                   document: {select: {id: true, title: true}},
@@ -188,6 +189,38 @@ export class PrismaPackageRepository extends PackageRepository {
 
 
   /**
+   * [NEW] Fetch all packages for a specific user.
+   * @param {string} userId
+   */
+  async findAllPackages(userId) {
+    try {
+      return await this.prisma.signingPackage.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' }, // Show newest packages first
+        include: {
+          documents: {
+            orderBy: { order: 'asc' },
+            take: 1, // Optimization: Only fetch the first document for preview/title
+            include: {
+              docVersion: {
+                include: {
+                  document: { select: { title: true } }
+                }
+              }
+            }
+          },
+          _count: {
+            select: { documents: true } // Efficiently count total documents in the package
+          }
+        }
+      });
+    } catch (error) {
+      throw CommonError.DatabaseError(`Failed to fetch package list: ${error.message}`);
+    }
+  }
+
+
+  /**
    * [UPDATE] Update data signature paket (misal: accessCode).
    */
   async updateSignature(signatureId, data) {
@@ -205,3 +238,4 @@ export class PrismaPackageRepository extends PackageRepository {
     }
   }
 }
+

@@ -23,6 +23,15 @@ export const createPackageRoutes = (packageController) => {
    */
   router.get("/:packageId", authMiddleware, packageController.getPackageDetails);
 
+
+  /**
+   * @route   GET /api/packages
+   * @desc    Get all packages.
+   * @access  Private
+   */
+  // IMPORTANT: This must come BEFORE the /:packageId route
+  router.get("/", authMiddleware, packageController.getAllPackages);
+
   /**
    * @route   POST /api/packages/:packageId/sign
    * @desc    Menyelesaikan & menandatangani semua dokumen dalam paket.

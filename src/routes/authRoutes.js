@@ -24,5 +24,11 @@ export default (authController) => {
    */
   router.post("/logout", authMiddleware, authController.logout);
 
+  /**
+   * Rute Google OAuth Callback
+   * Alur: Frontend kirim token -> Controller sync user ke DB lokal
+   */
+  router.post("/google/callback", authController.googleCallback);
+
   return router;
 };

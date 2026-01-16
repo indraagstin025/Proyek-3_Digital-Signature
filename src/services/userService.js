@@ -49,9 +49,8 @@ export class UserService {
       throw UserError.NotFound();
     }
 
-    if (user.profilePictureUrl) {
-      user.profilePictureUrl = this.fileStorage.getPublicUrl(user.profilePictureUrl);
-    }
+    // [REMOVE]: Formatting dipindahkan ke Controller/Helper agar terpusat
+    // if (user.profilePictureUrl) { ... }
 
     return user;
   }

@@ -186,6 +186,25 @@ export class PackageService {
     return { packageId, status, ...results };
   }
 
+
+  /**
+   * [NEW] Get all packages for a user.
+   */
+  async getAllPackages(userId) {
+    const packages = await this.packageRepository.findAllPackages(userId);
+
+    // Optional: Format the data for the frontend
+    return packages.map(pkg => ({
+      id: pkg.id,
+      title: pkg.title,
+      status: pkg.status,
+      createdAt: pkg.createdAt,
+      documentCount: pkg._count.documents, // Use the count from Prisma
+      // Get the title of the first document as a preview, or fallback to the package title
+      previewDoc: pkg.documents[0]?.docVersion?.document?.title || pkg.title || "Untitled Package"
+    }));
+  }
+
   /**
    * [PUBLIC] Cek QR Code (Gatekeeper)
    * [UPDATED] Mengembalikan status locked jika ada accessCode.
@@ -277,8 +296,8 @@ export class PackageService {
       ipAddress: null,
       signedAt: null,
 
-      documentTitle: signature.documentVersion.document.title,
-      storedFileHash: signature.documentVersion.signedFileHash,
+      documentTitle: docVersion.document.title,
+      storedFileHash: storedHash,
 
       verificationStatus: "REGISTERED",
       verificationMessage: "PIN Diterima. Unggah file untuk membuka seluruh metadata.",

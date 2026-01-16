@@ -222,5 +222,41 @@ export const createAuthController = (authService) => {
         message: result.message,
       });
     }),
+
+    /**
+     * @description Handle Google OAuth callback dari frontend
+     * @route POST /api/auth/google/callback
+     * @param {string} accessToken - Access token dari Supabase OAuth
+     * @param {string} refreshToken - Refresh token dari Supabase OAuth
+     */
+    googleCallback: asyncHandler(async (req, res) => {
+      const { accessToken, refreshToken } = req.body;
+
+      // 1. Proses OAuth callback
+      const { session, user } = await authService.handleGoogleCallback(accessToken, refreshToken);
+
+      // 2. Set cookies sama seperti login biasa
+      const cookieOptions = getCookieOptions();
+
+      // Fix: Ensure maxAge is a valid integer (minimum 1 hour)
+      const accessTokenMaxAge = Math.max(Math.floor(session.expires_in || 3600), 3600);
+
+      res.setHeader("Set-Cookie", [
+        serialize("sb-access-token", session.access_token, {
+          ...cookieOptions,
+          maxAge: accessTokenMaxAge,
+        }),
+        serialize("sb-refresh-token", session.refresh_token, {
+          ...cookieOptions,
+          maxAge: 60 * 60 * 24 * 7, // 7 hari
+        }),
+      ]);
+
+      res.status(200).json({
+        success: true,
+        message: "Login dengan Google berhasil",
+        data: { user },
+      });
+    }),
   };
 };

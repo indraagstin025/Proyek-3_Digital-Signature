@@ -637,7 +637,7 @@ describe("GroupSignatureService", () => {
 
       const result = await groupSignatureService.unlockVerification(signatureId, correctPIN);
 
-      expect(result.signerName).toBe("John Doe");
+      expect(result.signerName).toBeNull();
       expect(result.verificationStatus).toBe("REGISTERED");
       expect(result.isLocked).toBe(false);
       expect(result.requireUpload).toBe(true);
@@ -706,7 +706,7 @@ describe("GroupSignatureService", () => {
 
       const result = await groupSignatureService.unlockVerification(signatureId, correctPIN);
 
-      expect(result.signedAt).toEqual(createdDate);
+      expect(result.signedAt).toBeNull();
     });
 
     it("Harus throw BadRequest jika accessCode null/tidak cocok", async () => {

@@ -167,6 +167,89 @@ class SupabaseAuthRepository extends AuthRepository {
 
     return { message: "Password berhasil diperbarui. Silakan login dengan password baru." };
   }
+
+  /**
+   * [GOOGLE OAUTH] Handle callback dari Supabase OAuth.
+   * Verifikasi sesi dan sinkronisasi user ke database lokal.
+   * @param {string} accessToken - Access token dari Supabase OAuth
+   * @param {string} refreshToken - Refresh token dari Supabase OAuth  
+   * @returns {Object} Session dan user data
+   */
+  async handleOAuthCallback(accessToken, refreshToken) {
+    try {
+      // 1. Set session dengan token dari frontend
+      const { data: sessionData, error: sessionError } = await this.supabaseClient.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (sessionError) {
+        console.error("OAuth Session Error:", sessionError);
+        throw AuthError.InvalidCredentials("Sesi OAuth tidak valid.");
+      }
+
+      const supabaseUser = sessionData.user;
+      if (!supabaseUser) {
+        throw AuthError.UserNotFound("Data user tidak ditemukan dari OAuth.");
+      }
+
+      // 2. Cek apakah user sudah ada di database lokal (by ID)
+      let localUser = await this.prisma.user.findUnique({
+        where: { id: supabaseUser.id },
+        select: { id: true, email: true, name: true, isSuperAdmin: true },
+      });
+
+      // 3. Jika tidak ditemukan by ID, cek by email (user mungkin register sebelumnya)
+      if (!localUser) {
+        localUser = await this.prisma.user.findUnique({
+          where: { email: supabaseUser.email },
+          select: { id: true, email: true, name: true, isSuperAdmin: true, profilePictureUrl: true },
+        });
+
+        // 3a. Jika ditemukan by email, update ID-nya ke Supabase ID baru
+        if (localUser) {
+          console.log(`🔄 [OAuth] Linking existing user ${supabaseUser.email} to new Supabase ID`);
+          localUser = await this.prisma.user.update({
+            where: { email: supabaseUser.email },
+            data: {
+              id: supabaseUser.id,
+              profilePictureUrl: supabaseUser.user_metadata?.avatar_url || localUser.profilePictureUrl,
+            },
+            select: { id: true, email: true, name: true, isSuperAdmin: true },
+          });
+        }
+      }
+
+      // 4. Jika masih tidak ada, buat user baru
+      if (!localUser) {
+        const userName = supabaseUser.user_metadata?.full_name ||
+          supabaseUser.user_metadata?.name ||
+          supabaseUser.email?.split("@")[0] ||
+          "User";
+
+        localUser = await this.prisma.user.create({
+          data: {
+            id: supabaseUser.id,
+            email: supabaseUser.email,
+            name: userName,
+            profilePictureUrl: supabaseUser.user_metadata?.avatar_url || null,
+          },
+          select: { id: true, email: true, name: true, isSuperAdmin: true },
+        });
+
+        console.log(`✅ [OAuth] New user created: ${localUser.email}`);
+      }
+
+      return {
+        session: sessionData.session,
+        user: localUser
+      };
+    } catch (err) {
+      if (err instanceof AuthError || err instanceof CommonError) throw err;
+      console.error("OAuth Callback Error:", err);
+      throw CommonError.InternalServerError("Gagal memproses OAuth callback.");
+    }
+  }
 }
 
 export default SupabaseAuthRepository;

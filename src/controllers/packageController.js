@@ -62,6 +62,21 @@ export const createPackageController = (packageService) => {
       });
     }),
 
+
+    /**
+     * @description Get a list of all packages for the logged-in user.
+     * @route   GET /api/packages
+     */
+    getAllPackages: asyncHandler(async (req, res, next) => {
+      const userId = req.user?.id;
+      const packages = await packageService.getAllPackages(userId);
+
+      return res.status(200).json({
+        status: "success",
+        data: packages,
+      });
+    }),
+
     /**
      * @description Memproses tanda tangan untuk semua dokumen di dalam paket sekaligus.
      * * **Proses Kode:**

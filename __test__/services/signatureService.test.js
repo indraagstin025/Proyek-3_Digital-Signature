@@ -516,7 +516,7 @@ describe("SignatureService", () => {
 
       const result = await service.unlockVerification("sig-123", "123456");
 
-      expect(result.signerName).toBe("John Doe");
+      expect(result.signerName).toBeNull();
       expect(result.isLocked).toBe(false);
       expect(result.requireUpload).toBe(true);
     });
