@@ -35,29 +35,46 @@ const formatAvatarUrl = (path) => {
     return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${path}`;
 };
 
-export const initSocket = async (io) => {
+export const initSocket = (io) => {
 
     // --- 1. SETUP REDIS ADAPTER ---
     if (REDIS_URL) {
         console.log('🚀 Mendeteksi REDIS_URL, mencoba koneksi Redis...');
-        const pubClient = createClient({ url: REDIS_URL });
+        const pubClient = createClient({
+            url: REDIS_URL,
+            socket: {
+                tls: REDIS_URL.startsWith('rediss://'), // Auto-enable TLS for rediss://
+                rejectUnauthorized: false // Railway often uses self-signed certs for internal redis
+            }
+        });
         const subClient = pubClient.duplicate();
 
-        pubClient.on('error', (err) => console.error('❌ Redis Error:', err));
-        subClient.on('error', (err) => console.error('❌ Redis Error:', err));
+        pubClient.on('error', (err) => console.error('❌ Redis Pub Client Error:', err));
+        subClient.on('error', (err) => console.error('❌ Redis Sub Client Error:', err));
 
-        try {
-            await Promise.all([pubClient.connect(), subClient.connect()]);
-            io.adapter(createAdapter(pubClient, subClient));
-            console.log('✅ Redis Adapter Terhubung (Mode Cluster Siap)');
-        } catch (error) {
-            console.error('⚠️ Gagal connect Redis, fallback ke Memory:', error);
-        }
+        // Non-blocking connection to allow server to start immediately
+        Promise.all([pubClient.connect(), subClient.connect()])
+            .then(async () => {
+                io.adapter(createAdapter(pubClient, subClient));
+                console.log('✅ Redis Adapter Terhubung (Mode Cluster Siap)');
+
+                // [DEBUG] Tulis key test untuk memastikan koneksi Redis berhasil & bisa write
+                try {
+                    await pubClient.set('DIGISIGN_STATUS', 'Redis Connected Successfully - ' + new Date().toISOString());
+                    console.log('📝 Test Key [DIGISIGN_STATUS] berhasil ditulis ke Redis');
+                } catch (writeErr) {
+                    console.error('⚠️ Gagal menulis test key ke Redis:', writeErr);
+                }
+            })
+            .catch((error) => {
+                console.error('⚠️ Gagal connect Redis, fallback ke Memory:', error);
+            });
     } else {
         console.log('☕ Mode Development: Menggunakan RAM Laptop (Tanpa Redis)');
     }
 
     // --- 2. MIDDLEWARE AUTH ---
+    // Registered immediately regardless of Redis status
     io.use(async (socket, next) => {
         try {
             const cookieHeader = socket.request.headers.cookie;
