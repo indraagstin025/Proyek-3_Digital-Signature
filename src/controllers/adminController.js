@@ -279,5 +279,35 @@ export const createAdminController = (adminService) => {
         data: result,
       });
     }),
+
+    /**
+     * @description Mengambil semua laporan user.
+     * @route GET /api/admin/reports
+     */
+    getAllReports: asyncHandler(async (req, res) => {
+      const reports = await adminService.getAllReports();
+      res.status(200).json({
+        success: true,
+        data: reports,
+      });
+    }),
+
+    /**
+     * @description Mengupdate status laporan user.
+     * @route PATCH /api/admin/reports/:reportId
+     */
+    updateReportStatus: asyncHandler(async (req, res) => {
+      const { reportId } = req.params;
+      const { status } = req.body;
+      const adminId = req.user.id;
+
+      const updatedReport = await adminService.updateReportStatus(adminId, reportId, status, req);
+
+      res.status(200).json({
+        success: true,
+        message: "Status laporan berhasil diperbarui.",
+        data: updatedReport,
+      });
+    }),
   };
 };

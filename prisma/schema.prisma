@@ -61,6 +61,7 @@ enum AuditAction {
   SIGN_PACKAGE
   TRANSACTION_SUCCESS
   TRANSACTION_CANCELLED
+  RESOLVE_USER_REPORT
 
   @@map("audit_action")
 }
@@ -94,8 +95,24 @@ model User {
   groupSigningTasks  GroupDocumentSigner[]
   apiRequestLogs     ApiRequestLog[]
   transactions       Transaction[]
+  reports            UserReport[]
 
   @@map("users")
+}
+
+model UserReport {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @db.Text
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED, REJECTED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("user_reports")
 }
 
 model UserProfilePicture {

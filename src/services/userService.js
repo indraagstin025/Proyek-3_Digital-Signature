@@ -249,4 +249,13 @@ export class UserService {
 
     return newProgress;
   }
+  /**
+   * [BARU] Membuat laporan user baru.
+   */
+  async createReport(userId, { title, description }) {
+    if (!title || !description) {
+      throw CommonError.BadRequest("Judul dan deskripsi laporan wajib diisi.");
+    }
+    return this.userRepository.createUserReport(userId, { title, description });
+  }
 }

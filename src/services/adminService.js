@@ -98,4 +98,28 @@ export class AdminService {
     }
     return result;
   }
+  async getAllReports() {
+    return this.adminRepository.findAllReports();
+  }
+
+  async updateReportStatus(adminId, reportId, status, req) {
+    const validStatuses = ["PENDING", "IN_PROGRESS", "RESOLVED", "REJECTED"];
+    if (!validStatuses.includes(status)) {
+      throw CommonError.BadRequest("Status laporan tidak valid.");
+    }
+
+    const updatedReport = await this.adminRepository.updateReportStatus(reportId, status);
+
+    if (this.auditService) {
+      await this.auditService.log(
+        "RESOLVE_USER_REPORT",
+        adminId,
+        reportId,
+        `Admin mengubah status laporan menjadi ${status}`,
+        req
+      );
+    }
+
+    return updatedReport;
+  }
 }

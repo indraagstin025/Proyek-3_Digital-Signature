@@ -169,4 +169,34 @@ export class PrismaAdminRepository {
       return []; // Return array kosong jika gagal, jangan throw error agar dashboard tetap jalan
     }
   }
+  /**
+   * Mengambil semua laporan user dengan pagination (optional)
+   */
+  async findAllReports() {
+    return this.prisma.userReport.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: { name: true, email: true, profilePictureUrl: true },
+        },
+      },
+    });
+  }
+
+  /**
+   * Mengupdate status laporan user
+   */
+  async updateReportStatus(reportId, newStatus) {
+    try {
+      return await this.prisma.userReport.update({
+        where: { id: reportId },
+        data: { status: newStatus },
+      });
+    } catch (error) {
+      if (error.code === "P2025") {
+        throw CommonError.NotFound(`Laporan dengan ID ${reportId} tidak ditemukan.`);
+      }
+      throw CommonError.DatabaseError(`Gagal update laporan: ${error.message}`);
+    }
+  }
 }

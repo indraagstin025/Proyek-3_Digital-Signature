@@ -235,5 +235,22 @@ export const createUserController = (userService) => {
         data: updatedProgress,
       });
     }),
+
+    /**
+     * @description User membuat laporan baru (bug/feedback).
+     * @route POST /api/users/reports
+     */
+    createReport: asyncHandler(async (req, res) => {
+      const userId = req.user.id;
+      const { title, description } = req.body;
+
+      const report = await userService.createReport(userId, { title, description });
+
+      res.status(201).json({
+        status: "success",
+        message: "Laporan berhasil dikirim, terima kasih atas masukan Anda.",
+        data: report,
+      });
+    }),
   };
 };

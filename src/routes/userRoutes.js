@@ -49,10 +49,16 @@ export default (userController, adminController) => {
    * @desc    Simpan status panduan pengguna (selesai)
    */
   router.patch(
-      "/me/tour-progress",
-      authMiddleware,
-      userController.updateTourProgress
+    "/me/tour-progress",
+    authMiddleware,
+    userController.updateTourProgress
   );
+
+  /**
+   * @route   POST /api/users/reports
+   * @desc    Kirim laporan bug/feedback
+   */
+  router.post("/reports", authMiddleware, userController.createReport);
 
   return router;
 };

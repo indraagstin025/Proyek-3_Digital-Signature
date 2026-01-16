@@ -218,6 +218,16 @@ class PrismaUserRepository extends UserRepository {
       personalDocsCount,
     };
   }
+  async createUserReport(userId, { title, description }) {
+    return this.prisma.userReport.create({
+      data: {
+        userId,
+        title,
+        description,
+        status: "PENDING",
+      },
+    });
+  }
 }
 
 export default PrismaUserRepository;

@@ -44,5 +44,9 @@ export default (adminController) => {
   // Endpoint untuk testing cron job tanpa menunggu jadwal
   router.post("/cron/premium-expiry", adminController.triggerPremiumExpiryCheck);
 
+  // --- [BARU] User Reports (Feedback/Bug) ---
+  router.get("/reports", adminController.getAllReports);
+  router.patch("/reports/:reportId", adminController.updateReportStatus);
+
   return router;
 };
