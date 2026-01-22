@@ -25,15 +25,12 @@ export class GroupSignatureService {
      * [IMPROVED] Mencegah duplikat draft jika Frontend generate ID baru secara tidak sengaja.
      */
     async saveDraft(userId, documentId, signatureData) {
-        // [FIX TIPE DATA] Pastikan userId adalah String agar konsisten dengan Frontend
+        const start = Date.now();
         const safeUserId = String(userId);
 
         const document = await this.documentRepository.findById(documentId, safeUserId);
         if (!document) throw CommonError.NotFound(documentId);
 
-        // Cek apakah user sudah memiliki draft di versi dokumen ini?
-        // Ini langkah pengamanan: Jika frontend refresh dan generate UUID baru,
-        // Backend harus cukup pintar untuk tahu "Oh, ini orang lama, update aja yg lama".
         let targetId = signatureData.id;
 
         const existingDraft = await this.groupSignatureRepository.findBySignerAndVersion(safeUserId, document.currentVersionId);
@@ -59,14 +56,16 @@ export class GroupSignatureService {
 
         console.log("[GroupService] Saving Draft:", payload.id);
 
-        // Cek existing berdasarkan ID yang sudah diputuskan (targetId)
         const checkId = await this.groupSignatureRepository.findById(targetId);
 
+        let result;
         if (checkId) {
-            return await this.groupSignatureRepository.update(checkId.id, payload);
+            result = await this.groupSignatureRepository.update(checkId.id, payload);
         } else {
-            return await this.groupSignatureRepository.create(payload);
+            result = await this.groupSignatureRepository.create(payload);
         }
+        console.log(`[SERVICE] GroupSignatureService.saveDraft: ${Date.now() - start}ms`);
+        return result;
     }
 
     /**
@@ -97,11 +96,9 @@ export class GroupSignatureService {
      * [USER ACTION] Menandatangani Dokumen (Finalisasi).
      */
     async signDocument(userId, documentId, signatureData, auditData, req = null) {
-        // [FIX TIPE DATA]
+        const start = Date.now();
         const safeUserId = String(userId);
 
-        // 1. Cek Hak Akses (Apakah user terdaftar sebagai signer di dokumen ini?)
-        // Ini gatekeeper utama. Jika findPending mengembalikan null karena beda tipe data ID, user gagal save.
         const signerRequest = await this.groupDocumentSignerRepository.findPendingByUserAndDoc(safeUserId, documentId);
 
         if (!signerRequest) {
@@ -112,7 +109,6 @@ export class GroupSignatureService {
         const document = await this.documentRepository.findById(documentId, safeUserId);
         const currentVersion = document.currentVersion;
 
-        // 2. Cek Draft Existing
         const existingSignature = await this.groupSignatureRepository.findBySignerAndVersion(safeUserId, currentVersion.id);
         let finalSignature;
 
@@ -120,7 +116,7 @@ export class GroupSignatureService {
             ...signatureData,
             userId: safeUserId,
             documentVersionId: currentVersion.id,
-            status: "final", // FINAL
+            status: "final",
             ipAddress: auditData.ipAddress,
             userAgent: auditData.userAgent
         };
@@ -131,16 +127,14 @@ export class GroupSignatureService {
             finalSignature = await this.groupSignatureRepository.create(payload);
         }
 
-        // 3. Update Status Checklist
         await this.groupDocumentSignerRepository.updateStatusToSigned(documentId, safeUserId, finalSignature.id);
 
-        // 4. Audit Log
         if (this.auditService) {
             await this.auditService.log("SIGN_DOCUMENT_GROUP", safeUserId, documentId, `User menandatangani dokumen grup: ${document.title}`, req);
         }
 
-        // 5. Cek Sisa Signer
         const pendingCount = await this.groupDocumentSignerRepository.countPendingSigners(documentId);
+        console.log(`[SERVICE] GroupSignatureService.signDocument: ${Date.now() - start}ms`);
 
         return {
             ...finalSignature,

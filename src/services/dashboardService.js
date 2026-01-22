@@ -81,9 +81,7 @@ export class DashboardService {
   async _getActionItems(userId) {
     const [incomingRequests, myDrafts, groupPending] = await Promise.all([
       this.dashboardRepository.findPendingSignatures(userId, DASHBOARD_LIMIT),
-
       this.dashboardRepository.findActionRequiredDocuments(userId, DASHBOARD_LIMIT),
-
       this.groupDocumentSignerRepository ? this.groupDocumentSignerRepository.findPendingByUser(userId) : Promise.resolve([]),
     ]);
 

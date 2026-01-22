@@ -21,7 +21,8 @@ export class PrismaGroupRepository extends GroupRepository {
    */
   async createWithAdmin(adminId, name) {
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const start = Date.now();
+      const result = await this.prisma.$transaction(async (tx) => {
         const group = await tx.group.create({
           data: {
             name,
@@ -38,6 +39,7 @@ export class PrismaGroupRepository extends GroupRepository {
         });
         return group;
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal membuat grup di database: ${err.message}`);
     }
@@ -54,22 +56,19 @@ export class PrismaGroupRepository extends GroupRepository {
    */
   async findById(groupId) {
     try {
-      return await this.prisma.group.findUnique({
+      const start = Date.now();
+      const result = await this.prisma.group.findUnique({
         where: { id: groupId },
         include: {
-          // 1. DATA ADMIN (PEMILIK GRUP) - SANGAT PENTING
-          // Status Premium Admin menentukan limit seluruh grup.
           admin: {
             select: {
               id: true,
               name: true,
               email: true,
-              userStatus: true,   // <--- WAJIB: Agar frontend tahu Admin = Premium
+              userStatus: true,
               premiumUntil: true
             },
           },
-
-          // 2. DATA MEMBER (ANGGOTA)
           members: {
             include: {
               user: {
@@ -78,13 +77,11 @@ export class PrismaGroupRepository extends GroupRepository {
                   name: true,
                   email: true,
                   userStatus: true,
-                  profilePictureUrl: true     // (Opsional) Jika schema User punya kolom avatar
+                  profilePictureUrl: true
                 },
               },
             },
           },
-
-          // 3. DOKUMEN GRUP
           documents: {
             orderBy: { createdAt: "desc" },
             include: {
@@ -98,6 +95,7 @@ export class PrismaGroupRepository extends GroupRepository {
           },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mencari grup: ${err.message}`);
     }
@@ -116,9 +114,11 @@ export class PrismaGroupRepository extends GroupRepository {
 
   async countByAdminId(adminId) {
     try {
-      return await this.prisma.group.count({
+      const start = Date.now();
+      const result = await this.prisma.group.count({
         where: { adminId: adminId },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal menghitung jumlah grup admin: ${err.message}`);
     }

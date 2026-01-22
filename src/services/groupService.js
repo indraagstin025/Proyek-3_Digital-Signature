@@ -55,6 +55,7 @@ export class GroupService {
    * @throws {GroupError} If the name is empty or validation fails.
    */
   async createGroup(adminId, name) {
+    const start = Date.now();
     if (!name || name.trim() === "") throw GroupError.BadRequest("Nama grup tidak boleh kosong.");
 
     const isPremium = await this._isPremium(adminId);
@@ -66,7 +67,9 @@ export class GroupService {
     }
 
     try {
-      return await this.groupRepository.createWithAdmin(adminId, name);
+      const result = await this.groupRepository.createWithAdmin(adminId, name);
+      console.log(`[SERVICE] GroupService.createGroup: ${Date.now() - start}ms`);
+      return result;
     } catch (error) {
       throw new Error(`Gagal membuat grup: ${error.message}`);
     }
@@ -80,10 +83,12 @@ export class GroupService {
    * @throws {GroupError} If the user is not a member or the group is not found.
    */
   async getGroupById(groupId, userId) {
+    const start = Date.now();
     const member = await this.groupMemberRepository.findByGroupAndUser(groupId, userId);
     if (!member) throw GroupError.UnauthorizedAccess("Anda bukan anggota grup ini.");
 
     const group = await this.groupRepository.findById(groupId);
+    console.log(`[SERVICE] GroupService.getGroupById: ${Date.now() - start}ms`);
     if (!group) throw GroupError.NotFound(groupId);
     return group;
   }
@@ -369,9 +374,11 @@ export class GroupService {
    * @returns {Promise<Array<Object>>} List of group summaries including counts.
    */
   async getAllUserGroups(userId) {
+    const start = Date.now();
     const memberships = await this.groupMemberRepository.findAllByUserId(userId, {
       include: { group: { include: { _count: { select: { members: true, documents: true } }, admin: { select: { userStatus: true } } } } },
     });
+    console.log(`[SERVICE] GroupService.getAllUserGroups: ${Date.now() - start}ms`);
     return memberships
       .map(
         (m) =>
@@ -565,8 +572,27 @@ export class GroupService {
       throw CommonError.Forbidden(`Penyimpanan grup penuh (${maxFiles} dokumen). ${!isAdminPremium ? "Upgrade Admin Grup ke Premium untuk kapasitas 100 dokumen." : ""}`);
     }
 
-    const filePath = await this.fileStorage.uploadDocument(file, userId);
+    // [TITLE CHECK] Cek apakah judul dokumen sudah digunakan di grup ini
+    const existingTitle = await this.documentRepository.findFirst({
+      where: {
+        groupId: groupId,
+        title: { equals: title, mode: "insensitive" },
+      },
+    });
+
+    if (existingTitle) {
+      throw GroupError.DuplicateTitle(`Nama dokumen "${title}" sudah digunakan di dalam grup ini. Harap gunakan nama lain.`);
+    }
+
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
+
+    // [DUPLICATE CHECK] Cek apakah file yang sama sudah ada di grup ini
+    const existingVersion = await this.versionRepository.findByGroupAndHash(groupId, hash);
+    if (existingVersion) {
+      throw GroupError.DuplicateFile(`File dokumen ini sudah ada di dalam grup: "${existingVersion.document.title}". Harap hindari duplikasi file.`);
+    }
+
+    const filePath = await this.fileStorage.uploadDocument(file, userId);
 
     const newDoc = await this.documentRepository.createGroupDocument(userId, groupId, title, filePath, hash, signerUserIds);
 
@@ -580,7 +606,7 @@ export class GroupService {
       let uploaderName = "Anggota Grup";
       try {
         if (member.user && member.user.name) uploaderName = member.user.name;
-      } catch (err) {}
+      } catch (err) { }
 
       this.io.to(roomName).emit("group_document_update", {
         action: "new_document",

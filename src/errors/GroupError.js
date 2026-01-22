@@ -57,6 +57,19 @@ class GroupError extends BaseError {
   static AlreadyMember(message = "Anda sudah menjadi anggota grup ini.") {
     return new GroupError("ALREADY_MEMBER", 409, message);
   }
+  /**
+   * @description Error jika judul dokumen kembar di dalam grup.
+   */
+  static DuplicateTitle(message = "Nama dokumen sudah digunakan di grup ini.") {
+    return new GroupError("DUPLICATE_TITLE", 400, message);
+  }
+
+  /**
+   * @description Error jika file fisik kembar (hash sama) di dalam grup.
+   */
+  static DuplicateFile(message = "File ini sudah ada di dalam grup (Duplikat).") {
+    return new GroupError("DUPLICATE_FILE", 400, message);
+  }
 }
 
 export default GroupError;

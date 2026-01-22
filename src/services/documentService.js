@@ -235,58 +235,54 @@ export class DocumentService {
    * @returns {Promise<object>}
    */
   async useOldVersion(documentId, versionId, userId) {
-    const document = await this.documentRepository.findById(documentId, userId);
+    // Parallel lightweight queries for better performance
+    const [document, version, firstVersionId] = await Promise.all([
+      this.documentRepository.findById(documentId, userId),
+      this.versionRepository.findByIdSimple(versionId),
+      this.versionRepository.findFirstVersionId(documentId),
+    ]);
+
     if (!document) throw DocumentError.NotFound("Dokumen tidak ditemukan.");
+    if (!version || version.documentId !== documentId) {
+      throw DocumentError.InvalidVersion(versionId, documentId);
+    }
 
     const requestUserId = String(userId);
     const docOwnerId = String(document.userId);
     const isUploader = requestUserId === docOwnerId;
 
-    if (document.groupId) {
-      if (!isUploader) {
-        const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
-        if (!member || member.role !== "admin_group") {
-          throw DocumentError.Forbidden("Akses Ditolak: Hanya Admin Grup yang dapat mengembalikan versi dokumen. Signer hanya diizinkan menandatangani.");
-        }
+    // Access check for group documents
+    if (document.groupId && !isUploader) {
+      const member = await this.groupMemberRepository.findByGroupAndUser(document.groupId, userId);
+      if (!member || member.role !== "admin_group") {
+        throw DocumentError.Forbidden("Akses Ditolak: Hanya Admin Grup yang dapat mengembalikan versi dokumen. Signer hanya diizinkan menandatangani.");
       }
-    } else {
-      if (!isUploader) {
-        throw DocumentError.Forbidden("Anda tidak memiliki akses untuk mengubah dokumen ini.");
-      }
+    } else if (!isUploader) {
+      throw DocumentError.Forbidden("Anda tidak memiliki akses untuk mengubah dokumen ini.");
     }
 
-    const version = await this.versionRepository.findById(versionId);
-    if (!version || version.documentId !== documentId) {
-      throw DocumentError.InvalidVersion(versionId, documentId);
-    }
-
-    const allVersions = await this.versionRepository.findAllByDocumentId(documentId);
-    allVersions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-
-    const isFirstVersion = allVersions.length > 0 && allVersions[0].id === versionId;
-
+    const isFirstVersion = firstVersionId === versionId;
     let newStatus = "pending";
     let newSignedFileUrl = null;
 
     if (isFirstVersion) {
-      console.log(`🔄 [ROLLBACK] Kembali ke Versi Awal (V1). Cleaning Signatures...`);
-      newStatus = "pending";
-
-      if (this.signatureRepository) await this.signatureRepository.deleteBySignerAndVersion(null, versionId);
-      if (this.groupSignatureRepository) await this.groupSignatureRepository.deleteBySignerAndVersion(null, versionId);
-
-      if (document.groupId && this.groupDocumentSignerRepository) {
-        if (typeof this.groupDocumentSignerRepository.resetSigners === "function") {
-          await this.groupDocumentSignerRepository.resetSigners(documentId);
-        }
+      // Parallel signature cleanup for first version rollback
+      const cleanupPromises = [];
+      if (this.signatureRepository) {
+        cleanupPromises.push(this.signatureRepository.deleteBySignerAndVersion(null, versionId));
       }
+      if (this.groupSignatureRepository) {
+        cleanupPromises.push(this.groupSignatureRepository.deleteBySignerAndVersion(null, versionId));
+      }
+      if (document.groupId && this.groupDocumentSignerRepository?.resetSigners) {
+        cleanupPromises.push(this.groupDocumentSignerRepository.resetSigners(documentId));
+      }
+      await Promise.all(cleanupPromises);
     } else {
       const isBurnedFinal = !!version.signedFileHash || !!version.url;
       if (isBurnedFinal) {
         newStatus = "completed";
         newSignedFileUrl = version.url;
-      } else {
-        newStatus = "pending";
       }
     }
 

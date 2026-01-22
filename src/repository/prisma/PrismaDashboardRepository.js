@@ -32,11 +32,11 @@ export class PrismaDashboardRepository {
       });
 
       return result.reduce(
-          (acc, curr) => {
-            acc[curr.status] = curr._count.status;
-            return acc;
-          },
-          { draft: 0, pending: 0, completed: 0 }
+        (acc, curr) => {
+          acc[curr.status] = curr._count.status;
+          return acc;
+        },
+        { draft: 0, pending: 0, completed: 0 }
       );
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal menghitung status dokumen: ${err.message}`);
@@ -51,18 +51,18 @@ export class PrismaDashboardRepository {
    */
   async findPendingSignatures(userId, limit = 3) {
     try {
-      return await this.prisma.signaturePersonal.findMany({
+      const result = await this.prisma.signaturePersonal.findMany({
         where: {
           signerId: userId,
-          signatureImageUrl: "", // Belum ada tanda tangan
+          signatureImageUrl: "",
           documentVersion: {
             document: {
-              status: "pending", // Hanya dokumen yang masih aktif
+              status: "pending",
             },
           },
         },
         take: limit,
-        orderBy: { signedAt: "desc" }, // Sort berdasarkan waktu request (bisa disesuaikan createdAt)
+        orderBy: { signedAt: "desc" },
         include: {
           documentVersion: {
             include: {
@@ -78,6 +78,7 @@ export class PrismaDashboardRepository {
           },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil pending signatures: ${err.message}`);
     }
@@ -89,7 +90,7 @@ export class PrismaDashboardRepository {
    */
   async findActionRequiredDocuments(userId, limit = 3) {
     try {
-      return await this.prisma.document.findMany({
+      const result = await this.prisma.document.findMany({
         where: {
           userId: userId,
           status: { in: ["draft", "pending"] },
@@ -100,6 +101,7 @@ export class PrismaDashboardRepository {
           owner: { select: { name: true, email: true } },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil dokumen action required: ${err.message}`);
     }
@@ -111,12 +113,13 @@ export class PrismaDashboardRepository {
    */
   async findRecentUpdatedDocuments(userId, limit = 5) {
     try {
-      return await this.prisma.document.findMany({
+      const result = await this.prisma.document.findMany({
         where: { userId: userId },
         take: limit,
         orderBy: { updatedAt: "desc" },
-        select: { id: true, title: true, status: true, updatedAt: true, groupId: true},
+        select: { id: true, title: true, status: true, updatedAt: true, groupId: true },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil dokumen terbaru: ${err.message}`);
     }
@@ -128,10 +131,10 @@ export class PrismaDashboardRepository {
    */
   async findRecentSignatures(userId, limit = 5) {
     try {
-      return await this.prisma.signaturePersonal.findMany({
+      const result = await this.prisma.signaturePersonal.findMany({
         where: {
           signerId: userId,
-          signatureImageUrl: { not: "" }, // Sudah ada gambar tanda tangan
+          signatureImageUrl: { not: "" },
         },
         take: limit,
         orderBy: { signedAt: "desc" },
@@ -146,6 +149,7 @@ export class PrismaDashboardRepository {
           },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil riwayat tanda tangan personal: ${err.message}`);
     }
@@ -157,11 +161,10 @@ export class PrismaDashboardRepository {
    */
   async findRecentGroupSignatures(userId, limit = 5) {
     try {
-      return await this.prisma.signatureGroup.findMany({
+      const result = await this.prisma.signatureGroup.findMany({
         where: {
           signerId: userId,
-          // Biasanya signatureGroup row dibuat saat assign, status dicek lewat field status/img
-          status: "signed", // Pastikan field ini sesuai schema Prisma Anda (misal: status='signed' atau check signatureImageUrl)
+          status: "signed",
         },
         take: limit,
         orderBy: { signedAt: "desc" },
@@ -175,6 +178,7 @@ export class PrismaDashboardRepository {
           },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil riwayat tanda tangan grup: ${err.message}`);
     }
@@ -186,7 +190,7 @@ export class PrismaDashboardRepository {
    */
   async findRecentPackageSignatures(userId, limit = 5) {
     try {
-      return await this.prisma.packageSignature.findMany({
+      const result = await this.prisma.packageSignature.findMany({
         where: { signerId: userId },
         take: limit,
         orderBy: { createdAt: "desc" },
@@ -207,6 +211,7 @@ export class PrismaDashboardRepository {
           },
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil riwayat tanda tangan paket: ${err.message}`);
     }

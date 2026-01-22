@@ -21,12 +21,14 @@ export class PrismaGroupMemberRepository extends GroupMemberRepository {
    */
   async findByGroupAndUser(groupId, userId) {
     try {
-      return await this.prisma.groupMember.findFirst({
+      const start = Date.now();
+      const result = await this.prisma.groupMember.findFirst({
         where: {
           groupId,
           userId,
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mencari anggota grup: ${err.message}`);
     }
@@ -40,10 +42,12 @@ export class PrismaGroupMemberRepository extends GroupMemberRepository {
    */
   async findAllByUserId(userId, options = {}) {
     try {
-      return await this.prisma.groupMember.findMany({
+      const start = Date.now();
+      const result = await this.prisma.groupMember.findMany({
         where: { userId },
         ...options,
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil daftar grup user: ${err.message}`);
     }
@@ -108,9 +112,11 @@ export class PrismaGroupMemberRepository extends GroupMemberRepository {
 
   async countByGroupId(groupId) {
     try {
-      return await this.prisma.groupMember.count({
+      const start = Date.now();
+      const result = await this.prisma.groupMember.count({
         where: { groupId: groupId },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal menghitung anggota grup: ${err.message}`);
     }

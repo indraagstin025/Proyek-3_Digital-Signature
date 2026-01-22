@@ -48,6 +48,59 @@ export class PrismaVersionRepository extends VersionRepository {
     }
   }
 
+  async findByGroupAndHash(groupId, hash) {
+    try {
+      return await this.prisma.documentVersion.findFirst({
+        where: {
+          hash: hash,
+          document: { groupId: groupId },
+        },
+        include: { document: true },
+      });
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mengecek duplikasi dokumen grup: ${err.message}`);
+    }
+  }
+
+  /**
+   * Lightweight version lookup - only essential fields, no heavy includes
+   * Use this when you don't need signature/package relations
+   */
+  async findByIdSimple(versionId) {
+    try {
+      const version = await this.prisma.documentVersion.findUnique({
+        where: { id: versionId },
+        select: {
+          id: true,
+          documentId: true,
+          url: true,
+          hash: true,
+          signedFileHash: true,
+          createdAt: true,
+        },
+      });
+      return version;
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mengambil versi dokumen: ${err.message}`);
+    }
+  }
+
+  /**
+   * Get the first (oldest) version ID of a document - optimized for rollback checks
+   */
+  async findFirstVersionId(documentId) {
+    try {
+      const first = await this.prisma.documentVersion.findFirst({
+        where: { documentId },
+        orderBy: { createdAt: "asc" },
+        select: { id: true },
+      });
+      return first?.id || null;
+    } catch (err) {
+      throw CommonError.DatabaseError(`Gagal mengambil versi pertama: ${err.message}`);
+    }
+  }
+
   async findById(versionId) {
     try {
       const version = await this.prisma.documentVersion.findUnique({
@@ -125,6 +178,8 @@ export class PrismaVersionRepository extends VersionRepository {
     }
   }
 
+  // PrismaVersionRepository.js
+
   async deleteById(versionId) {
     try {
       const versionToDelete = await this.prisma.documentVersion.findUnique({
@@ -136,12 +191,25 @@ export class PrismaVersionRepository extends VersionRepository {
         throw CommonError.NotFound("Versi dokumen tidak ditemukan.");
       }
 
+      // --- [LOGIKA BARU DIMULAI DISINI] ---
+
+      // 1. Ambil ID versi pertama (terlama)
+      const firstVersionId = await this.findFirstVersionId(versionToDelete.documentId);
+
+      // 2. Cek apakah versi yang mau dihapus adalah versi pertama?
+      if (firstVersionId === versionId) {
+        throw CommonError.BadRequest("DILARANG: Versi pertama (Original) tidak boleh dihapus demi integritas riwayat dokumen.");
+      }
+
+      // --- [LOGIKA BARU SELESAI] ---
+
+      // (Logika lama: Cek jumlah total versi agar tidak kosong)
       const totalVersions = await this.prisma.documentVersion.count({
         where: { documentId: versionToDelete.documentId },
       });
 
       if (totalVersions <= 1) {
-        throw CommonError.BadRequest("Anda tidak dapat menghapus versi asli (satu-satunya). Silakan hapus dokumen secara keseluruhan jika ingin menghapusnya.");
+        throw CommonError.BadRequest("Anda tidak dapat menghapus satu-satunya versi yang tersisa.");
       }
 
       return await this.prisma.documentVersion.delete({

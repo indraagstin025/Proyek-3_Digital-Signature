@@ -6,6 +6,58 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { serialize } from "cookie";
 
 // ============================================================
+// USER CACHE - Mengurangi API calls ke Supabase
+// ============================================================
+// Cache hasil getUser untuk menghindari network call berulang
+// TTL: 5 menit (300000ms) - cukup untuk mengurangi load tanpa risiko stale data
+const userCache = new Map();
+const USER_CACHE_TTL = 5 * 60 * 1000; // 5 menit
+
+/**
+ * Membersihkan cache yang expired
+ */
+const cleanupExpiredCache = () => {
+  const now = Date.now();
+  for (const [key, value] of userCache.entries()) {
+    if (now - value.timestamp > USER_CACHE_TTL) {
+      userCache.delete(key);
+    }
+  }
+};
+
+/**
+ * Mendapatkan user dari cache atau Supabase
+ * @returns {Promise<{user: object, fromCache: boolean}>}
+ */
+const getUserWithCache = async (accessToken) => {
+  // Gunakan hash sederhana dari token sebagai cache key
+  const cacheKey = accessToken.substring(accessToken.length - 32);
+
+  // Cek cache dulu
+  if (userCache.has(cacheKey)) {
+    const cached = userCache.get(cacheKey);
+    const age = Date.now() - cached.timestamp;
+
+    if (age < USER_CACHE_TTL) {
+      return { user: cached.user, fromCache: true, error: null };
+    }
+  }
+
+  // Cache miss - panggil Supabase
+  const { data, error } = await supabaseAuth.auth.getUser(accessToken);
+
+  if (!error && data?.user) {
+    // Simpan ke cache
+    userCache.set(cacheKey, {
+      user: data.user,
+      timestamp: Date.now(),
+    });
+  }
+
+  return { user: data?.user, fromCache: false, error };
+};
+
+// ============================================================
 // REFRESH TOKEN LOCK - Mencegah Race Condition
 // ============================================================
 // Ketika multiple request datang bersamaan dengan access token expired,
@@ -81,7 +133,7 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     try {
       // Tunggu hasil dari refresh yang sedang berjalan
       const result = await existingLock.promise;
-      
+
       // Return hasil yang sama (user & token sudah di-refresh oleh request pertama)
       return result;
     } catch (error) {
@@ -96,6 +148,10 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     resolveRefresh = resolve;
     rejectRefresh = reject;
   });
+
+  // PENTING: Tambahkan catch handler kosong untuk mencegah unhandled rejection crash
+  // Error akan tetap di-throw oleh caller, tapi ini mencegah Node crash
+  refreshPromise.catch(() => { });
 
   // Set lock dengan timestamp untuk cleanup
   refreshLocks.set(lockKey, {
@@ -114,10 +170,10 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     if (error || !data.session) {
       const errorMsg = error?.message || "Gagal memperbarui sesi";
       console.error(`❌ [Auth] Refresh gagal: ${errorMsg}`);
-      
+
       // Hapus cookies karena refresh gagal
       clearSessionCookies(res);
-      
+
       const authError = AuthError.SessionExpired("Sesi berakhir. Silakan login kembali.");
       rejectRefresh(authError);
       throw authError;
@@ -169,16 +225,6 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
   // Cleanup expired locks setiap request
   cleanupExpiredLocks();
 
-  // Log cookies untuk debugging (hanya di development)
-  if (process.env.NODE_ENV !== "production") {
-    const cookieNames = Object.keys(req.cookies || {});
-    if (cookieNames.length > 0) {
-      console.log(`✅ Cookies Diterima: [${cookieNames.map(c => `'${c}'`).join(", ")}]`);
-    } else {
-      console.log(`❌ TIDAK ADA COOKIES YANG DITERIMA`);
-    }
-  }
-
   let accessToken = req.cookies["sb-access-token"];
   const refreshToken = req.cookies["sb-refresh-token"];
 
@@ -193,13 +239,15 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
   // 2. Validasi Access Token (Jika ada)
   if (accessToken) {
     try {
-      const { data, error } = await supabaseAuth.auth.getUser(accessToken);
+      // 🚀 OPTIMIZED: Menggunakan cache untuk menghindari network call berulang
+      cleanupExpiredCache();
+      const { user, fromCache, error } = await getUserWithCache(accessToken);
 
-      if (!error && data?.user) {
-        supabaseUser = data.user;
+      if (!error && user) {
+        supabaseUser = user;
       } else if (error) {
         const errorMsg = error.message?.toLowerCase() || "";
-        
+
         // Cek apakah token expired (bukan invalid/malformed)
         const isExpired =
           errorMsg.includes("jwt expired") ||
@@ -258,7 +306,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         email: true,
         name: true,
         isSuperAdmin: true,
-        userStatus: true, // Jika ada field premium status
+        userStatus: true,
       },
     });
   } catch (dbError) {

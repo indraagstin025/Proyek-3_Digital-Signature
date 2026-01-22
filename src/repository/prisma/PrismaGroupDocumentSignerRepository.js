@@ -11,16 +11,18 @@ export class PrismaGroupDocumentSignerRepository {
    */
   async createSigners(documentId, userIds) {
     try {
+      const start = Date.now();
       const data = userIds.map((userId) => ({
         documentId,
         userId,
         status: "PENDING",
       }));
 
-      return await this.prisma.groupDocumentSigner.createMany({
+      const result = await this.prisma.groupDocumentSigner.createMany({
         data,
         skipDuplicates: true,
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal membuat daftar penanda tangan: ${err.message}`);
     }
@@ -32,13 +34,14 @@ export class PrismaGroupDocumentSignerRepository {
    */
   async findPendingByUserAndDoc(userId, documentId) {
     try {
-      return await this.prisma.groupDocumentSigner.findFirst({
+      const start = Date.now();
+      const result = await this.prisma.groupDocumentSigner.findFirst({
         where: {
           userId: userId,
           documentId: documentId,
-          // status: "PENDING" // Hanya kembalikan jika status masih PENDING
         },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal memvalidasi status tanda tangan: ${err.message}`);
     }
@@ -49,7 +52,8 @@ export class PrismaGroupDocumentSignerRepository {
    */
   async findPendingByUser(userId) {
     try {
-      return await this.prisma.groupDocumentSigner.findMany({
+      const start = Date.now();
+      const result = await this.prisma.groupDocumentSigner.findMany({
         where: {
           userId,
           status: "PENDING",
@@ -64,6 +68,7 @@ export class PrismaGroupDocumentSignerRepository {
         },
         orderBy: { createdAt: "desc" },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mengambil task user: ${err.message}`);
     }
@@ -97,12 +102,14 @@ export class PrismaGroupDocumentSignerRepository {
    * Menghitung berapa orang yang BELUM tanda tangan di dokumen ini.
    */
   async countPendingSigners(documentId) {
-    return await this.prisma.groupDocumentSigner.count({
+    const start = Date.now();
+    const result = await this.prisma.groupDocumentSigner.count({
       where: {
         documentId,
         status: "PENDING",
       },
     });
+    return result;
   }
 
   async deleteByDocumentId(documentId) {

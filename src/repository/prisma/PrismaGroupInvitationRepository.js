@@ -20,9 +20,11 @@ export class PrismaGroupInvitationRepository extends GroupInvitationRepository {
    */
   async create(data) {
     try {
-      return await this.prisma.groupInvitation.create({
+      const start = Date.now();
+      const result = await this.prisma.groupInvitation.create({
         data,
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal membuat undangan: ${err.message}`);
     }
@@ -35,9 +37,11 @@ export class PrismaGroupInvitationRepository extends GroupInvitationRepository {
    */
   async findByToken(token) {
     try {
-      return await this.prisma.groupInvitation.findUnique({
+      const start = Date.now();
+      const result = await this.prisma.groupInvitation.findUnique({
         where: { token },
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal mencari undangan: ${err.message}`);
     }
@@ -51,10 +55,12 @@ export class PrismaGroupInvitationRepository extends GroupInvitationRepository {
    */
   async update(invitationId, data) {
     try {
-      return await this.prisma.groupInvitation.update({
+      const start = Date.now();
+      const result = await this.prisma.groupInvitation.update({
         where: { id: invitationId },
         data: data,
       });
+      return result;
     } catch (err) {
       throw CommonError.DatabaseError(`Gagal memperbarui data undangan: ${err.message}`);
     }
