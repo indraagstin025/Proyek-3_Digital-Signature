@@ -80,19 +80,32 @@ const cleanupExpiredLocks = () => {
 
 /**
  * Mendapatkan opsi cookie yang konsisten
+ * 
+ * PENTING untuk Production:
+ * - SameSite: "none" diperlukan untuk cross-origin requests (frontend != backend domain)
+ * - Secure: true wajib jika SameSite: "none"
+ * - Domain: harus diset dengan benar (misal: .moodvis.my.id)
  */
 const getCookieOptions = (maxAge) => {
   const isProduction = process.env.NODE_ENV === "production";
   const cookieDomain = process.env.COOKIE_DOMAIN;
 
-  return {
+  const options = {
     httpOnly: true,
     path: "/",
     secure: isProduction,
-    sameSite: "lax",
+    sameSite: isProduction ? "none" : "lax", // "none" untuk cross-origin di production
     domain: isProduction && cookieDomain ? cookieDomain : undefined,
     maxAge,
   };
+
+  // Log cookie options untuk debugging (hanya sekali per request)
+  if (isProduction && !global._cookieOptionsLogged) {
+    console.log(`🍪 [Cookie] Options: secure=${options.secure}, sameSite=${options.sameSite}, domain=${options.domain || 'undefined'}`);
+    global._cookieOptionsLogged = true;
+  }
+
+  return options;
 };
 
 /**
@@ -159,7 +172,12 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     timestamp: Date.now(),
   });
 
-  console.log(`🔄 [Auth] Memulai refresh session... (Lock: ${lockKey.substring(0, 8)}...)`);
+  // Log refresh token info (masked untuk keamanan)
+  const tokenPreview = refreshToken ? `${refreshToken.substring(0, 10)}...${refreshToken.substring(refreshToken.length - 5)}` : 'NULL';
+  console.log(`🔄 [Auth] Memulai refresh session...`);
+  console.log(`   ├─ Lock: ${lockKey.substring(0, 8)}...`);
+  console.log(`   ├─ Token: ${tokenPreview}`);
+  console.log(`   └─ Length: ${refreshToken?.length || 0} chars`);
 
   try {
     // Panggil Supabase untuk refresh session
@@ -169,7 +187,11 @@ const refreshSessionWithLock = async (refreshToken, res) => {
 
     if (error || !data.session) {
       const errorMsg = error?.message || "Gagal memperbarui sesi";
-      console.error(`❌ [Auth] Refresh gagal: ${errorMsg}`);
+      const errorCode = error?.code || 'UNKNOWN';
+      console.error(`❌ [Auth] Refresh gagal!`);
+      console.error(`   ├─ Message: ${errorMsg}`);
+      console.error(`   ├─ Code: ${errorCode}`);
+      console.error(`   └─ Token used: ${tokenPreview}`);
 
       // Hapus cookies karena refresh gagal
       clearSessionCookies(res);
