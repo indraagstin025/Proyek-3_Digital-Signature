@@ -36,6 +36,11 @@ const formatAvatarUrl = (path) => {
 };
 
 export const initSocket = (io) => {
+    // 🔧 [DEBUG] Log untuk memastikan env variable REDIS_URL terbaca
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔧 [REDIS DEBUG] REDIS_URL exists:', !!REDIS_URL);
+    console.log('🔧 [REDIS DEBUG] REDIS_URL value:', REDIS_URL ? REDIS_URL.replace(/:[^:@]+@/, ':****@') : 'NOT SET');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     // --- 1. SETUP REDIS ADAPTER ---
     if (REDIS_URL) {
