@@ -580,7 +580,7 @@ export class GroupService {
       let uploaderName = "Anggota Grup";
       try {
         if (member.user && member.user.name) uploaderName = member.user.name;
-      } catch (err) {}
+      } catch (err) { }
 
       this.io.to(roomName).emit("group_document_update", {
         action: "new_document",
@@ -742,14 +742,14 @@ export class GroupService {
 
         const message = `Halo *${user.name}*! 👋
 
-                    Anda diminta untuk menandatangani dokumen baru di *${groupName || "Signify Group"}*.
-                    
-                    📄 Judul: *${docTitle}*
-                    
-                    Silakan klik link di bawah ini untuk melihat dokumen:
-                    👉 ${documentLink}
-                    
-                    Terima kasih.`;
+Anda diminta untuk menandatangani dokumen baru di *${groupName || "Signify Group"}*.
+
+📄 Judul: *${docTitle}*
+
+Silakan klik link di bawah ini untuk melihat dokumen:
+👉 ${documentLink}
+
+Terima kasih.`;
 
         return sendWhatsappNotification(user.phoneNumber, message);
       });
