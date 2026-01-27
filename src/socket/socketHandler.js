@@ -85,10 +85,12 @@ export const initSocket = (io) => {
             const cookieHeader = socket.request.headers.cookie;
 
             // Allow Header/Auth fallback
+            // Allow Header/Auth fallback
             let accessToken = null;
+            let cookies = {}; // ✅ Declare outside to fix scope
 
             if (cookieHeader) {
-                const cookies = parse(cookieHeader);
+                cookies = parse(cookieHeader); // ✅ Assign here
                 accessToken = cookies['sb-access-token'];
 
                 // Debugging: Log cookie keys
