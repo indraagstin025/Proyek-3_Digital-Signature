@@ -35,6 +35,9 @@ class SupabaseAuthRepository extends AuthRepository {
     const { data: authData, error: authError } = await this.supabaseClient.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: process.env.EMAIL_REDIRECT_URL,
+      },
     });
 
     if (authError) {

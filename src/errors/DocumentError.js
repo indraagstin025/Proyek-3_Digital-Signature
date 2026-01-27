@@ -31,6 +31,15 @@ class DocumentError extends BaseError {
   }
 
   /**
+   * @description Dilempar saat judul dokumen duplikat.
+   * @param {string} title - Judul yang duplikat.
+   * @returns {DocumentError}
+   */
+  static DuplicateTitle(title) {
+    return new DocumentError("DOCUMENT_TITLE_EXISTS", 400, `Dokumen dengan judul "${title}" sudah ada. Gunakan judul lain.`);
+  }
+
+  /**
    * @description Dilempar saat mencoba mengakses versi yang tidak terkait dengan dokumen tertentu.
    * @param {string} versionId - ID versi yang dicari.
    * @param {string} documentId - ID dokumen yang seharusnya memiliki versi tersebut.

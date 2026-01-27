@@ -195,7 +195,6 @@ export const createUserController = (userService) => {
     getMyQuota: asyncHandler(async (req, res, next) => {
       const userId = req.user.id;
       const quotaData = await userService.getUserQuota(userId);
-      // Quota tidak ada hubungannya dengan foto, return langsung
       res.status(200).json({
         status: "success",
         data: quotaData,

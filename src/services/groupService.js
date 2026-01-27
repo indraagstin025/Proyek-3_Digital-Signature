@@ -568,6 +568,34 @@ export class GroupService {
     const filePath = await this.fileStorage.uploadDocument(file, userId);
     const hash = crypto.createHash("sha256").update(file.buffer).digest("hex");
 
+    // [NEW] Cek Duplikasi File di dalam Grup (Same Hash + Same Group)
+    // Menggunakan prisma instance dari repository jika tersedia
+    if (this.groupRepository.prisma) {
+      const existingFileInGroup = await this.groupRepository.prisma.documentVersion.findFirst({
+        where: {
+          hash: hash,
+          document: { groupId: groupId },
+        },
+        include: { document: true },
+      });
+
+      if (existingFileInGroup) {
+        throw GroupError.DuplicateFile(`File ini sudah ada di grup sebagai dokumen: "${existingFileInGroup.document.title}".`);
+      }
+    }
+
+    // [NEW] Cek Duplikasi Judul di dalam Grup
+    const existingTitleInGroup = await this.documentRepository.findFirst({
+      where: {
+        groupId: groupId,
+        title: title,
+      },
+    });
+
+    if (existingTitleInGroup) {
+      throw GroupError.DuplicateTitle(`Judul dokumen "${title}" sudah digunakan di grup ini.`);
+    }
+
     const newDoc = await this.documentRepository.createGroupDocument(userId, groupId, title, filePath, hash, signerUserIds);
 
     if (signerUserIds && signerUserIds.length > 0) {

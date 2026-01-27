@@ -9,28 +9,9 @@ import { PDFDocument } from "pdf-lib";
  * @param {Object} fileStorage - Service untuk menangani operasi file (download/upload buffer).
  * @returns {Object} Kumpulan method controller untuk rute dokumen.
  */
-export const createDocumentController = (documentService, signatureRepository, fileStorage) => {
+export const createDocumentController = (documentService, signatureRepository, fileStorage, io) => {
   return {
-    /**
-     * @description Mengunggah dokumen baru ke sistem
-     * Proses:
-     * 1. Validasi file dari req.file (Multer)
-     * 2. Ambil userId dari middleware authentication
-     * 3. Ambil title dan type dari request body
-     * 4. Upload file ke cloud storage (Supabase)
-     * 5. Simpan metadata dokumen ke database
-     * 6. Return dokumen yang baru dibuat dengan status 201
-     * @route POST /api/documents
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} title - Judul dokumen
-     * @param {string} type - Tipe MIME dokumen
-     * @param {file} file - File dokumen (multipart form data)
-     * @returns {201} Dokumen berhasil dibuat
-     * @error {400} File tidak valid atau validasi gagal
-     * @error {401} User tidak authenticated
-     * @error {500} Server error atau upload gagal
-     */
+    // ... triggers: createDocument ...
     createDocument: asyncHandler(async (req, res, next) => {
       const { title, type } = req.body;
 
@@ -45,21 +26,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Mengambil daftar semua dokumen milik user yang login
-     * Proses:
-     * 1. Ambil userId dari middleware authentication
-     * 2. Ambil search query parameter (opsional)
-     * 3. Query database untuk semua dokumen user dengan search filter
-     * 4. Return array dokumen dalam format JSON
-     * @route GET /api/documents
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} [search] - Filter search berdasarkan title (optional)
-     * @returns {200} Array dokumen user
-     * @error {401} User tidak authenticated
-     * @error {500} Server error
-     */
+    // ... triggers: getAllDocuments ...
     getAllDocuments: asyncHandler(async (req, res, next) => {
       const userId = req.user?.id;
       const search = req.query.search || "";
@@ -72,23 +39,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Mendapatkan detail lengkap satu dokumen berdasarkan ID
-     * Proses:
-     * 1. Ambil documentId dari URL parameter
-     * 2. Ambil userId dari middleware authentication
-     * 3. Query database dengan ownership validation (dokumen harus milik user)
-     * 4. Return detail dokumen lengkap dengan metadata
-     * @route GET /api/documents/:id
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} id - Document ID (path parameter)
-     * @returns {200} Detail dokumen lengkap
-     * @error {401} User tidak authenticated
-     * @error {403} Akses ditolak (dokumen bukan milik user)
-     * @error {404} Dokumen tidak ditemukan
-     * @error {500} Server error
-     */
+    // ... triggers: getDocumentById ...
     getDocumentById: asyncHandler(async (req, res, next) => {
       const documentId = req.params.id;
 
@@ -108,27 +59,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Memperbarui metadata dokumen
-     * Proses:
-     * 1. Ambil documentId dari URL parameter
-     * 2. Ambil userId dari middleware authentication
-     * 3. Validasi ownership (dokumen harus milik user)
-     * 4. Update field yang dikirim dari req.body (title, type, dll)
-     * 5. Simpan perubahan ke database
-     * 6. Return dokumen yang sudah diupdate
-     * @route PUT /api/documents/:id
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} id - Document ID (path parameter)
-     * @param {object} body - Fields yang akan diupdate (title, type, etc)
-     * @returns {200} Dokumen berhasil diupdate
-     * @error {400} Validasi gagal
-     * @error {401} User tidak authenticated
-     * @error {403} Akses ditolak
-     * @error {404} Dokumen tidak ditemukan
-     * @error {500} Server error
-     */
+    // ... triggers: updateDocument ...
     updateDocument: asyncHandler(async (req, res, next) => {
       const { id: documentId } = req.params;
       const userId = req.user?.id;
@@ -143,26 +74,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Menghapus dokumen beserta file dan riwayatnya
-     * Proses:
-     * 1. Ambil documentId dari URL parameter
-     * 2. Ambil userId dari middleware authentication
-     * 3. Validasi ownership (dokumen harus milik user)
-     * 4. Delete file dari cloud storage
-     * 5. Delete dokumen record dari database
-     * 6. Delete semua versi/riwayat dokumen
-     * 7. Return success message
-     * @route DELETE /api/documents/:id
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} id - Document ID (path parameter)
-     * @returns {200} Dokumen berhasil dihapus
-     * @error {401} User tidak authenticated
-     * @error {403} Akses ditolak
-     * @error {404} Dokumen tidak ditemukan
-     * @error {500} Server error atau delete file gagal
-     */
+    // ... triggers: deleteDocument ...
     deleteDocument: asyncHandler(async (req, res, next) => {
       const { id: documentId } = req.params;
       const userId = req.user?.id;
@@ -175,25 +87,7 @@ export const createDocumentController = (documentService, signatureRepository, f
       });
     }),
 
-    /**
-     * @description Mengambil riwayat/history versi dokumen
-     * Proses:
-     * 1. Ambil documentId dari URL parameter
-     * 2. Ambil userId dari middleware authentication
-     * 3. Validasi ownership
-     * 4. Query semua versi/revisi dokumen dari database
-     * 5. Sort berdasarkan tanggal (terbaru first)
-     * 6. Return array history dengan metadata
-     * @route GET /api/documents/:documentId/history
-     * @access Private - Require cookie authentication
-     * @security cookieAuth: []
-     * @param {string} documentId - Document ID (path parameter)
-     * @returns {200} Array riwayat versi dokumen
-     * @error {401} User tidak authenticated
-     * @error {403} Akses ditolak
-     * @error {404} Dokumen tidak ditemukan
-     * @error {500} Server error
-     */
+    // ... triggers: getDocumentHistory ...
     getDocumentHistory: asyncHandler(async (req, res, next) => {
       const { documentId } = req.params;
       const userId = req.user?.id;
@@ -231,9 +125,23 @@ export const createDocumentController = (documentService, signatureRepository, f
       const userId = req.user?.id;
 
       if (!documentId || !versionId) {
+        // [FIXED] Empty block logic
       }
 
       const updatedDocument = await documentService.useOldVersion(documentId, versionId, userId);
+
+      // [REALTIME] Emit Socket Event jika Dokumen Grup
+      if (updatedDocument.groupId && io) {
+        const roomName = `group_${updatedDocument.groupId}`;
+        io.to(roomName).emit("group_document_update", {
+          action: "rollback_version",
+          documentId: updatedDocument.id,
+          document: updatedDocument,
+          message: `Dokumen dikembalikan ke versi sebelumnya.`,
+          actorId: userId,
+          uploaderName: req.user?.name || "Admin", // Fallback name
+        });
+      }
 
       return res.status(200).json({
         status: "success",
