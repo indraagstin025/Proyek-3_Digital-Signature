@@ -83,10 +83,30 @@ export const initSocket = (io) => {
     io.use(async (socket, next) => {
         try {
             const cookieHeader = socket.request.headers.cookie;
-            if (!cookieHeader) return next(new Error("Authentication error: No cookies found."));
 
-            const cookies = parse(cookieHeader);
-            const accessToken = cookies['sb-access-token'];
+            // Allow Header/Auth fallback
+            let accessToken = null;
+
+            if (cookieHeader) {
+                const cookies = parse(cookieHeader);
+                accessToken = cookies['sb-access-token'];
+
+                // Debugging: Log cookie keys
+                if (!accessToken) {
+                    console.log("[Socket Auth] Cookies accepted but token missing. Keys:", Object.keys(cookies));
+                }
+            }
+
+            // Fallback: Check Handshake Auth or Query
+            if (!accessToken && socket.handshake.auth && socket.handshake.auth.token) {
+                accessToken = socket.handshake.auth.token;
+                console.log("[Socket Auth] Using token from Handshake Auth");
+            }
+            if (!accessToken && socket.handshake.query && socket.handshake.query.token) {
+                accessToken = socket.handshake.query.token;
+                console.log("[Socket Auth] Using token from Query Param");
+            }
+
             if (!accessToken) return next(new Error("Authentication error: Access token missing."));
 
             // A. Validasi Token ke Supabase Auth (Client Standard)
