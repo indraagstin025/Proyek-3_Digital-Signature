@@ -85,7 +85,6 @@ export const initSocket = (io) => {
             const cookieHeader = socket.request.headers.cookie;
 
             // Allow Header/Auth fallback
-            // Allow Header/Auth fallback
             let accessToken = null;
             let cookies = {}; // ✅ Declare outside to fix scope
 
@@ -108,6 +107,9 @@ export const initSocket = (io) => {
                 accessToken = socket.handshake.query.token;
                 console.log("[Socket Auth] Using token from Query Param");
             }
+
+            // Get Refresh Token from cookies
+            const refreshToken = cookies['sb-refresh-token'];
 
             if (!accessToken && !refreshToken) return next(new Error("Authentication error: Access token missing."));
 
