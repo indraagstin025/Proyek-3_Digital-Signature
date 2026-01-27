@@ -138,6 +138,11 @@ export const initSocket = (io) => {
                     // tapi setidaknya koneksi ini berhasil.
                 } else {
                     console.error("❌ [Socket Auth] Refresh failed:", refreshError?.message);
+                    // ✅ [CRITICAL] Emit event ke client untuk redirect ke login
+                    socket.emit("session_expired", {
+                        message: "Sesi Anda telah berakhir. Silakan login kembali.",
+                        reason: refreshError?.message || "Refresh token tidak valid"
+                    });
                 }
             }
 
