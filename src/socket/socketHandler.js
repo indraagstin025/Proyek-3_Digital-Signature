@@ -107,15 +107,41 @@ export const initSocket = (io) => {
                 console.log("[Socket Auth] Using token from Query Param");
             }
 
-            if (!accessToken) return next(new Error("Authentication error: Access token missing."));
+            if (!accessToken && !refreshToken) return next(new Error("Authentication error: Access token missing."));
 
             // A. Validasi Token ke Supabase Auth (Client Standard)
-            const { data, error } = await supabase.auth.getUser(accessToken);
-            if (error || !data.user) return next(new Error("Authentication error: Invalid or expired token."));
+            let user = null;
+
+            // 1. Coba Validasi Access Token
+            if (accessToken) {
+                const { data, error } = await supabase.auth.getUser(accessToken);
+                if (!error && data.user) {
+                    user = data.user;
+                }
+            }
+
+            // 2. Jika Access Token Gagal/Expired, Coba Refresh Token
+            if (!user && refreshToken) {
+                console.log("🔄 [Socket Auth] Access token expired/invalid. Attempting refresh...");
+                const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+                    refresh_token: refreshToken,
+                });
+
+                if (!refreshError && refreshData.session) {
+                    console.log("✅ [Socket Auth] Refresh successful for user:", refreshData.user.email);
+                    user = refreshData.user;
+                    // Note: Kita tidak bisa update cookie di browser via Socket Handshake dengan mudah,
+                    // tapi setidaknya koneksi ini berhasil.
+                } else {
+                    console.error("❌ [Socket Auth] Refresh failed:", refreshError?.message);
+                }
+            }
+
+            if (!user) return next(new Error("Authentication error: Invalid or expired token."));
 
             // B. Ambil Data User dari DB Lokal (Prisma)
             const localUser = await prisma.user.findUnique({
-                where: { id: data.user.id },
+                where: { id: user.id },
                 select: {
                     id: true,
                     name: true,
