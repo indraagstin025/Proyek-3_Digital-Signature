@@ -113,12 +113,22 @@ const allowedOrigins = [
 // ============================================================
 // Chrome blocks public websites from accessing private IPs (192.168.x.x, 10.x.x.x, 127.0.0.1)
 // This middleware handles the preflight request for Private Network Access
+// This middleware handles the preflight request for Private Network Access
 app.use((req, res, next) => {
   // Handle Chrome's Private Network Access preflight
   if (req.method === 'OPTIONS') {
     const requestPrivateNetwork = req.headers['access-control-request-private-network'];
     if (requestPrivateNetwork === 'true') {
       res.setHeader('Access-Control-Allow-Private-Network', 'true');
+      // ✅ [FIX] Explicitly set Origin for PNA requests to avoid CORS blunders
+      const origin = req.headers.origin;
+      if (origin && allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Set-Cookie');
+        // Stop here for PNA OPTIONS to prevent double-handling
+        return res.status(204).end();
+      }
     }
   }
   next();
@@ -132,8 +142,8 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("Blocked by CORS:", origin); // Log jika ada yg kena blok
-      callback(new Error("Not allowed by CORS"));
+      console.warn(`[CORS Blocked] Origin: ${origin} not in allowed list.`);
+      callback(null, false); // Return false instead of Error to avoid crashing
     }
   },
   credentials: true, // ✅ PENTING: Allow credentials (cookies, auth headers)
@@ -159,8 +169,17 @@ const corsOptions = {
 const io = new Server(httpServer, {
   path: "/socket.io/",
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("[Socket CORS] Blocked origin:", origin);
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST"],
+    allowedHeaders: ["content-type", "authorization", "cookie", "x-requested-with"],
     credentials: true,
   },
   transports: ["websocket", "polling"],
