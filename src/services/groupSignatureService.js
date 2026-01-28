@@ -339,11 +339,13 @@ export class GroupSignatureService {
                 }));
 
             console.log(`🔍 [DEBUG] Getting document owner...`);
-            // ✅ Get document owner info (need to fetch full document with owner)
-            const fullDocument = await this.documentRepository.findById(documentId);
-            console.log(`🔍 [DEBUG] FullDocument:`, fullDocument ? 'FOUND' : 'NULL');
-            console.log(`🔍 [DEBUG] Owner:`, fullDocument?.owner ? 'FOUND' : 'NULL');
-            const documentOwner = fullDocument.owner;
+            // ✅ Use owner already loaded from findById signature query
+            const documentOwner = sig.documentVersion.document.owner;
+            console.log(`🔍 [DEBUG] Owner from sig:`, documentOwner ? 'FOUND' : 'NULL');
+
+            if (!documentOwner) {
+                throw new Error("Document owner information missing");
+            }
 
             console.log(`🔍 [DEBUG] Returning verification result...`);
             return {
@@ -353,7 +355,7 @@ export class GroupSignatureService {
                 ipAddress: "-", // Owner might not have signed
                 groupSigners: groupSigners, // ✅ Array of signer detail objects
                 documentTitle: document.title,
-                signedAt: fullDocument.createdAt, // Document upload time
+                signedAt: sig.documentVersion.document.createdAt, // Document upload time
                 storedFileHash: storedHash,
                 recalculatedFileHash: recalculateHash,
                 verificationStatus: isHashMatch ? "VALID" : "INVALID",
