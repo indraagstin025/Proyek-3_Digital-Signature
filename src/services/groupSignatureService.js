@@ -282,17 +282,12 @@ export class GroupSignatureService {
     }
 
     async verifyUploadedFile(signatureId, uploadedFileBuffer, inputAccessCode = null) {
-        console.log(`🔍 [DEBUG] Looking for signature ID: ${signatureId}`);
         const sig = await this.groupSignatureRepository.findById(signatureId);
-        console.log(`🔍 [DEBUG] FindById result:`, sig ? 'FOUND' : 'NULL');
-        if (sig) console.log(`🔍 [DEBUG] Has owner?`, sig.documentVersion?.document?.owner ? 'YES' : 'NO');
         if (!sig) return null;
 
         // [LOGIC BARU] Cek PIN
-        console.log(`🔍 [DEBUG] Checking PIN... accessCode:`, sig.accessCode ? 'EXISTS' : 'NONE');
         if (sig.accessCode) {
             if (!inputAccessCode || sig.accessCode !== inputAccessCode) {
-                console.log(`🔍 [DEBUG] PIN check failed, returning locked status`);
                 return {
                     isLocked: true,
                     signatureId: sig.id,
@@ -303,24 +298,16 @@ export class GroupSignatureService {
             }
         }
 
-        console.log(`🔍 [DEBUG] Getting documentId...`);
         const documentId = sig.documentVersion.documentId;
-        console.log(`🔍 [DEBUG] DocumentId:`, documentId);
         const document = await this.documentRepository.findByIdSimple(documentId);
-        console.log(`🔍 [DEBUG] Document status:`, document?.status);
 
         if (document.status !== 'completed') {
-            console.log(`🔍 [DEBUG] Document not completed, throwing error`);
             throw new Error("Dokumen grup ini belum difinalisasi oleh Admin.");
         }
 
-        console.log(`🔍 [DEBUG] Getting finalVersion...`);
-
         try {
             const finalVersion = await this.versionRepository.findById(document.currentVersionId);
-            console.log(`🔍 [DEBUG] FinalVersion:`, finalVersion ? 'FOUND' : 'NULL');
             const storedHash = finalVersion.signedFileHash;
-            console.log(`🔍 [DEBUG] StoredHash:`, storedHash ? 'EXISTS' : 'MISSING');
 
             if (!storedHash) throw CommonError.InternalServerError("Data Hash dokumen final tidak ditemukan.");
 
@@ -338,21 +325,18 @@ export class GroupSignatureService {
                     ipAddress: s.ipAddress || "-"
                 }));
 
-            console.log(`🔍 [DEBUG] Getting document owner...`);
             // ✅ Use owner already loaded from findById signature query
             const documentOwner = sig.documentVersion.document.owner;
-            console.log(`🔍 [DEBUG] Owner from sig:`, documentOwner ? 'FOUND' : 'NULL');
 
             if (!documentOwner) {
                 throw new Error("Document owner information missing");
             }
 
-            console.log(`🔍 [DEBUG] Returning verification result...`);
             return {
                 // ✅ Display document owner as main info
                 signerName: documentOwner.name,
                 signerEmail: documentOwner.email,
-                ipAddress: "-", // Owner might not have signed
+                ipAddress: "-", // Owner info, not specific to signing
                 groupSigners: groupSigners, // ✅ Array of signer detail objects
                 documentTitle: document.title,
                 signedAt: sig.documentVersion.document.createdAt, // Document upload time
@@ -364,9 +348,7 @@ export class GroupSignatureService {
                 isLocked: false
             };
         } catch (error) {
-            console.error(`❌ [DEBUG] Error in verifyUploadedFile:`, error.message);
-            console.error(`❌ [DEBUG] Error stack:`, error.stack);
-            throw error; // Re-throw to let controller handle
+            throw error;
         }
     }
 }
