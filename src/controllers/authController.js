@@ -107,11 +107,15 @@ export const createAuthController = (authService) => {
         console.log(`[AUTH] Login Token Size: ${tokenSize} bytes`);
       }
 
-      // 4. Set Header Cookie
+      // 4. Ensure maxAge is valid integer (minimum 1 hour = 3600 seconds)
+      // Fix: Prevent undefined/0/decimal maxAge that causes cookie to not set
+      const accessTokenMaxAge = Math.max(Math.floor(session.expires_in || 3600), 3600);
+
+      // 5. Set Header Cookie
       res.setHeader("Set-Cookie", [
         serialize("sb-access-token", session.access_token, {
           ...cookieOptions,
-          maxAge: session.expires_in, // Sesuai expire dari Supabase (Detik)
+          maxAge: accessTokenMaxAge, // ✅ Fixed: Validated integer >= 3600
         }),
         serialize("sb-refresh-token", session.refresh_token, {
           ...cookieOptions,

@@ -184,16 +184,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use(cookieParser());
-app.use((req, res, next) => {
-  if (req.path.startsWith("/api") || req.path.startsWith("/socket.io")) {
-    if (req.cookies && Object.keys(req.cookies).length > 0) {
-      console.log("✅ Cookies Diterima:", Object.keys(req.cookies));
-    } else {
-      console.log("❌ TIDAK ADA COOKIES YANG DITERIMA");
-    }
-  }
-  next();
-});
+// Note: Cookie logging handled by authMiddleware for authenticated routes
 
 app.use(trafficLogger);
 
