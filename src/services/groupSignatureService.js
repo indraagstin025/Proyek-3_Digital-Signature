@@ -203,12 +203,16 @@ export class GroupSignatureService {
                 ipAddress: s.ipAddress || "-"
             }));
 
+        // ✅ Get document owner (uploader) info for main display
+        const documentOwner = docVersion.document.owner;
+
         return {
-            signerName: signer.name,
-            signerEmail: signer.email,
-            signerIpAddress: sig.ipAddress || "-",
+            // ✅ Display document owner as main info
+            signerName: documentOwner.name,
+            signerEmail: documentOwner.email,
+            signerIpAddress: "-", // Owner might not have signed yet
             documentTitle: docVersion.document.title,
-            signedAt: sig.signedAt || sig.createdAt,
+            signedAt: docVersion.document.createdAt, // Document upload time
             storedFileHash: storedHash || "PENDING",
             verificationStatus: "REGISTERED",
             verificationMessage: "Tanda tangan grup terdaftar.",
@@ -320,13 +324,18 @@ export class GroupSignatureService {
                 ipAddress: s.ipAddress || "-"
             }));
 
+        // ✅ Get document owner info (need to fetch full document with owner)
+        const fullDocument = await this.documentRepository.findById(documentId);
+        const documentOwner = fullDocument.owner;
+
         return {
-            signerName: sig.signer.name,
-            signerEmail: sig.signer.email,
-            ipAddress: sig.ipAddress || "-",
+            // ✅ Display document owner as main info
+            signerName: documentOwner.name,
+            signerEmail: documentOwner.email,
+            ipAddress: "-", // Owner might not have signed
             groupSigners: groupSigners, // ✅ Array of signer detail objects
             documentTitle: document.title,
-            signedAt: sig.signedAt || sig.createdAt, // ✅ Use signedAt
+            signedAt: fullDocument.createdAt, // Document upload time
             storedFileHash: storedHash,
             recalculatedFileHash: recalculateHash,
             verificationStatus: isHashMatch ? "VALID" : "INVALID",

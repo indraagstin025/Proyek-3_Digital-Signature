@@ -49,7 +49,15 @@ export class PrismaGroupSignatureRepository {
             where: { id },
             include: {
                 signer: true,
-                documentVersion: { include: { document: true } },
+                documentVersion: {
+                    include: {
+                        document: {
+                            include: {
+                                owner: true // ✅ Include document owner for verification
+                            }
+                        }
+                    }
+                },
             },
         });
     }
