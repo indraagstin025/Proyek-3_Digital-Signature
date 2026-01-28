@@ -164,6 +164,11 @@ const io = new Server(httpServer, {
     credentials: true,
   },
   transports: ["websocket", "polling"],
+  // ✅ Heartbeat configuration to reduce false disconnects
+  pingTimeout: 30000,     // 30 seconds (default: 20s) - Time to wait for pong response
+  pingInterval: 35000,    // 35 seconds (default: 25s) - Interval between ping packets
+  // Longer timeout prevents false disconnects during:
+  // - Temporary network latency, browser tab backgrounded, mobile network transitions
 });
 
 initSocket(io);
