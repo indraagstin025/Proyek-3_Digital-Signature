@@ -108,6 +108,22 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
 ];
 
+// ============================================================
+// Chrome Private Network Access Support
+// ============================================================
+// Chrome blocks public websites from accessing private IPs (192.168.x.x, 10.x.x.x, 127.0.0.1)
+// This middleware handles the preflight request for Private Network Access
+app.use((req, res, next) => {
+  // Handle Chrome's Private Network Access preflight
+  if (req.method === 'OPTIONS') {
+    const requestPrivateNetwork = req.headers['access-control-request-private-network'];
+    if (requestPrivateNetwork === 'true') {
+      res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
+  }
+  next();
+});
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Izinkan request tanpa origin (seperti dari curl/mobile apps tertentu)
