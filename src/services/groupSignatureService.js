@@ -192,6 +192,17 @@ export class GroupSignatureService {
             };
         }
 
+        // ✅ Fetch all signers for group collaboration display
+        const allSignatures = await this.groupSignatureRepository.findAllByVersionId(docVersion.id);
+        const groupSigners = allSignatures
+            .filter(s => s.status === 'final')
+            .map(s => ({
+                name: s.signer.name,
+                email: s.signer.email,
+                signedAt: s.signedAt || s.createdAt,
+                ipAddress: s.ipAddress || "-"
+            }));
+
         return {
             signerName: signer.name,
             signerEmail: signer.email,
@@ -203,6 +214,7 @@ export class GroupSignatureService {
             verificationMessage: "Tanda tangan grup terdaftar.",
             originalDocumentUrl: docVersion.url,
             type: "GROUP",
+            groupSigners: groupSigners, // ✅ Array of signer objects
             isLocked: false
         };
     }
@@ -297,15 +309,24 @@ export class GroupSignatureService {
         const recalculateHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
         const isHashMatch = recalculateHash === storedHash;
         const allSignatures = await this.groupSignatureRepository.findAllByVersionId(sig.documentVersionId);
-        const signersNames = allSignatures.map(s => s.signer.name).join(", ");
+
+        // ✅ Send groupSigners as array of objects with complete details
+        const groupSigners = allSignatures
+            .filter(s => s.status === 'final')
+            .map(s => ({
+                name: s.signer.name,
+                email: s.signer.email,
+                signedAt: s.signedAt || s.createdAt,
+                ipAddress: s.ipAddress || "-"
+            }));
 
         return {
             signerName: sig.signer.name,
             signerEmail: sig.signer.email,
             ipAddress: sig.ipAddress || "-",
-            groupSigners: signersNames,
+            groupSigners: groupSigners, // ✅ Array of signer detail objects
             documentTitle: document.title,
-            signedAt: sig.createdAt,
+            signedAt: sig.signedAt || sig.createdAt, // ✅ Use signedAt
             storedFileHash: storedHash,
             recalculatedFileHash: recalculateHash,
             verificationStatus: isHashMatch ? "VALID" : "INVALID",
