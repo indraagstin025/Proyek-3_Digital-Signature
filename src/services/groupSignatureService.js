@@ -122,7 +122,8 @@ export class GroupSignatureService {
             documentVersionId: currentVersion.id,
             status: "final", // FINAL
             ipAddress: auditData.ipAddress,
-            userAgent: auditData.userAgent
+            userAgent: auditData.userAgent,
+            signedAt: new Date(), // ✅ Record exact time of signing
         };
 
         if (existingSignature) {
