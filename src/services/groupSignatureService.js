@@ -316,43 +316,55 @@ export class GroupSignatureService {
 
         console.log(`🔍 [DEBUG] Getting finalVersion...`);
 
-        const finalVersion = await this.versionRepository.findById(document.currentVersionId);
-        const storedHash = finalVersion.signedFileHash;
+        try {
+            const finalVersion = await this.versionRepository.findById(document.currentVersionId);
+            console.log(`🔍 [DEBUG] FinalVersion:`, finalVersion ? 'FOUND' : 'NULL');
+            const storedHash = finalVersion.signedFileHash;
+            console.log(`🔍 [DEBUG] StoredHash:`, storedHash ? 'EXISTS' : 'MISSING');
 
-        if (!storedHash) throw CommonError.InternalServerError("Data Hash dokumen final tidak ditemukan.");
+            if (!storedHash) throw CommonError.InternalServerError("Data Hash dokumen final tidak ditemukan.");
 
-        const recalculateHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
-        const isHashMatch = recalculateHash === storedHash;
-        const allSignatures = await this.groupSignatureRepository.findAllByVersionId(sig.documentVersionId);
+            const recalculateHash = crypto.createHash("sha256").update(uploadedFileBuffer).digest("hex");
+            const isHashMatch = recalculateHash === storedHash;
+            const allSignatures = await this.groupSignatureRepository.findAllByVersionId(sig.documentVersionId);
 
-        // ✅ Send groupSigners as array of objects with complete details
-        const groupSigners = allSignatures
-            .filter(s => s.status === 'final')
-            .map(s => ({
-                name: s.signer.name,
-                email: s.signer.email,
-                signedAt: s.signedAt || s.createdAt,
-                ipAddress: s.ipAddress || "-"
-            }));
+            // ✅ Send groupSigners as array of objects with complete details
+            const groupSigners = allSignatures
+                .filter(s => s.status === 'final')
+                .map(s => ({
+                    name: s.signer.name,
+                    email: s.signer.email,
+                    signedAt: s.signedAt || s.createdAt,
+                    ipAddress: s.ipAddress || "-"
+                }));
 
-        // ✅ Get document owner info (need to fetch full document with owner)
-        const fullDocument = await this.documentRepository.findById(documentId);
-        const documentOwner = fullDocument.owner;
+            console.log(`🔍 [DEBUG] Getting document owner...`);
+            // ✅ Get document owner info (need to fetch full document with owner)
+            const fullDocument = await this.documentRepository.findById(documentId);
+            console.log(`🔍 [DEBUG] FullDocument:`, fullDocument ? 'FOUND' : 'NULL');
+            console.log(`🔍 [DEBUG] Owner:`, fullDocument?.owner ? 'FOUND' : 'NULL');
+            const documentOwner = fullDocument.owner;
 
-        return {
-            // ✅ Display document owner as main info
-            signerName: documentOwner.name,
-            signerEmail: documentOwner.email,
-            ipAddress: "-", // Owner might not have signed
-            groupSigners: groupSigners, // ✅ Array of signer detail objects
-            documentTitle: document.title,
-            signedAt: fullDocument.createdAt, // Document upload time
-            storedFileHash: storedHash,
-            recalculatedFileHash: recalculateHash,
-            verificationStatus: isHashMatch ? "VALID" : "INVALID",
-            isHashMatch: isHashMatch,
-            type: "GROUP",
-            isLocked: false
-        };
+            console.log(`🔍 [DEBUG] Returning verification result...`);
+            return {
+                // ✅ Display document owner as main info
+                signerName: documentOwner.name,
+                signerEmail: documentOwner.email,
+                ipAddress: "-", // Owner might not have signed
+                groupSigners: groupSigners, // ✅ Array of signer detail objects
+                documentTitle: document.title,
+                signedAt: fullDocument.createdAt, // Document upload time
+                storedFileHash: storedHash,
+                recalculatedFileHash: recalculateHash,
+                verificationStatus: isHashMatch ? "VALID" : "INVALID",
+                isHashMatch: isHashMatch,
+                type: "GROUP",
+                isLocked: false
+            };
+        } catch (error) {
+            console.error(`❌ [DEBUG] Error in verifyUploadedFile:`, error.message);
+            console.error(`❌ [DEBUG] Error stack:`, error.stack);
+            throw error; // Re-throw to let controller handle
+        }
     }
 }
