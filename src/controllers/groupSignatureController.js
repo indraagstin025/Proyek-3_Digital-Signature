@@ -11,7 +11,7 @@ const getRealIpAddress = (req) => {
   return req.ip || req.connection.remoteAddress;
 };
 
-export const createGroupSignatureController = (groupSignatureService, groupService) => {
+export const createGroupSignatureController = (groupSignatureService, groupService, io) => {
   return {
     /**
      * @description User menandatangani dokumen grup (Draft -> Final)
@@ -69,6 +69,23 @@ export const createGroupSignatureController = (groupSignatureService, groupServi
       try {
         const result = await groupSignatureService.signDocument(userId, documentId, signatureData, auditData, req);
         console.log(`✅ [Controller] signDocument Success.`);
+
+        // ✅ [REALTIME] Emit socket event untuk update badge signature count di GroupDocuments
+        // Fetch document untuk mendapatkan groupId
+        const DocumentRepository = groupSignatureService.documentRepository;
+        const document = await DocumentRepository.findByIdSimple(documentId);
+
+        if (document && document.groupId && io) {
+          const roomName = `group_${document.groupId}`;
+          io.to(roomName).emit("group_document_update", {
+            action: "signature_added",
+            documentId: document.id,
+            document: document,
+            actorId: userId,
+            message: `${req.user?.name || "User"} telah menandatangani dokumen.`,
+          });
+          console.log(`📤 [Socket] Emitted group_document_update to room: ${roomName}`);
+        }
 
         return res.status(200).json({
           status: "success",
