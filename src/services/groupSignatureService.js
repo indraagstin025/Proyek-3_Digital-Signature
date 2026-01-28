@@ -282,7 +282,10 @@ export class GroupSignatureService {
     }
 
     async verifyUploadedFile(signatureId, uploadedFileBuffer, inputAccessCode = null) {
+        console.log(`🔍 [DEBUG] Looking for signature ID: ${signatureId}`);
         const sig = await this.groupSignatureRepository.findById(signatureId);
+        console.log(`🔍 [DEBUG] FindById result:`, sig ? 'FOUND' : 'NULL');
+        if (sig) console.log(`🔍 [DEBUG] Has owner?`, sig.documentVersion?.document?.owner ? 'YES' : 'NO');
         if (!sig) return null;
 
         // [LOGIC BARU] Cek PIN
