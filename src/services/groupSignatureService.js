@@ -289,8 +289,10 @@ export class GroupSignatureService {
         if (!sig) return null;
 
         // [LOGIC BARU] Cek PIN
+        console.log(`🔍 [DEBUG] Checking PIN... accessCode:`, sig.accessCode ? 'EXISTS' : 'NONE');
         if (sig.accessCode) {
             if (!inputAccessCode || sig.accessCode !== inputAccessCode) {
+                console.log(`🔍 [DEBUG] PIN check failed, returning locked status`);
                 return {
                     isLocked: true,
                     signatureId: sig.id,
@@ -301,12 +303,18 @@ export class GroupSignatureService {
             }
         }
 
+        console.log(`🔍 [DEBUG] Getting documentId...`);
         const documentId = sig.documentVersion.documentId;
+        console.log(`🔍 [DEBUG] DocumentId:`, documentId);
         const document = await this.documentRepository.findByIdSimple(documentId);
+        console.log(`🔍 [DEBUG] Document status:`, document?.status);
 
         if (document.status !== 'completed') {
+            console.log(`🔍 [DEBUG] Document not completed, throwing error`);
             throw new Error("Dokumen grup ini belum difinalisasi oleh Admin.");
         }
+
+        console.log(`🔍 [DEBUG] Getting finalVersion...`);
 
         const finalVersion = await this.versionRepository.findById(document.currentVersionId);
         const storedHash = finalVersion.signedFileHash;
