@@ -55,11 +55,25 @@ const setSessionCookies = (res, session) => {
 
 /**
  * Hapus cookies saat session invalid
+ * [FIX] Gunakan parameter yang sama dengan getCookieOptions agar cookie bisa terhapus dengan benar
  */
 const clearSessionCookies = (res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieDomain = process.env.COOKIE_DOMAIN;
+
+  const clearOptions = {
+    httpOnly: true,
+    path: "/",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    domain: isProduction && cookieDomain ? cookieDomain : undefined,
+    maxAge: -1,
+    expires: new Date(0)
+  };
+
   res.setHeader("Set-Cookie", [
-    serialize("sb-access-token", "", { maxAge: -1, path: "/" }),
-    serialize("sb-refresh-token", "", { maxAge: -1, path: "/" }),
+    serialize("sb-access-token", "", clearOptions),
+    serialize("sb-refresh-token", "", clearOptions),
   ]);
 };
 
