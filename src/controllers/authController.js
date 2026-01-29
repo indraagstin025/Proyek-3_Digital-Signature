@@ -13,23 +13,17 @@ export const createAuthController = (authService) => {
    */
   const getCookieOptions = () => {
     const isProduction = process.env.NODE_ENV === "production";
-
-    // Pastikan variabel ini diisi ".moodvis.my.id" di Railway
     const cookieDomain = process.env.COOKIE_DOMAIN;
 
     return {
-      httpOnly: true, // Wajib agar tidak bisa diakses JS client
+      httpOnly: true,
       path: "/",
 
-      // Production wajib HTTPS (Secure)
-      secure: isProduction,
+      // [FIX] Cross-Site Cookie: Gunakan 'none' agar bisa diakses dari domain frontend yang berbeda
+      // Wajib Secure: true jika SameSite: none
+      secure: isProduction, // Pastikan production menggunakan HTTPS
+      sameSite: isProduction ? "none" : "lax", // None untuk Prod (Cross-Site), Lax untuk Dev (Localhost)
 
-      // GUNAKAN 'lax' (Sama seperti Middleware)
-      // Aman untuk Mobile dan Cross-Subdomain (www <-> api)
-      sameSite: "lax",
-
-      // WAJIB ADA DOMAIN (Sama seperti Middleware)
-      // Agar cookie bisa dibaca oleh frontend 'www'
       domain: isProduction && cookieDomain ? cookieDomain : undefined,
     };
   };

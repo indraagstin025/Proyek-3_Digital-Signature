@@ -37,7 +37,7 @@ const getCookieOptions = (maxAge) => {
     httpOnly: true,
     path: "/",
     secure: isProduction,
-    sameSite: "lax",
+    sameSite: isProduction ? "none" : "lax", // [FIX] None untuk Prod (Cross-Site)
     domain: isProduction && cookieDomain ? cookieDomain : undefined,
     maxAge,
   };
@@ -81,7 +81,7 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     try {
       // Tunggu hasil dari refresh yang sedang berjalan
       const result = await existingLock.promise;
-      
+
       // Return hasil yang sama (user & token sudah di-refresh oleh request pertama)
       return result;
     } catch (error) {
@@ -114,10 +114,10 @@ const refreshSessionWithLock = async (refreshToken, res) => {
     if (error || !data.session) {
       const errorMsg = error?.message || "Gagal memperbarui sesi";
       console.error(`❌ [Auth] Refresh gagal: ${errorMsg}`);
-      
+
       // Hapus cookies karena refresh gagal
       clearSessionCookies(res);
-      
+
       const authError = AuthError.SessionExpired("Sesi berakhir. Silakan login kembali.");
       rejectRefresh(authError);
       throw authError;
@@ -199,7 +199,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         supabaseUser = data.user;
       } else if (error) {
         const errorMsg = error.message?.toLowerCase() || "";
-        
+
         // Cek apakah token expired (bukan invalid/malformed)
         const isExpired =
           errorMsg.includes("jwt expired") ||
